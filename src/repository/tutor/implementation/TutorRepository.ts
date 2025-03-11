@@ -13,6 +13,18 @@ class TutorRepository implements ITutorRepository{
         const newUser = await Tutor.create({username,email,password});
         return newUser;
     }
+    async createGoogleUser(username: string, email: string, password: string, image: string): Promise<TutorType | null> {
+        const newUser = await Tutor.create({
+            username,
+            email,
+            password,
+            profile: {
+                profilePicture: image,  
+            },
+        });
+        return newUser;
+    }
+    
 
     async updateUserByEmail(email: string, data:TutorType): Promise<TutorType | null> {
         const updatedUser = await Tutor.findOneAndUpdate({ email }, data,{ new:true })

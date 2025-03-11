@@ -225,6 +225,9 @@ class TutorController {
                     })
                 return
             }
+            if(user.status === -1){
+                res.status(403).json({success:false,message:"User is Blocked by the admin",data:null})
+            }
             const comparePassword = await PasswordUtils.comparePassword(password, user?.password)
 
             if (!comparePassword) {
@@ -464,13 +467,12 @@ class TutorController {
     async googleAuth(req: Request, res:Response) : Promise<void> {
         try {
             const {username,email,image} = req.body;
-
             if(!username || !email || ! image) {
                 res.status(400).json({success:false,message:"credential need to login",data:null});
                 return;
             }
             let user = await this._tutorService.findByEmail(email);
-
+            
             if(user?.status == -1){
                 res.status(403).json({success:false,message:"user is blocked by the admin",data:null})
                 return
@@ -478,7 +480,7 @@ class TutorController {
 
             if (!user) {
                 const password = await PasswordUtils.passwordHash(username);
-                user = await this._tutorService.createUser(username, email, password);  // Assign to 'user'
+                user = await this._tutorService.createGoogleUser(username, email, password,image);  // Assign to 'user'
             }
     
             if (!user) {

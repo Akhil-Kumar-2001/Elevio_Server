@@ -26,7 +26,8 @@ class TutorProfileController {
             }
             res.status(STATUS_CODES.OK).json({success:true,message:"Tutor found ",data:tutor})
         } catch (error) {
-            
+            console.error("Error fetching tutor:", error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     }
 
@@ -42,7 +43,21 @@ class TutorProfileController {
             res.status(200).json({success:true,message:"Form submitted Successfully",data:response});
 
         } catch (error) {
-            
+            console.error("Error verifying tutor:", error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+
+    async updateProfile(req:Request, res:Response):Promise<void> {
+        try {
+            const {id,formData} = req.body;
+            const response  = await this._tutorProfileService.updateProfile(id,formData);
+            if(response){
+                res.status(STATUS_CODES.OK).json({success:true,message:"Profile updated Successfully",data:response})
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     }
 

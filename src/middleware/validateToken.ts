@@ -99,6 +99,7 @@ export const validateToken = (requiredRole?: string) => {
         if (requiredRole && role !== requiredRole) {
           return res.status(403).json({ message: "Access denied: Insufficient permissions." });
         }
+        
         console.log("Checking role of the user in middleware => ",role);
 
         req.userId = userId;

@@ -30,6 +30,15 @@ class TutorProfileRepository implements ITutorProfileRepository{
         return updatedTutor;
     }
 
+    async updateProfile(id: string, formData: TutorType): Promise<boolean | null> {
+        const updatedTutor = await Tutor.findByIdAndUpdate(
+            id, 
+            { $set: formData }, 
+            { new: true } 
+        );
+        return updatedTutor ? true : false;
+    }
+
 }
     
 

@@ -5,6 +5,7 @@ import { TutorVerificationFormData } from "../../Types/basicTypes"
 interface ITutorProfileService{
     getTutorById(id:string):Promise<TutorType | null>
     verifyTutor(formData:TutorVerificationFormData):Promise<TutorType | null>
+    updateProfile(id:string,formData:TutorType):Promise<boolean | null>
 }
 
 export default ITutorProfileService

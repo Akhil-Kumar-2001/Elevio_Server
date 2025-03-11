@@ -5,6 +5,8 @@ import TutorController from '../../controller/tutor/tutorController';
 import TutorProfileRepository from '../../repository/tutor/implementation/TutorProfileRepository';
 import TutorProfileService from '../../service/tutor/implementation/TutorProfileService';
 import TutorProfileController from '../../controller/tutor/tutorProfileController';
+import { validateToken } from '../../middleware/validateToken';
+import isBlocked  from '../../middleware/isBlocked';
 
 
 
@@ -38,8 +40,9 @@ router.post('/reset-password', tutorController.resetPassword.bind(tutorControlle
 
 router.post("/callback", tutorController.googleAuth.bind(tutorController));
 
-router.get("/get-tutor/:id", tutorProfileController.getTutor.bind(tutorProfileController));
-router.put("/verify-tutor",tutorProfileController.verifyTutor.bind(tutorProfileController))
+router.get("/get-tutor/:id",isBlocked,validateToken("Tutor"), tutorProfileController.getTutor.bind(tutorProfileController));
+router.put("/verify-tutor",isBlocked,validateToken("Tutor"),tutorProfileController.verifyTutor.bind(tutorProfileController))
+router.patch("/update-profile",isBlocked,validateToken("Tutor"),tutorProfileController.updateProfile.bind(tutorProfileController))
 
 
 export default  router

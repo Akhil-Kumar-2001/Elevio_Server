@@ -19,6 +19,10 @@ class TutorService implements ITutorService{
         const newUser = await this._tutorRepository.createUser(username,email,password)
         return newUser;
     }
+    async createGoogleUser(username: string, email: string, password: string,image:string): Promise<TutorType | null> {
+        const newUser = await this._tutorRepository.createGoogleUser(username,email,password,image)
+        return newUser;
+    }
 
     async updateUser(email: string, data:TutorType): Promise<TutorType | null> {
         const updatedUser = await this._tutorRepository.updateUserByEmail(email,data);

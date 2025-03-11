@@ -22,6 +22,11 @@ class TutorProfileService implements ITutorProfileService{
             return tutor
         
     }
+
+    async updateProfile(id: string, formData: TutorType): Promise<boolean | null> {
+        const updatedTutor = await this._tutorProfileRepository.updateProfile(id,formData);
+        return updatedTutor
+    }
     
 }
 

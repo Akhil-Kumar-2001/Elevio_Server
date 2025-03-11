@@ -27,7 +27,7 @@ const morganMiddleware = morgan(morganFormat, {
         const colorizedMessage = message.replace(status, colorizedStatus);
 
         // Log the request details in color
-        console.log(colorizedMessage.trim());
+        // console.log(colorizedMessage.trim());
       }
     },
   },
