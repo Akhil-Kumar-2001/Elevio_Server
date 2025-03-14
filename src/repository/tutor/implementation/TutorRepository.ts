@@ -1,19 +1,24 @@
-import { Tutor, TutorType } from '../../../model/tutor/tutorModel';
+import { Tutor, ITutor } from '../../../model/tutor/tutorModel';
 import ITutorRepository from '../ITutorRepository'
 import { OTP,OTPType } from '../../../model/otp/ otpModel';
+import { BaseRepository } from '../../base/implementation/BaseRepository';
 
-class TutorRepository implements ITutorRepository{
+class TutorRepository extends BaseRepository<ITutor> implements ITutorRepository{
 
-    async findByEmail(email: string): Promise<TutorType | null> {
+    constructor(){
+        super(Tutor)
+    }
+
+    async findByEmail(email: string): Promise<ITutor | null> {
         const getUser = await Tutor.findOne({email :  email});
         return getUser;
     }
 
-    async createUser(username: string, email: string, password: string): Promise<TutorType | null> {
-        const newUser = await Tutor.create({username,email,password});
-        return newUser;
-    }
-    async createGoogleUser(username: string, email: string, password: string, image: string): Promise<TutorType | null> {
+    // async createUser(username: string, email: string, password: string): Promise<ITutor | null> {
+    //     const newUser = await Tutor.create({username,email,password});
+    //     return newUser;
+    // }
+    async createGoogleUser(username: string, email: string, password: string, image: string): Promise<ITutor | null> {
         const newUser = await Tutor.create({
             username,
             email,
@@ -26,7 +31,7 @@ class TutorRepository implements ITutorRepository{
     }
     
 
-    async updateUserByEmail(email: string, data:TutorType): Promise<TutorType | null> {
+    async updateUserByEmail(email: string, data:ITutor): Promise<ITutor | null> {
         const updatedUser = await Tutor.findOneAndUpdate({ email }, data,{ new:true })
         return updatedUser
     }
@@ -46,11 +51,11 @@ class TutorRepository implements ITutorRepository{
         return storedOtp
     }
 
-    async loginUser(email:string, password:string): Promise<TutorType | null> {
-        const user = await Tutor.findOne({email})
-        return user
-    }
-    async getTutorById(id: string): Promise<TutorType | null> {
+    // async loginUser(email:string, password:string): Promise<ITutor | null> {
+    //     const user = await Tutor.findOne({email})
+    //     return user
+    // }
+    async getTutorById(id: string): Promise<ITutor | null> {
         const tutor = await Tutor.findById(id)
         return tutor
     }

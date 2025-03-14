@@ -3,7 +3,7 @@ import { Request,Response } from "express";
 import PasswordUtils from "../../utils/passwordUtility";
 import MailUtility from "../../utils/mailUtility";
 import OtpUtility from "../../utils/otpUtility";
-import { TutorType } from "../../model/tutor/tutorModel";
+import { ITutor } from "../../model/tutor/tutorModel";
 import { Token } from "../../utils/tokenUtility";
 import jwt from 'jsonwebtoken'
 import { STATUS_CODES } from "../../constants/statusCode";
@@ -22,7 +22,7 @@ class TutorController {
 
             if (!username || !email || !password) {
                 res
-                    .status(400)
+                    .status(STATUS_CODES.BAD_REQUEST)
                     .json({ message: "Username, Email and Password is Required" });
                 return;
             }
@@ -34,7 +34,7 @@ class TutorController {
                     const updatedUser = await this._tutorService.updateUser(email,{
                         username,
                         password,
-                    } as TutorType);
+                    } as ITutor);
 
                     const otp = (await OtpUtility.otpGenerator()).toString();
 
@@ -50,20 +50,20 @@ class TutorController {
                     try {
                         await MailUtility.sendMail(email, otp, "Verification otp");
 
-                        res.status(200).json({
+                        res.status(STATUS_CODES.OK).json({
                             message: "Otp sent to the mail",
                             email,
                         });
                     } catch (error) {
                         console.error("Failed to send otp", error);
                         res
-                            .status(500)
+                            .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
                             .json({ message: "Failed to send the verification mail." });
                     }
                     return;
                 }
                 else {
-                    res.status(409).json({ message: "User already exist." });
+                    res.status(STATUS_CODES.CONFLICT).json({ message: "User already exist." });
                     return;
                 }
             }
@@ -86,7 +86,7 @@ class TutorController {
 
             try {
                 await MailUtility.sendMail(email, otp, "Verification otp");
-                res.status(200).json({
+                res.status(STATUS_CODES.OK).json({
                     message: "Otp sent to the given mail id",
                     email,
                     otp,
@@ -94,23 +94,23 @@ class TutorController {
             } catch (error) {
                 console.error("Failed to send otp", error);
                 res
-                    .status(500)
+                    .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
                     .json({ message: "Failed to send the verification mail" });
             }
         } catch (error) {
             console.error("Error during signup:", error);
-            res.status(500).json({ message: `Error while adding user: ${error}` });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: `Error while adding user: ${error}` });
         }
     }
 
     async verifyOtp(req: Request, res: Response): Promise<void> {
         const { otp, email } = req.body;
         if (!otp) {
-            res.status(400).json({ message: "Otp is required" });
+            res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Otp is required" });
             return;
         }
         if (!otp || !email) {
-            res.status(400).json({ message: "OTP Timeout. Try again" });
+            res.status(STATUS_CODES.BAD_REQUEST).json({ message: "OTP Timeout. Try again" });
             return;
         }
 
@@ -121,11 +121,11 @@ class TutorController {
         if (storedOtp === otp) {
             let currentUser = await this._tutorService.findByEmail(email);
             if (!currentUser) {
-                res.status(404).json({ message: "User not found" });
+                res.status(STATUS_CODES.NOT_FOUND).json({ message: "User not found" });
                 return;
             }
 
-            const userData: TutorType = { ...currentUser.toObject(), status: 1 };
+            const userData: ITutor = { ...currentUser.toObject(), status: 1 };
 
             const updatedUser = await this._tutorService.updateUser(
                 email,
@@ -133,16 +133,16 @@ class TutorController {
             );
 
             if (updatedUser) {
-                res.status(200).json({
+                res.status(STATUS_CODES.OK).json({
                     message: "Otp Verified Successfully",
                 });
             } else {
-                res.status(500).json({
+                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
                     message: "Error while updating user data",
                 });
             }
         } else {
-            res.status(400).json({
+            res.status(STATUS_CODES.BAD_REQUEST).json({
                 message: "Incorrect otp Please try again later",
             });
         }
@@ -157,7 +157,7 @@ class TutorController {
 
         try {
             await MailUtility.sendMail(email, otp, "Verification otp");
-            res.status(200).json({
+            res.status(STATUS_CODES.OK).json({
                 message: "Otp sent to the given mail id",
                 email,
                 otp,
@@ -165,7 +165,7 @@ class TutorController {
         } catch (error) {
             console.error("Failed to send otp", error);
             res
-                .status(500)
+                .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
                 .json({ message: "Failed to send the verification mail" });
         }
     }
@@ -184,7 +184,7 @@ class TutorController {
 
             if (!email || !password) {
                 res
-                    .status(400)
+                    .status(STATUS_CODES.BAD_REQUEST)
                     .json({
                         success: false,
                         message: "Email and password required",
@@ -196,7 +196,7 @@ class TutorController {
 
             if (!user) {
                 res
-                    .status(404)
+                    .status(STATUS_CODES.NOT_FOUND)
                     .json({
                         success: false,
                         message: "User not found Signup first to login",
@@ -207,7 +207,7 @@ class TutorController {
 
             if (!user?.status) {
                 res
-                    .status(403)
+                    .status(STATUS_CODES.FORBIDDEN)
                     .json({
                         success: false,
                         message: "Your Account is Blocked",
@@ -217,7 +217,7 @@ class TutorController {
             }
             if (!user.password) {
                 res
-                    .status(404)
+                    .status(STATUS_CODES.NOT_FOUND)
                     .json({
                         success: false,
                         message: "Password is not set for this account",
@@ -226,13 +226,13 @@ class TutorController {
                 return
             }
             if(user.status === -1){
-                res.status(403).json({success:false,message:"User is Blocked by the admin",data:null})
+                res.status(STATUS_CODES.FORBIDDEN).json({success:false,message:"User is Blocked by the admin",data:null})
             }
             const comparePassword = await PasswordUtils.comparePassword(password, user?.password)
 
             if (!comparePassword) {
                 res
-                    .status(401)
+                    .status(STATUS_CODES.UNAUTHORIZED)
                     .json({
                         success: false,
                         message: "Invalid email or password",
@@ -265,7 +265,7 @@ class TutorController {
                         maxAge: 2 * 60 * 60 * 1000,
                     });
                     res
-                        .status(200)
+                        .status(STATUS_CODES.OK)
                         .json({
                             successs: true,
                             message: "Sign-in successful",
@@ -273,7 +273,7 @@ class TutorController {
                         });
                     return
                 } else {
-                    res.status(401).json({
+                    res.status(STATUS_CODES.UNAUTHORIZED).json({
                         success: false,
                         message: "Invalid credentials"
                     });
@@ -281,7 +281,7 @@ class TutorController {
                 }
             } else {
                 res
-                    .status(401)
+                    .status(STATUS_CODES.UNAUTHORIZED)
                     .json({
                         success: false,
                         message: "Invalid Credentials"
@@ -297,14 +297,14 @@ class TutorController {
         try {
             const refreshToken = req.cookies.refreshToken;
             if (!refreshToken) {
-                res.status(401).json({ success: false, message: 'Refresh token missing' });
+                res.status(STATUS_CODES.UNAUTHORIZED).json({ success: false, message: 'Refresh token missing' });
                 return
             }
 
             // **Verify the refresh token**
             jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, decoded: any) => {
                 if (err) {
-                    return res.status(403).json({ success: false, message: 'Invalid refresh token' });
+                    return res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: 'Invalid refresh token' });
                 }
 
                 // Generate a new access token
@@ -447,7 +447,7 @@ class TutorController {
                 return
             }
             const hashedPassword = await PasswordUtils.passwordHash(password);
-            const userData: TutorType = { ...user.toObject(), password: hashedPassword };
+            const userData: ITutor = { ...user.toObject(), password: hashedPassword };
             const updatedUser = await this._tutorService.updateUser(email, userData);
 
             if (updatedUser) {
@@ -488,7 +488,7 @@ class TutorController {
                 return;
             }
 
-            const userData: TutorType = { ...user.toObject(), status: 1 };
+            const userData: ITutor = { ...user.toObject(), status: 1 };
 
             const updatedUser = await this._tutorService.updateUser(
                 email,

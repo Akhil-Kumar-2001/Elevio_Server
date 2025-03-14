@@ -1,20 +1,24 @@
 import IStudentRepository from "../IStudentRepository";
-import { Student, StudentType } from "../../../model/student/studentModel";
+import { Student, IStudent } from "../../../model/student/studentModel";
 import { OTP, OTPType } from "../../../model/otp/ otpModel";
+import { BaseRepository } from "../../base/implementation/BaseRepository";
 
-class StudentRepository implements IStudentRepository {
-
-    async findByEmail(email: string): Promise<StudentType | null> {
+class StudentRepository extends BaseRepository<IStudent> implements IStudentRepository {
+constructor(){
+    super(Student)
+}
+  
+    async findByEmail(email: string): Promise<IStudent | null> {
         const getUser = await Student.findOne({email :  email});
         return getUser;
     }
 
-    async createUser(username: string, email: string, password: string): Promise<StudentType | null> {
-        const newUser = await Student.create({username,email,password});
-        return newUser;
-    }
+    // async createUser(username: string, email: string, password: string): Promise<IStudent | null> {
+    //     const newUser = await Student.create({username,email,password});
+    //     return newUser;
+    // }
 
-    async updateUserByEmail(email: string, data:StudentType): Promise<StudentType | null> {
+    async updateUserByEmail(email: string, data:IStudent): Promise<IStudent | null> {
         const updatedUser = await Student.findOneAndUpdate({ email }, data,{ new:true })
         return updatedUser
     }
@@ -34,10 +38,10 @@ class StudentRepository implements IStudentRepository {
         return storedOtp
     }
 
-    async loginUser(email:string, password:string): Promise<StudentType | null> {
-        const user = await Student.findOne({email})
-        return user
-    }
+    // async loginUser(email:string, password:string): Promise<IStudent | null> {
+    //     const user = await Student.findOne({email})
+    //     return user
+    // }
 
     async isBlocked(_id: string): Promise<number | undefined> {
         const user = await Student.findById({_id});

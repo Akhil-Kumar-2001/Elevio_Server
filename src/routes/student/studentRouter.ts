@@ -2,8 +2,6 @@ import Router from 'express';
 import StudentRepository from '../../repository/student/implementation/StudentRepository';
 import StudentService from '../../service/student/implementation/StudentService';
 import StudentController from '../../controller/student/studentController';
-import { validateToken } from '../../middleware/validateToken';
-import { checkRole } from '../../middleware/checkRole';
 
 
 const router = Router();

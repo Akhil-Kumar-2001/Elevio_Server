@@ -1,6 +1,6 @@
 import { Model } from "mongoose"; // Import Model type
-import { Tutor, TutorType } from "../model/tutor/tutorModel"; // Import Tutor model and type
-import { Student, StudentType } from "../model/student/studentModel"; // Import Student model and type
+import { Tutor, ITutor } from "../model/tutor/tutorModel"; // Import Tutor model and type
+import { Student, IStudent } from "../model/student/studentModel"; // Import Student model and type
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
@@ -24,7 +24,8 @@ const isBlocked = async (req: Request, res: Response, next: NextFunction): Promi
     let decoded: JwtPayload;
     try {
       decoded = jwt.verify(accessToken, JWT_KEY) as JwtPayload;
-    } catch (err) {
+    } catch (error) {
+      console.log(error)
       res.status(403).json({ message: "Invalid or expired token, please log in again." });
       return;
     }
@@ -39,7 +40,7 @@ const isBlocked = async (req: Request, res: Response, next: NextFunction): Promi
     }
 
     // 🔹 Determine Schema type
-    let Schema: Model<TutorType> | Model<StudentType> | null = null;
+    let Schema: Model<ITutor> | Model<IStudent> | null = null;
 
     if (role === "Tutor") {
       Schema = Tutor;
@@ -54,7 +55,7 @@ const isBlocked = async (req: Request, res: Response, next: NextFunction): Promi
     }
 
     // ✅ **Explicitly cast Schema to the correct Model type before calling findById**
-    const user = await (Schema as Model<TutorType | StudentType>).findById(userId);
+    const user = await (Schema as Model<ITutor | IStudent>).findById(userId);
 
     if (!user) {
       res.status(404).json({ success: false, message: "User not found" });

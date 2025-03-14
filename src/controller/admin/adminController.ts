@@ -1,5 +1,5 @@
 import IAdminService from "../../service/admin/IAdminService"
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { Token } from "../../utils/adminTokenUtility"
 import { ERROR_MESSAGES } from "../../constants/errorMessage";
 import { STATUS_CODES } from "../../constants/statusCode";
@@ -50,11 +50,7 @@ class AdminController {
                         sameSite: "none",
                         maxAge: 2 * 60 * 60 * 1000,
                     });
-                    res
-                        .status(STATUS_CODES.OK)
-                        .json({
-                            successs: true, message: "Sign-in successful", data: { accessToken, user: email }
-                        });
+                    res.status(STATUS_CODES.OK).json({successs: true, message: "Sign-in successful", data: { accessToken, user: email }});
                     return
                 }
             } else {
@@ -112,10 +108,7 @@ class AdminController {
                 secure: true,
                 sameSite: "none",
             });
-            res.status(200).json({
-                success: true,
-                message: "Logout successful",
-            });
+            res.status(200).json({success: true,message: "Logout successful",});
             return
         } catch (error) {
             console.error("Logout error:", error);
@@ -153,7 +146,7 @@ class AdminController {
             console.log(response)
             if(response)res.status(STATUS_CODES.OK).json({success:true,message:"Change status success",data:response})
         } catch (error) {
-            
+            console.log(error)
         }
     }
 
@@ -164,7 +157,7 @@ class AdminController {
             console.log(response)
             if(response)res.status(STATUS_CODES.OK).json({success:true,message:"Change status success",data:response})
         } catch (error) {
-            
+            console.log(error)
         }
     }
 

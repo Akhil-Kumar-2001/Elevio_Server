@@ -1,17 +1,16 @@
-import { Tutor, TutorType } from '../../../model/tutor/tutorModel';
+import { Tutor, ITutor } from '../../../model/tutor/tutorModel';
 import ITutorProfileRepository from '../ITutorProfileRepository'
-import { OTP,OTPType } from '../../../model/otp/ otpModel';
 import { TutorVerificationFormData } from '../../../Types/basicTypes';
 
 class TutorProfileRepository implements ITutorProfileRepository{
 
     
-    async getTutorById(id: string): Promise<TutorType | null> {
+    async getTutorById(id: string): Promise<ITutor | null> {
         const tutor = await Tutor.findById(id)
         return tutor
     }
 
-    async verifyTutor(formData: TutorVerificationFormData): Promise<TutorType | null> {
+    async verifyTutor(formData: TutorVerificationFormData): Promise<ITutor | null> {
         const updatedTutor = await Tutor.findByIdAndUpdate(
             formData._id,
             {
@@ -30,7 +29,7 @@ class TutorProfileRepository implements ITutorProfileRepository{
         return updatedTutor;
     }
 
-    async updateProfile(id: string, formData: TutorType): Promise<boolean | null> {
+    async updateProfile(id: string, formData: ITutor): Promise<boolean | null> {
         const updatedTutor = await Tutor.findByIdAndUpdate(
             id, 
             { $set: formData }, 

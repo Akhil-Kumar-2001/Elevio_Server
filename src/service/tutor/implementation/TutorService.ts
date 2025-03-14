@@ -1,4 +1,4 @@
-import { TutorType } from '../../../model/tutor/tutorModel';
+import { ITutor } from '../../../model/tutor/tutorModel';
 import { OTPType } from '../../../model/otp/ otpModel';
 import ITutorRepository from '../../../repository/tutor/implementation/TutorRepository'
 import ITutorService from '../ITutorService';
@@ -10,21 +10,21 @@ class TutorService implements ITutorService{
         this._tutorRepository = tutorRepository
     }
 
-    async findByEmail(email: string): Promise<TutorType | null> {
+    async findByEmail(email: string): Promise<ITutor | null> {
         const getUser = await this._tutorRepository.findByEmail(email)
         return getUser
     }
 
-    async createUser(username: string, email: string, password: string): Promise<TutorType | null> {
-        const newUser = await this._tutorRepository.createUser(username,email,password)
+    async createUser(username: string, email: string, password: string): Promise<ITutor | null> {
+        const newUser = await this._tutorRepository.create({username,email,password})
         return newUser;
     }
-    async createGoogleUser(username: string, email: string, password: string,image:string): Promise<TutorType | null> {
+    async createGoogleUser(username: string, email: string, password: string,image:string): Promise<ITutor | null> {
         const newUser = await this._tutorRepository.createGoogleUser(username,email,password,image)
         return newUser;
     }
 
-    async updateUser(email: string, data:TutorType): Promise<TutorType | null> {
+    async updateUser(email: string, data:ITutor): Promise<ITutor | null> {
         const updatedUser = await this._tutorRepository.updateUserByEmail(email,data);
         return updatedUser
     }
@@ -43,11 +43,11 @@ class TutorService implements ITutorService{
         return storedOtp
     }
 
-    async loginUser(email: string, password: string): Promise<TutorType | null> {
-        const user = await this._tutorRepository.loginUser(email,password);
-        return user
-    }
-    async getTutorById(id: string): Promise<TutorType | null> {
+    // async loginUser(email: string, password: string): Promise<ITutor | null> {
+    //     const user = await this._tutorRepository.loginUser(email,password);
+    //     return user
+    // }
+    async getTutorById(id: string): Promise<ITutor | null> {
         const tutor = await this._tutorRepository.getTutorById(id);
         return tutor
     }

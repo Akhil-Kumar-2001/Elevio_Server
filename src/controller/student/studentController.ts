@@ -1,12 +1,11 @@
 import IStudentService from "../../service/student/IStudentService";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import OtpUtility from "../../utils/otpUtility";
 import MailUtility from "../../utils/mailUtility";
 import { Token } from "../../utils/tokenUtility";
 import PasswordUtils from "../../utils/passwordUtility";
-import { StudentType } from "../../model/student/studentModel";
+import { IStudent } from "../../model/student/studentModel";
 import jwt from 'jsonwebtoken'
-import passport from "passport";
 
 class StudentController {
     private _studentService: IStudentService;
@@ -30,10 +29,10 @@ class StudentController {
             if (existingUser) {
                 if (existingUser.status === 0) {
                     password = await PasswordUtils.passwordHash(password);
-                    const updatedUser = await this._studentService.updateUser(email, {
+                    await this._studentService.updateUser(email, {
                         username,
                         password,
-                    } as StudentType);
+                    } as IStudent);
 
                     const otp = (await OtpUtility.otpGenerator()).toString();
 
@@ -67,7 +66,7 @@ class StudentController {
                 }
             }
             password = await PasswordUtils.passwordHash(password);
-            const newUser = await this._studentService.createUser(
+            await this._studentService.createUser(
                 username,
                 email,
                 password
@@ -118,13 +117,13 @@ class StudentController {
         const storedOtp = response?.otp;
 
         if (storedOtp === otp) {
-            let currentUser = await this._studentService.findByEmail(email);
+            const currentUser = await this._studentService.findByEmail(email);
             if (!currentUser) {
                 res.status(404).json({ message: "User not found" });
                 return;
             }
 
-            const userData: StudentType = { ...currentUser.toObject(), status: 1 };
+            const userData: IStudent = { ...currentUser.toObject(), status: 1 };
 
             const updatedUser = await this._studentService.updateUser(
                 email,
@@ -454,7 +453,7 @@ class StudentController {
                 return
             }
             const hashedPassword = await PasswordUtils.passwordHash(password);
-            const userData: StudentType = { ...user.toObject(), password: hashedPassword };
+            const userData: IStudent = { ...user.toObject(), password: hashedPassword };
             const updatedUser = await this._studentService.updateUser(email, userData);
 
             if (updatedUser) {
@@ -499,7 +498,7 @@ class StudentController {
                 return;
             }
 
-            const userData: StudentType = { ...user.toObject(), status: 1 };
+            const userData: IStudent = { ...user.toObject(), status: 1 };
 
             await this._studentService.updateUser(
                 email,

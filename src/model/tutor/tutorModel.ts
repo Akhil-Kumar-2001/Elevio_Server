@@ -1,6 +1,6 @@
-import { Schema, Types, Document, model } from "mongoose";
+import { Schema, Document, model } from "mongoose";
 
-interface TutorType extends Document {
+interface ITutor extends Document {
     username: string;
     email: string;
     password: string;
@@ -22,7 +22,7 @@ interface TutorType extends Document {
     updatedAt: Date;
 }
 
-const tutorSchema = new Schema<TutorType>({
+const tutorSchema = new Schema<ITutor>({
     username: {
         type: String,
         required: true,
@@ -69,5 +69,6 @@ const tutorSchema = new Schema<TutorType>({
     },
 }, { timestamps: true });
 
-const Tutor = model<TutorType>("Tutor", tutorSchema);
-export { Tutor, TutorType };
+const Tutor = model<ITutor>("Tutor", tutorSchema);
+export { Tutor, ITutor };
+

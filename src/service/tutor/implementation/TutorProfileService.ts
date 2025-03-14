@@ -1,5 +1,4 @@
-import { TutorType } from '../../../model/tutor/tutorModel';
-import { OTPType } from '../../../model/otp/ otpModel';
+import { ITutor } from '../../../model/tutor/tutorModel';
 import ITutorProfileRepository from '../../../repository/tutor/implementation/TutorProfileRepository'
 import ITutorProfileService from '../ITutorProfileService';
 import { TutorVerificationFormData } from '../../../Types/basicTypes';
@@ -12,18 +11,18 @@ class TutorProfileService implements ITutorProfileService{
     }
 
     
-    async getTutorById(id: string): Promise<TutorType | null> {
+    async getTutorById(id: string): Promise<ITutor | null> {
         const tutor = await this._tutorProfileRepository.getTutorById(id);
         return tutor
     }
 
-    async verifyTutor(formData: TutorVerificationFormData): Promise<TutorType | null> {
+    async verifyTutor(formData: TutorVerificationFormData): Promise<ITutor | null> {
         const tutor = await this._tutorProfileRepository.verifyTutor(formData);
             return tutor
         
     }
 
-    async updateProfile(id: string, formData: TutorType): Promise<boolean | null> {
+    async updateProfile(id: string, formData: ITutor): Promise<boolean | null> {
         const updatedTutor = await this._tutorProfileRepository.updateProfile(id,formData);
         return updatedTutor
     }

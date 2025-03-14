@@ -1,5 +1,4 @@
 import express, { NextFunction, Request, Response } from "express";
-import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDb from "./Config/dbConfig";
@@ -43,6 +42,7 @@ app.use("/api/admin", adminRouter);
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log(err);
   res.status(500).json({ message: "Internal server error" });
+  next()
 });
 
 // Start Server

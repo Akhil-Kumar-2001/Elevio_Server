@@ -1,16 +1,17 @@
-import { TutorType } from "../../model/tutor/tutorModel"
+import { ITutor } from "../../model/tutor/tutorModel"
 import { OTPType } from "../../model/otp/ otpModel"
+import { IBaseRepository } from "../base/IBaseRepository"
 
-interface ITutorRepository{
-    findByEmail(email:string):Promise<TutorType | null>
-    createUser(username:string,email:string,password:string):Promise<TutorType | null>
-    createGoogleUser(username:string,email:string,password:string,image:string):Promise<TutorType | null>
-    updateUserByEmail(email:string, data:TutorType):Promise<TutorType | null> 
+interface ITutorRepository extends IBaseRepository<ITutor>{
+    findByEmail(email:string):Promise<ITutor | null>
+    // createUser(username:string,email:string,password:string):Promise<ITutor | null>
+    createGoogleUser(username:string,email:string,password:string,image:string):Promise<ITutor | null>
+    updateUserByEmail(email:string, data:ITutor):Promise<ITutor | null> 
     storeOtpInDb(email:string, otp:string):Promise<OTPType | null>
     findOtpByemail(email:string):Promise<OTPType | null>
     storeResendOtpInDb(email:string, otp:string):Promise<OTPType | null>
-    loginUser(email:string, password:string): Promise<TutorType | null>
-    getTutorById(id:string):Promise<TutorType | null>
+    // loginUser(email:string, password:string): Promise<ITutor | null>
+    getTutorById(id:string):Promise<ITutor | null>
 
 }
 

@@ -7,7 +7,7 @@
     "build": "tsc -b",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint . --ext .ts"
   },
   "author": "",
   "license": "ISC",
@@ -31,6 +31,7 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.22.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
@@ -41,7 +42,12 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/winston": "^2.4.4",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript-eslint": "^8.26.1"
   }
 }

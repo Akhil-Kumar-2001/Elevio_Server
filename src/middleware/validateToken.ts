@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
-import { Token } from "../utils/tokenUtility";
+// import { Token } from "../utils/tokenUtility";
 import dotenv from "dotenv";
-import { Student } from "../model/student/studentModel"; // Import your User model
+// import { Student } from "../model/student/studentModel"; // Import your User model
 
 dotenv.config();
 
 // Define the expected structure of JWT payload
-interface TokenPayload extends JwtPayload {
-  userId: string;
-  role: string;
-}
+// interface TokenPayload extends JwtPayload {
+//   userId: string;
+//   role: string;
+// }
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -75,7 +75,7 @@ declare module "express-serve-static-core" {
 export const validateToken = (requiredRole?: string) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      let JWT_KEY = process.env.JWT_SECRET as string;
+      const JWT_KEY = process.env.JWT_SECRET as string;
       let accessToken = req.headers.authorization?.split(" ")[1] || req.cookies?.accessToken;
 
       if (!accessToken) {
@@ -108,6 +108,7 @@ export const validateToken = (requiredRole?: string) => {
       });
 
     } catch (error) {
+      console.log(error)
       res.status(500).json({ message: "Internal server error" });
       return;
     }

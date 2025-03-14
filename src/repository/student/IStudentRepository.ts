@@ -1,15 +1,16 @@
 import { OTPType } from "../../model/otp/ otpModel";
-import { StudentType } from "../../model/student/studentModel";
+import { IStudent } from "../../model/student/studentModel";
+import { IBaseRepository } from "../base/IBaseRepository";
 
-interface IStudentRepository  {
+interface IStudentRepository extends IBaseRepository<IStudent> {
 
-    findByEmail(email:string):Promise<StudentType | null>
-    createUser(username:string,email:string,password:string):Promise<StudentType | null>
-    updateUserByEmail(email:string, data:StudentType):Promise<StudentType | null>
+    findByEmail(email:string):Promise<IStudent | null>
+    // createUser(username:string,email:string,password:string):Promise<IStudent | null>
+    updateUserByEmail(email:string, data:IStudent):Promise<IStudent | null>
     storeOtpInDb(email:string, otp:string):Promise<OTPType | null>
     findOtpByemail(email:string):Promise<OTPType | null>
     storeResendOtpInDb(email:string, otp:string):Promise<OTPType | null>
-    loginUser(email:string, password:string): Promise<StudentType | null>
+    // loginUser(email:string, password:string): Promise<IStudent | null>
     isBlocked(_id:string):Promise<number | undefined>
 
 }

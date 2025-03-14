@@ -1,5 +1,5 @@
 import { OTPType } from "../../../model/otp/ otpModel";
-import { StudentType } from "../../../model/student/studentModel";
+import { IStudent } from "../../../model/student/studentModel";
 import IStudentRepository from "../../../repository/student/IStudentRepository";
 import IStudentService from "../IStudentService";
 
@@ -11,16 +11,16 @@ class StudentService implements IStudentService {
         this._studentRepository = studentRepository;
     }
 
-    async findByEmail(email: string): Promise<StudentType | null> {
+    async findByEmail(email: string): Promise<IStudent | null> {
         const getUser = await this._studentRepository.findByEmail(email)
         return getUser
     }
 
-    async createUser(username: string, email: string, password: string): Promise<StudentType | null> {
-        const newUser = await this._studentRepository.createUser(username,email,password)
+    async createUser(username: string, email: string, password: string): Promise<IStudent | null> {
+        const newUser = await this._studentRepository.create({username,email,password})
         return newUser;
     }
-    async updateUser(email: string, data:StudentType): Promise<StudentType | null> {
+    async updateUser(email: string, data:IStudent): Promise<IStudent | null> {
         const updatedUser = await this._studentRepository.updateUserByEmail(email,data);
         return updatedUser
     }
@@ -39,10 +39,10 @@ class StudentService implements IStudentService {
         return storedOtp
     }
 
-    async loginUser(email: string, password: string): Promise<StudentType | null> {
-        const user = await this._studentRepository.loginUser(email,password);
-        return user
-    }
+    // async loginUser(email: string): Promise<IStudent | null> {
+    //     const user = await this._studentRepository.findByEmail(email);   
+    //     return user
+    // }
 
     async isBlocked(_id: string): Promise<number | undefined> {
         const user = await this._studentRepository.isBlocked(_id);

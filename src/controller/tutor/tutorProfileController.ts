@@ -1,8 +1,5 @@
 import ITutorProfileService from "../../service/tutor/ITutorProfileService";
 import { Request,Response } from "express";
-import { TutorType } from "../../model/tutor/tutorModel";
-import { Token } from "../../utils/tokenUtility";
-import jwt from 'jsonwebtoken'
 import { STATUS_CODES } from "../../constants/statusCode";
 import { ERROR_MESSAGES } from "../../constants/errorMessage";
 

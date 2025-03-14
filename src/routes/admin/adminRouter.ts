@@ -6,6 +6,7 @@ import { validateToken } from '../../middleware/validateToken';
 import AdminTutorController from '../../controller/admin/tutorController';
 import AdminTutorRepository from '../../repository/admin/implementation/AdminTutorRepository'
 import AdminTutorService from '../../service/admin/Implementation/AdminTutorService';
+import { error } from 'winston';
 
 const adminRepository = new AdminRepository();
 const adminService = new AdminService(adminRepository);
@@ -36,5 +37,10 @@ router.get('/pending-tutor',validateToken("admin"),adminTutorController.getPendi
 router.get('/get-tutor/:id',validateToken("admin"),adminTutorController.getTutor.bind(adminTutorController))
 router.patch('/reject-tutor',validateToken("admin"),adminTutorController.rejectTutor.bind(adminTutorController))
 router.patch('/approve-tutor',validateToken("admin"),adminTutorController.approveTutor.bind(adminTutorController))
+
+// category management
+router.post('/create-category',validateToken("admin"),adminTutorController.createCategory.bind(adminTutorController))
+router.get('/categories',validateToken("admin"),adminTutorController.getCategories.bind(adminTutorController))
+router.patch('/updatecategorystatus',validateToken("admin"),adminTutorController.blockCategory.bind(adminTutorController))
 
 export default router

@@ -1,6 +1,6 @@
-import { TutorType } from "../../../model/tutor/tutorModel";
+import { ITutor } from "../../../model/tutor/tutorModel";
 import IAdminRepository from "../../../repository/admin/IAdminRepository";
-import { StudentType } from "../../../model/student/studentModel"
+import { IStudent } from "../../../model/student/studentModel"
 
 import IAdminService from "../IAdminService";
 
@@ -13,23 +13,23 @@ class AdminService implements IAdminService {
 
     }
 
-    async getStudents(): Promise<StudentType[] | null> {
+    async getStudents(): Promise<IStudent[] | null> {
         const students = await this._adminRepository.getStudents()
         return students
     }
 
-    async getTutors(): Promise<StudentType[] | null> {
+    async getTutors(): Promise<IStudent[] | null> {
 
         const tutors = await this._adminRepository.getTutors()
         return tutors
 
     }
 
-    async blockTutor(id: string): Promise<TutorType | null> {
+    async blockTutor(id: string): Promise<ITutor | null> {
         const response = await this._adminRepository.blockTutor(id);
         return response
     }
-    async blockStudent(id: string): Promise<StudentType | null> {
+    async blockStudent(id: string): Promise<IStudent | null> {
         const response = await this._adminRepository.blockStudent(id);
         return response
     }
