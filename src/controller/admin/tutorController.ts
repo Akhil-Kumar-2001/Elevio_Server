@@ -92,35 +92,43 @@ class AdminTutorController {
 
     async getCategories(req: Request, res: Response): Promise<void> {
         try {
-            const response = await this._adminTutorService.getCategories();
+            const page = parseInt(req.query.page as string) || 1; // Default page 1
+            const limit = parseInt(req.query.limit as string) || 10; // Default limit 10
+    
+            const response = await this._adminTutorService.getCategories(page, limit);
+            
+            res.status(200).json({ 
+                success: true, 
+                message: "Categories retrieved successfully", 
+                data: response 
+            });
+        } catch (error) {
+            console.error("Error fetching categories", error);
+            res.status(500).json({ success: false, message: "Error fetching categories" });
+        }
+    }
+
+    async blockCategory(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.body
+            const response = await this._adminTutorService.blockCategory(id);
             if (response) {
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Categories retrieved successfully", data: response })
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Change status success", data: response })
             }
         } catch (error) {
             console.log(error)
         }
     }
 
-    // async blockStudent(req:Request, res:Response): Promise<void>{
-    //     try {
-    //         const {id} = req.body
-    //         const response = await this._adminService.blockStudent(id);
-    //         console.log(response)
-    //         if(response)res.status(STATUS_CODES.OK).json({success:true,message:"Change status success",data:response})
-    //     } catch (error) {
-    //         console.log(error)
-    //     }
-    // }
-
-    async blockCategory(req: Request, res: Response): Promise<void> {
-        try {
-            const { id } = req.body
-            console.log("category id from blockcategory", id)
-            const response = await this._adminTutorService.blockCategory(id);
+    async deleteCategory(req:Request,res:Response):Promise<void>{
+        try{
+            const id = req.body.id;
+            console.log("id from delete category backend",id)
+            const response = await this._adminTutorService.deleteCategory(id);
             if (response) {
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Change status success", data: response })
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Category deleted Successfully", data: response })
             }
-        } catch (error) {
+        }catch(error){
             console.log(error)
         }
     }

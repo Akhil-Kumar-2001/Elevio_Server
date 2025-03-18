@@ -42,5 +42,7 @@ router.patch('/approve-tutor',validateToken("admin"),adminTutorController.approv
 router.post('/create-category',validateToken("admin"),adminTutorController.createCategory.bind(adminTutorController))
 router.get('/categories',validateToken("admin"),adminTutorController.getCategories.bind(adminTutorController))
 router.patch('/updatecategorystatus',validateToken("admin"),adminTutorController.blockCategory.bind(adminTutorController))
+router.delete('/delete-category',validateToken("admin"),adminTutorController.deleteCategory.bind(adminTutorController))
+
 
 export default router

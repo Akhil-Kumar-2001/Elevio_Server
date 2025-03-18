@@ -1,7 +1,8 @@
 import { ITutor } from '../../../model/tutor/tutorModel';
-import ITutorProfileRepository from '../../../repository/tutor/implementation/TutorProfileRepository'
+import ITutorProfileRepository from '../../../repository/tutor/ITutorProfileRepository'
 import ITutorProfileService from '../ITutorProfileService';
 import { TutorVerificationFormData } from '../../../Types/basicTypes';
+import { ICategory } from '../../../model/category/categoryModel';
 
 class TutorProfileService implements ITutorProfileService{
 

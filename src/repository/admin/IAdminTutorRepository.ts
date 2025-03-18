@@ -1,5 +1,6 @@
 import { ICategory } from "../../model/category/categoryModel"
 import { ITutor } from "../../model/tutor/tutorModel"
+import { CategoryResponseDataType } from "../../Types/CategoryReturnType"
 
 interface IAdminTutorRepository{
     getPendingTutors():Promise<ITutor[] | null>
@@ -8,8 +9,9 @@ interface IAdminTutorRepository{
     approveTutor(id:string):Promise<boolean | null>
     findCategory(name:string):Promise<boolean | null>
     createCategory(name:string):Promise<boolean | null>
-    getCategories():Promise<ICategory[] | null>
+    getCategories(page:number,limit:number):Promise<CategoryResponseDataType | null>
     blockCategory(id:string):Promise<ICategory | null>
+    deleteCategory(id:string):Promise<boolean | null>
 }
 
 export default IAdminTutorRepository

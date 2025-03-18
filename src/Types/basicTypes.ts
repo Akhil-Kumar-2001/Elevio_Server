@@ -12,3 +12,13 @@ export interface TutorVerificationFormData {
       skills: string[];
     };
   }
+
+
+  export interface CourseData {
+    courseName: string;
+    coursePrice: string;
+    category: string;
+    thumbnail: string;
+    description: string;
+  }
+  

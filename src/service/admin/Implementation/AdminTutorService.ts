@@ -1,6 +1,7 @@
 import { ICategory } from "../../../model/category/categoryModel";
 import { ITutor } from "../../../model/tutor/tutorModel";
 import IAdminTutorRepository from "../../../repository/admin/IAdminTutorRepository";
+import { CategoryResponseDataType } from "../../../Types/CategoryReturnType";
 import IAdminTutorService from "../IAdminTutorService";
 
 class AdminTutorService implements IAdminTutorService {
@@ -40,13 +41,18 @@ class AdminTutorService implements IAdminTutorService {
         return category
     }
 
-    async getCategories(): Promise<ICategory[] | null> {
-        const categories = await this._adminTutorRepository.getCategories();
+    async getCategories(page:number,limit:number): Promise<CategoryResponseDataType | null> {
+        const categories = await this._adminTutorRepository.getCategories(page,limit);
         return categories
     }
 
     async blockCategory(id: string): Promise<ICategory | null> {
         const response = await this._adminTutorRepository.blockCategory(id);
+        return response
+    }
+
+    async deleteCategory(id: string): Promise<boolean | null> {
+        const response = await this._adminTutorRepository.deleteCategory(id);
         return response
     }
 

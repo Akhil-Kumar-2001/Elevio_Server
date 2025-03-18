@@ -1,3 +1,4 @@
+import { ICategory } from "../../model/category/categoryModel"
 import { ITutor } from "../../model/tutor/tutorModel"
 import { TutorVerificationFormData } from "../../Types/basicTypes"
 

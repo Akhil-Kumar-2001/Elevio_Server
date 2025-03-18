@@ -7,6 +7,9 @@ import TutorProfileService from '../../service/tutor/implementation/TutorProfile
 import TutorProfileController from '../../controller/tutor/tutorProfileController';
 import { validateToken } from '../../middleware/validateToken';
 import isBlocked  from '../../middleware/isBlocked';
+import TutorCourseRepository from '../../repository/tutor/implementation/TutorCourseRepository';
+import TutorCourseService from '../../service/tutor/implementation/TutorCourseService';
+import TutorCourseController from '../../controller/tutor/tutorCourseController';
 
 
 
@@ -17,7 +20,11 @@ const tutorController = new TutorController(tutorService)
 
 const tutorProfileRepository = new TutorProfileRepository()
 const tutorProfileService = new TutorProfileService(tutorProfileRepository);
-const tutorProfileController = new TutorProfileController(tutorProfileService)
+const tutorProfileController = new TutorProfileController(tutorProfileService);
+
+const tutorCourseRepository = new TutorCourseRepository();
+const tutorCourseService = new TutorCourseService(tutorCourseRepository);
+const tutorCourseController = new TutorCourseController(tutorCourseService)
 
 
 // sign-up routes
@@ -44,5 +51,7 @@ router.get("/get-tutor/:id",isBlocked,validateToken("Tutor"), tutorProfileContro
 router.put("/verify-tutor",isBlocked,validateToken("Tutor"),tutorProfileController.verifyTutor.bind(tutorProfileController))
 router.patch("/update-profile",isBlocked,validateToken("Tutor"),tutorProfileController.updateProfile.bind(tutorProfileController))
 
+router.get("/get-categories",isBlocked,validateToken("Tutor"),tutorCourseController.getCategories.bind(tutorCourseController))
+router.post("/create-course",isBlocked,validateToken("Tutor"),tutorCourseController.createCourse.bind(tutorCourseController))
 
 export default  router

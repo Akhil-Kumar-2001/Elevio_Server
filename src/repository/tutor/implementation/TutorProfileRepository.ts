@@ -1,6 +1,7 @@
 import { Tutor, ITutor } from '../../../model/tutor/tutorModel';
 import ITutorProfileRepository from '../ITutorProfileRepository'
 import { TutorVerificationFormData } from '../../../Types/basicTypes';
+import { Category, ICategory } from '../../../model/category/categoryModel';
 
 class TutorProfileRepository implements ITutorProfileRepository{
 
@@ -36,8 +37,7 @@ class TutorProfileRepository implements ITutorProfileRepository{
             { new: true } 
         );
         return updatedTutor ? true : false;
-    }
-
+    }   
 }
     
 
