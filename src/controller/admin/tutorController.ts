@@ -92,19 +92,19 @@ class AdminTutorController {
 
     async getCategories(req: Request, res: Response): Promise<void> {
         try {
-            const page = parseInt(req.query.page as string) || 1; // Default page 1
-            const limit = parseInt(req.query.limit as string) || 10; // Default limit 10
+            const page = parseInt(req.query.page as string) || 1; 
+            const limit = parseInt(req.query.limit as string) || 5; 
     
             const response = await this._adminTutorService.getCategories(page, limit);
             
-            res.status(200).json({ 
+            res.status(STATUS_CODES.OK).json({ 
                 success: true, 
                 message: "Categories retrieved successfully", 
                 data: response 
             });
         } catch (error) {
             console.error("Error fetching categories", error);
-            res.status(500).json({ success: false, message: "Error fetching categories" });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error fetching categories" });
         }
     }
 
