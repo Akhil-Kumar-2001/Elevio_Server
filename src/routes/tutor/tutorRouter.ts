@@ -10,10 +10,14 @@ import isBlocked  from '../../middleware/isBlocked';
 import TutorCourseRepository from '../../repository/tutor/implementation/TutorCourseRepository';
 import TutorCourseService from '../../service/tutor/implementation/TutorCourseService';
 import TutorCourseController from '../../controller/tutor/tutorCourseController';
+import multer from 'multer';
 
 
 
 const router = Router();
+
+const upload = multer({ storage: multer.memoryStorage() });
+
 const tutorRepository = new TutorRepository()
 const tutorService = new TutorService(tutorRepository)
 const tutorController = new TutorController(tutorService)
@@ -47,16 +51,35 @@ router.post('/reset-password', tutorController.resetPassword.bind(tutorControlle
 
 router.post("/callback", tutorController.googleAuth.bind(tutorController));
 
+
+// Tutor Profile
 router.get("/get-tutor/:id",isBlocked,validateToken("Tutor"), tutorProfileController.getTutor.bind(tutorProfileController));
 router.put("/verify-tutor",isBlocked,validateToken("Tutor"),tutorProfileController.verifyTutor.bind(tutorProfileController))
 router.patch("/update-profile",isBlocked,validateToken("Tutor"),tutorProfileController.updateProfile.bind(tutorProfileController))
 
+
+// Course creation
 router.get("/get-categories",isBlocked,validateToken("Tutor"),tutorCourseController.getCategories.bind(tutorCourseController))
 router.post("/create-course",isBlocked,validateToken("Tutor"),tutorCourseController.createCourse.bind(tutorCourseController))
-
 router.get('/courses',validateToken("Tutor"),isBlocked,tutorCourseController.getCourses.bind(tutorCourseController))
 router.get('/get-category',validateToken("Tutor"),isBlocked,tutorCourseController.getCourseDetails.bind(tutorCourseController))
 router.post('/edit-course',validateToken('Tutor'),isBlocked,tutorCourseController.editCourse.bind(tutorCourseController))
+
+
+// Add Course Content
+router.post('/create-section',isBlocked,validateToken("Tutor"),tutorCourseController.createSection.bind(tutorCourseController))
+router.post('/create-lecture',isBlocked,validateToken("Tutor"),tutorCourseController.createLecture.bind(tutorCourseController))
+router.get('/get-sections',isBlocked,validateToken("Tutor"),tutorCourseController.getSections.bind(tutorCourseController))
+router.get('/get-lectures',isBlocked,validateToken("Tutor"),tutorCourseController.getLectures.bind(tutorCourseController))
+
+
+// Edit and Delete Course Content
+router.patch('/edit-lecture/:id',isBlocked,validateToken('Tutor'),tutorCourseController.editLecture.bind(tutorCourseController))
+router.delete('/delete-lecture/:id',isBlocked,validateToken('Tutor'),tutorCourseController.deleteLecture.bind(tutorCourseController))
+
+router.post('/lectures/upload-video',isBlocked,validateToken('Tutor'),upload.single('video'),tutorCourseController.uploadLectureVideo.bind(tutorCourseController));
+
+router.patch('/apply-review',isBlocked,validateToken('Tutor'),tutorCourseController.applyReview.bind(tutorCourseController))
 
 
 export default  router

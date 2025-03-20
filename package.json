@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/nodemailer": "^6.4.17",
+    "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
@@ -24,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -39,6 +41,7 @@
     "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.12",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/winston": "^2.4.4",

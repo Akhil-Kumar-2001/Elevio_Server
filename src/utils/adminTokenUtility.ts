@@ -17,7 +17,7 @@ export class Token implements IAdminToken {
     const accessToken = jwt.sign(
       { email,role },  
       this.JWT_Key,
-      { expiresIn: "120m" }
+      { expiresIn: "2h" }
     );
 
     const refreshToken = jwt.sign(
