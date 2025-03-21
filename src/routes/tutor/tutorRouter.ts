@@ -76,7 +76,7 @@ router.get('/get-lectures',isBlocked,validateToken("Tutor"),tutorCourseControlle
 // Edit and Delete Course Content
 router.patch('/edit-lecture/:id',isBlocked,validateToken('Tutor'),tutorCourseController.editLecture.bind(tutorCourseController))
 router.delete('/delete-lecture/:id',isBlocked,validateToken('Tutor'),tutorCourseController.deleteLecture.bind(tutorCourseController))
-
+router.patch('/edit-sections/:id',isBlocked,validateToken("Tutor"),tutorCourseController.editSection.bind(tutorCourseController))
 router.post('/lectures/upload-video',isBlocked,validateToken('Tutor'),upload.single('video'),tutorCourseController.uploadLectureVideo.bind(tutorCourseController));
 
 router.patch('/apply-review',isBlocked,validateToken('Tutor'),tutorCourseController.applyReview.bind(tutorCourseController))

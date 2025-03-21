@@ -92,15 +92,15 @@ class AdminTutorController {
 
     async getCategories(req: Request, res: Response): Promise<void> {
         try {
-            const page = parseInt(req.query.page as string) || 1; 
-            const limit = parseInt(req.query.limit as string) || 5; 
-    
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+
             const response = await this._adminTutorService.getCategories(page, limit);
-            
-            res.status(STATUS_CODES.OK).json({ 
-                success: true, 
-                message: "Categories retrieved successfully", 
-                data: response 
+
+            res.status(STATUS_CODES.OK).json({
+                success: true,
+                message: "Categories retrieved successfully",
+                data: response
             });
         } catch (error) {
             console.error("Error fetching categories", error);
@@ -120,16 +120,111 @@ class AdminTutorController {
         }
     }
 
-    async deleteCategory(req:Request,res:Response):Promise<void>{
-        try{
+    async deleteCategory(req: Request, res: Response): Promise<void> {
+        try {
             const id = req.body.id;
-            console.log("id from delete category backend",id)
+            console.log("id from delete category backend", id)
             const response = await this._adminTutorService.deleteCategory(id);
             if (response) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Category deleted Successfully", data: response })
             }
-        }catch(error){
+        } catch (error) {
             console.log(error)
+        }
+    }
+
+    async pendingCourse(req: Request, res: Response): Promise<void> {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const courses = await this._adminTutorService.pendingCourse(page,limit);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Pending Courses Retrived", data: courses })
+        } catch (error) {
+            res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Courses data Retrived failed", data: null });
+        }
+    }
+
+    async getCategory(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this._adminTutorService.getCategory()
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Categories retrieved Successfully", data: response })
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+
+    async courseDetails(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params
+            console.log(id)
+            const response = await this._adminTutorService.courseDetails(id)
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Course details retrieved Successfully", data: response })
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+
+        }
+    }
+    async getSections(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            console.log(id)
+            const response = await this._adminTutorService.getSections(id)
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Sections retrieved Successfully", data: response })
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+
+        }
+    }
+
+    async getLectures(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const response = await this._adminTutorService.getLectures(id)
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Lectures retrieved successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching Lectures")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Lectures" });
+        }
+    }
+
+    async rejectCourse(req:Request,res:Response):Promise<void> {
+        try {
+            const {id} = req.params;
+            const reason = req.body.reason
+            console.log("==================>",id,reason)
+            const response = await this._adminTutorService.rejectCourse(id,reason)
+            if (!response) {
+                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
+                return
+            }
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Course rejected successfully", data: response })
+ 
+        } catch (error) {
+            console.log("Error while rejecting Course")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while Rejecting course" });
+        }
+    }
+
+    async approveCourse(req:Request,res:Response):Promise<void> {
+        try {
+            const {id} = req.params;
+            console.log("==================>",id)
+            const response = await this._adminTutorService.approveCourse(id)
+            if (!response) {
+                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
+                return
+            }
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Course approved successfully", data: response })
+
+        } catch (error) {
+            console.log("Error while rejecting Course")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while Rejecting course" });
         }
     }
 }

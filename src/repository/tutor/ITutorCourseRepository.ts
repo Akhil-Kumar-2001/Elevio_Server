@@ -17,6 +17,7 @@ interface ITutorCourseRepository {
     getLectures(id: string): Promise<ILecture[] | null>
     editLecture(id: string, title: string): Promise<ILecture | null>
     deleteLecture(id: string): Promise<boolean | null>
+    editSection(id:string,data:ISectionData):Promise<ISection | null>
 
     uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null>;
 

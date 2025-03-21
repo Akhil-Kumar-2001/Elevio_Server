@@ -1,6 +1,9 @@
 import { Category, ICategory } from '../../../model/category/categoryModel';
+import { Course, ICourse } from '../../../model/course/courseModel';
+import { ILecture, Lecture } from '../../../model/lecture/lectureModel';
+import { ISection, Section } from '../../../model/section/sectionModel';
 import { ITutor, Tutor } from '../../../model/tutor/tutorModel';
-import { CategoryResponseDataType } from '../../../Types/CategoryReturnType';
+import { CategoryResponseDataType, CourseResponseDataType } from '../../../Types/CategoryReturnType';
 import IAdminTutorRepository from '../IAdminTutorRepository'
 
 class AdminTutorRepository implements IAdminTutorRepository {
@@ -74,15 +77,14 @@ class AdminTutorRepository implements IAdminTutorRepository {
 
     async getCategories(page: number, limit: number): Promise<CategoryResponseDataType | null> {
         try {
-            // return  await Category.find();
             const skip = (page - 1) * limit;
             const categories = await Category.find()
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .exec();
-                const totalRecord = await Category.countDocuments()
-                return {categories,totalRecord}    
+            const totalRecord = await Category.countDocuments()
+            return { categories, totalRecord }
         } catch (error) {
             console.log("Error while retrieving categories")
             return null
@@ -107,6 +109,78 @@ class AdminTutorRepository implements IAdminTutorRepository {
         } catch (error) {
             console.log("Error deleting category:", error);
             return false;
+        }
+    }
+
+    async pendingCourse(page:number,limit:number): Promise<CourseResponseDataType | null> {
+
+        const skip = (page - 1) * limit;
+        const courses = await Course.find({ status: "pending" })
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .exec(); 
+                const totalRecord = await Course.countDocuments()
+                return { courses, totalRecord }
+    }
+
+    async getCategory(): Promise<ICategory[] | null> {
+        const categories = await Category.find();
+        return categories
+    }
+
+    async courseDetails(id: string): Promise<ICourse | null> {
+        const course = Course.findOne({ _id: id })
+        return course;
+    }
+
+    async getSections(id: string): Promise<ISection[] | null> {
+        try {
+            const sections = await Section.find({ courseId: id })
+            return sections
+        } catch (error) {
+            console.log("Error while getting Sections");
+            return null
+        }
+    }
+
+    async getLectures(id: string): Promise<ILecture[] | null> {
+        try {
+            const lectures = await Lecture.find({ sectionId: id })
+            return lectures
+        } catch (error) {
+            console.log("Error while retrieving Sections ");
+            return null
+        }
+    }
+
+    async rejectCourse(id: string, reason: string): Promise<boolean | null> {
+        try {
+            const course = await Course.findByIdAndUpdate(
+                id,
+                {
+                    status: "rejected",
+                    rejectedReason: reason
+                },
+                { new: true }
+            )
+            return course ? true : false;
+        } catch (error) {
+            console.error("Error while rejecting course verification:", error);
+            return null;
+        }
+    }
+
+    async approveCourse(id: string): Promise<boolean | null> {
+        try {
+            const course = await Course.findByIdAndUpdate(
+                id,
+                { status: "accepted" },
+                { new: true }
+            );
+            return course ? true : false
+        } catch (error) {
+            console.error("Error while approving course verification:", error);
+            return null;
         }
     }
 }

@@ -31,3 +31,4 @@ export interface ILectureData {
   courseId: string,
   sectionId:string
 }
+

@@ -1,7 +1,10 @@
 import { ICategory } from "../../../model/category/categoryModel";
+import { ICourse } from "../../../model/course/courseModel";
+import { ILecture } from "../../../model/lecture/lectureModel";
+import { ISection } from "../../../model/section/sectionModel";
 import { ITutor } from "../../../model/tutor/tutorModel";
 import IAdminTutorRepository from "../../../repository/admin/IAdminTutorRepository";
-import { CategoryResponseDataType } from "../../../Types/CategoryReturnType";
+import { CategoryResponseDataType, CourseResponseDataType } from "../../../Types/CategoryReturnType";
 import IAdminTutorService from "../IAdminTutorService";
 
 class AdminTutorService implements IAdminTutorService {
@@ -37,12 +40,12 @@ class AdminTutorService implements IAdminTutorService {
     }
 
     async createCategory(name: string): Promise<boolean | null> {
-        const category = await this. _adminTutorRepository.createCategory(name);
+        const category = await this._adminTutorRepository.createCategory(name);
         return category
     }
 
-    async getCategories(page:number,limit:number): Promise<CategoryResponseDataType | null> {
-        const categories = await this._adminTutorRepository.getCategories(page,limit);
+    async getCategories(page: number, limit: number): Promise<CategoryResponseDataType | null> {
+        const categories = await this._adminTutorRepository.getCategories(page, limit);
         return categories
     }
 
@@ -56,6 +59,40 @@ class AdminTutorService implements IAdminTutorService {
         return response
     }
 
+    async pendingCourse(page:number,limit:number): Promise<CourseResponseDataType | null> {
+        const response = await this._adminTutorRepository.pendingCourse(page,limit);
+        return response
+    }
+
+
+    async getCategory(): Promise<ICategory[] | null> {
+        const categories = await this._adminTutorRepository.getCategory();
+        return categories
+    }
+
+    async courseDetails(id: string): Promise<ICourse | null> {
+        const course = await this._adminTutorRepository.courseDetails(id);
+        return course;
+    }
+    async getSections(id: string): Promise<ISection[] | null> {
+        const sections = await this._adminTutorRepository.getSections(id);
+        return sections;
+    }
+
+    async getLectures(id: string): Promise<ILecture[] | null> {
+        const response = await this._adminTutorRepository.getLectures(id);
+        return response
+    }
+
+    async rejectCourse(id: string, reason: string): Promise<boolean | null> {
+        const response = await this._adminTutorRepository.rejectCourse(id,reason);
+        return response;
+    }
+
+    async approveCourse(id: string): Promise<boolean | null> {
+        const response = await this._adminTutorRepository.approveCourse(id);
+        return response;
+    }
 }
 
 export default AdminTutorService

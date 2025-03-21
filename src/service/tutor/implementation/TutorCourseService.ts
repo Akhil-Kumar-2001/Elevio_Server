@@ -70,6 +70,11 @@ class TutorCourseService implements ITutorCourseService{
         return response;
     }
 
+    async editSection(id: string, data: ISectionData): Promise<ISection | null> {
+        const response = await this._tutorProfileRepository.editSection(id,data);
+        return response;
+    }
+
     async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string> {
         const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
         const params = {

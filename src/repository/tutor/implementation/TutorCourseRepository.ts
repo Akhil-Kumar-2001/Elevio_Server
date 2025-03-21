@@ -186,6 +186,22 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
+    async editSection(id: string, data: ISectionData): Promise<ISection | null> {
+        try {
+            console.log("reached here")
+            const updatedSection = await Section.findByIdAndUpdate(
+                            id,
+                            {$set:data},
+                            {new:true}
+            );
+            console.log(updatedSection)
+            return updatedSection;
+        } catch (error) {
+            console.log("Error updating section:", error);
+            return null;
+        }
+    }
+
     async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null> {
         const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
         const params = {

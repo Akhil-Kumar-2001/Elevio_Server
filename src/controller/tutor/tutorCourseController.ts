@@ -182,12 +182,25 @@ class TutorCourseController {
 
     async deleteLecture(req:Request,res:Response):Promise<void>{
         try {
-            let id = req.params.id
+            const id = req.params.id
             console.log("this is the lecture id form the delte contorller",id)
             const response = await this._tutorCourseService.deleteLecture(id);
             res.status(STATUS_CODES.OK).json({success:true,message:"Lecture deleted successfully",data:response})
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    async editSection(req:Request,res:Response):Promise<void>{
+        try {
+            const id = req.params.id;
+            const data = req.body;
+            console.log(id,",",data)
+            const response = await this._tutorCourseService.editSection(id,data)
+            res.status(STATUS_CODES.OK).json({success:true,message:"Section updated successfully",data:response})
+        } catch (error) {
+            console.log("Error while editing Section")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while editing section" });
         }
     }
 
