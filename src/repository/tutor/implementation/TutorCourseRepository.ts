@@ -7,6 +7,12 @@ import { ISection, Section } from "../../../model/section/sectionModel";
 import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
 import s3 from '../../../Config/awsConfig'
 
+import fs from "fs";
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
 class TutorCourseRepository implements ITutorCourseRepository {
 
     async getCategories(): Promise<ICategory[] | null> {
@@ -46,13 +52,13 @@ class TutorCourseRepository implements ITutorCourseRepository {
             return null
         }
     }
-    
+
     async editCourse(id: string, editCourse: ICourse): Promise<ICourse | null> {
         try {
             const updatedCourse = await Course.findByIdAndUpdate(
                 id,
                 { $set: editCourse },
-                { new: true}
+                { new: true }
             );
             return updatedCourse
         } catch (error) {
@@ -63,59 +69,57 @@ class TutorCourseRepository implements ITutorCourseRepository {
 
     async createSection(id: string, sectionData: ISectionData): Promise<ISection | null> {
         try {
-          // Log the id to verify
-          console.log("Course ID in createSection:", id);
-      
-          // Find the course to ensure it exists
-          const courseExists = await Course.findById(id);
-          if (!courseExists) {
-            console.log("Course not found for ID:", id);
-            return null;
-          }
-      
-          // Get the total number of sections to determine the order
-          const sectionCount = await Section.countDocuments({ courseId: id });
-      
-          // Create new section
-          const newSection = new Section({
-            courseId: id,
-            title: sectionData.title,
-            description: sectionData.description,
-            order: sectionCount + 1, // Set order based on existing sections
-            totalLectures: 0,
-            totalDuration: 0,
-            isPublished: false,
-          });
-      
-          await newSection.save();
-          return newSection;
-        } catch (error) {
-          console.error("Error while creating section:", error);
-          return null;
-        }
-      }
+            const course = await Course.findById(id);
+            if (!course) {
+                console.log("Course not found for ID:", id);
+                return null;
+            }
 
-      
+            const sectionCount = await Section.countDocuments({ courseId: id });
+
+            const newSection = new Section({
+                courseId: id,
+                title: sectionData.title,
+                description: sectionData.description,
+                order: sectionCount + 1,
+                totalLectures: 0,
+                totalDuration: 0,
+                isPublished: false,
+            });
+
+            await newSection.save();
+
+            course.totalSections = (course.totalSections ?? 0) + 1;
+            await course.save();
+
+            return newSection;
+        } catch (error) {
+            console.log("Error while creating section:", error);
+            return null;
+        }
+    }
+
+
     async createLecture(data: ILectureData): Promise<ILecture | null> {
         try {
             const { title, courseId, sectionId } = data;
-    
+
             // Check if the course and section exist
-            const courseExists = await Course.findById(courseId);
-            if (!courseExists) {
+            const course = await Course.findById(courseId);
+            if (!course) {
                 console.log("Course not found");
                 return null;
             }
-    
+
             const sectionExists = await Section.findById(sectionId);
             if (!sectionExists) {
                 console.log("Section not found");
                 return null;
             }
-    
+
             // Get the current number of lectures in the section to determine the order
             const lectureCount = await Lecture.countDocuments({ sectionId });
-    
+
             // Create new lecture
             const newLecture = new Lecture({
                 sectionId,
@@ -127,14 +131,17 @@ class TutorCourseRepository implements ITutorCourseRepository {
                 status: "processing",
                 isPreview: false,
             });
-    
+
             await newLecture.save();
-    
+
             // Update section's total lectures count
             await Section.findByIdAndUpdate(sectionId, {
                 $inc: { totalLectures: 1 },
             });
-    
+
+            course.totalLectures = (course.totalLectures ?? 0) + 1
+            course.save()
+
             return newLecture;
         } catch (error) {
             console.error("Error while creating lecture:", error);
@@ -144,7 +151,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
 
     async getSections(id: string): Promise<ISection[] | null> {
         try {
-            const sections = await Section.find({courseId:id})
+            const sections = await Section.find({ courseId: id })
             return sections
         } catch (error) {
             console.log("Error while retrieving Sections ");
@@ -154,7 +161,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
 
     async getLectures(id: string): Promise<ILecture[] | null> {
         try {
-            const lectures = await Lecture.find({sectionId:id})
+            const lectures = await Lecture.find({ sectionId: id })
             return lectures
         } catch (error) {
             console.log("Error while retrieving Sections ");
@@ -167,7 +174,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
             const updatedLecture = await Lecture.findByIdAndUpdate(
                 id,
                 { title },
-                { new: true } 
+                { new: true }
             );
             return updatedLecture;
         } catch (error) {
@@ -178,21 +185,46 @@ class TutorCourseRepository implements ITutorCourseRepository {
 
     async deleteLecture(id: string): Promise<boolean | null> {
         try {
+            // Find the lecture to get section and course IDs
             const deletedLecture = await Lecture.findByIdAndDelete(id);
-            return deletedLecture ? true :false;
+            if (!deletedLecture) {
+                console.log("Lecture not found for ID:", id);
+                return false;
+            }
+
+            const { sectionId, courseId, duration } = deletedLecture;
+
+            // Update totalLectures and totalDuration in the section
+            const section = await Section.findById(sectionId);
+            if (section) {
+                section.totalLectures = Math.max((section.totalLectures ?? 0) - 1, 0);
+                section.totalDuration = Math.max((section.totalDuration ?? 0) - duration, 0);
+                await section.save();
+            }
+
+            // Update totalLectures and totalDuration in the course
+            const course = await Course.findById(courseId);
+            if (course) {
+                course.totalLectures = Math.max((course.totalLectures ?? 0) - 1, 0);
+                course.totalDuration = Math.max((course.totalDuration ?? 0) - duration, 0);
+                await course.save();
+            }
+
+            return true;
         } catch (error) {
             console.log("Error deleting lecture:", error);
-            return null
+            return null;
         }
     }
+
 
     async editSection(id: string, data: ISectionData): Promise<ISection | null> {
         try {
             console.log("reached here")
             const updatedSection = await Section.findByIdAndUpdate(
-                            id,
-                            {$set:data},
-                            {new:true}
+                id,
+                { $set: data },
+                { new: true }
             );
             console.log(updatedSection)
             return updatedSection;
@@ -202,35 +234,106 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
+    // async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null> {
+    //     const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
+    //     const params = {
+    //         Bucket: process.env.AWS_S3_BUCKET_NAME || 'your-bucket-name',
+    //         Key: `lectures/${fileName}`,
+    //         Body: videoFile.buffer,
+    //         ContentType: videoFile.mimetype,
+    //         // Remove ACL: 'public-read'
+    //     };
+
+    //     try {
+    //         // Upload to S3
+    //         const uploadResult = await s3.upload(params).promise();
+    //         const videoUrl = uploadResult.Location;
+
+    //         // Update lecture in the database
+    //         const updatedLecture = await Lecture.findByIdAndUpdate(
+    //             lectureId,
+    //             { videoUrl, status: 'completed' },
+    //             { new: true }
+    //         );
+
+    //         if (!updatedLecture) {
+    //             throw new Error('Lecture not found');
+    //         }
+
+    //         return videoUrl;
+    //     } catch (error) {
+    //         console.error('Error uploading video to S3:', error);
+    //         return null;
+    //     }
+    // }
+
+    async getVideoDuration(filePath: string): Promise<number> {
+        return new Promise((resolve, reject) => {
+            ffmpeg.ffprobe(filePath, (err, metadata) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(metadata.format.duration || 0);
+                }
+            });
+        });
+    }
+
     async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null> {
         const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
-        const params = {
-            Bucket: process.env.AWS_S3_BUCKET_NAME || 'your-bucket-name',
-            Key: `lectures/${fileName}`,
-            Body: videoFile.buffer,
-            ContentType: videoFile.mimetype,
-            // Remove ACL: 'public-read'
-        };
-    
+        const filePath = `/tmp/${fileName}`; // Temporary storage
+
         try {
-            // Upload to S3
-            const uploadResult = await s3.upload(params).promise();
+            // Save the file temporarily
+            await fs.promises.writeFile(filePath, videoFile.buffer);
+
+            // Get video duration
+            const duration = Math.round(await this.getVideoDuration(filePath));
+
+            // Upload video to S3
+            const uploadResult = await s3.upload({
+                Bucket: process.env.AWS_S3_BUCKET_NAME || "your-bucket-name",
+                Key: `lectures/${fileName}`,
+                Body: videoFile.buffer,
+                ContentType: videoFile.mimetype,
+            }).promise();
+
+
             const videoUrl = uploadResult.Location;
-    
-            // Update lecture in the database
+
+            // Find the lecture
+            const lecture = await Lecture.findById(lectureId);
+            if (!lecture) throw new Error("Lecture not found");
+
+            const { sectionId, courseId } = lecture;
+
+            // Update the lecture with the video URL and duration
             const updatedLecture = await Lecture.findByIdAndUpdate(
                 lectureId,
-                { videoUrl, status: 'completed' },
+                { videoUrl, duration, status: "processed" },
                 { new: true }
             );
-    
-            if (!updatedLecture) {
-                throw new Error('Lecture not found');
-            }
-    
+
+            if (!updatedLecture) throw new Error("Failed to update lecture");
+
+            // Update the total duration of the section
+            await Section.findByIdAndUpdate(
+                sectionId,
+                { $inc: { totalDuration: duration } }
+            );
+
+            // Update the total duration of the course
+            await Course.findByIdAndUpdate(
+                courseId,
+                { $inc: { totalDuration: duration } }
+            );
+
+            // Remove the temporary file
+            await fs.promises.unlink(filePath);
+
             return videoUrl;
         } catch (error) {
-            console.error('Error uploading video to S3:', error);
+            console.error("Error processing video:", error);
             return null;
         }
     }
@@ -238,22 +341,22 @@ class TutorCourseRepository implements ITutorCourseRepository {
     async applyReview(courseId: string): Promise<boolean | null> {
         try {
             const updatedCourse = await Course.findByIdAndUpdate(
-                courseId, 
-                { status: "pending" }, 
+                courseId,
+                { status: "pending" },
                 { new: true }
             );
             if (!updatedCourse) {
-                return null; 
+                return null;
             }
             return true;
         } catch (error) {
             console.log("Error updating course status:", error);
-            return null; 
+            return null;
         }
     }
-    
-    
-    
+
+
+
 }
 
 export default TutorCourseRepository;
