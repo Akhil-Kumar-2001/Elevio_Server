@@ -165,7 +165,23 @@ class AdminTutorRepository implements IAdminTutorRepository {
             )
             return course ? true : false;
         } catch (error) {
-            console.error("Error while rejecting course verification:", error);
+            console.log("Error while rejecting course verification:", error);
+            return null;
+        }
+    }
+
+    async getTutorMail(tutorId: string): Promise<string | null> {
+        try {
+            const tutor = await Tutor.findOne({_id:tutorId})
+            if (!tutor) {
+                console.log("Tutor not found for ID:", tutorId);
+                return null;
+            }
+            const email = tutor.email;
+            return email;
+            
+        } catch (error) {
+            console.log("Error while getting email of tutor:", error);
             return null;
         }
     }

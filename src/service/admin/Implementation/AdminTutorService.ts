@@ -89,6 +89,11 @@ class AdminTutorService implements IAdminTutorService {
         return response;
     }
 
+    async getTutorMail(tutorId: string): Promise<string | null> {
+        const email = await this._adminTutorRepository.getTutorMail(tutorId)
+        return email
+    }
+
     async approveCourse(id: string): Promise<boolean | null> {
         const response = await this._adminTutorRepository.approveCourse(id);
         return response;

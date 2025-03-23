@@ -22,6 +22,7 @@ interface IAdminTutorService {
     getSections(id: string): Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
     rejectCourse(id:string,reason:string):Promise<boolean | null>
+    getTutorMail(tutorId:string):Promise<string | null>
     approveCourse(id:string):Promise<boolean | null>
 
 

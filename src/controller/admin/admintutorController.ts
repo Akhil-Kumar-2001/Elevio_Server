@@ -2,6 +2,7 @@ import { ERROR_MESSAGES } from '../../constants/errorMessage';
 import { STATUS_CODES } from '../../constants/statusCode';
 import IAdminTutorService from "../../service/admin/IAdminTutorService";
 import { Request, Response } from "express"; //
+import MailUtility from '../../utils/mailUtility';
 
 
 
@@ -197,11 +198,19 @@ class AdminTutorController {
         try {
             const {id} = req.params;
             const reason = req.body.reason
-            console.log("==================>",id,reason)
+            const tutorId = req.body.tutorId
+            console.log("==================>",tutorId)
+            const email = await this._adminTutorService.getTutorMail(tutorId);
+            // console.log(object)
             const response = await this._adminTutorService.rejectCourse(id,reason)
             if (!response) {
                 res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
                 return
+            }
+            if (response && email) {
+                await MailUtility.sendMail(email, reason, "Course Rejection");
+            } else if (!email) {
+                console.log("Email not found for tutor, skipping email notification");
             }
             res.status(STATUS_CODES.OK).json({ success: true, message: "Course rejected successfully", data: response })
  
