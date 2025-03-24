@@ -1,9 +1,10 @@
-import ITutorProfileService from "../../service/tutor/ITutorProfileService";
+import ITutorProfileService from "../../../service/tutor/ITutorProfileService";
 import { Request,Response } from "express";
-import { STATUS_CODES } from "../../constants/statusCode";
-import { ERROR_MESSAGES } from "../../constants/errorMessage";
+import { STATUS_CODES } from "../../../constants/statusCode";
+import { ERROR_MESSAGES } from "../../../constants/errorMessage";
+import ITutorProfileController from "../ITutorProfileController";
 
-class TutorProfileController {
+class TutorProfileController implements ITutorProfileController {
     private _tutorProfileService:ITutorProfileService
 
     constructor(tutorProfileService:ITutorProfileService){

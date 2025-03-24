@@ -1,12 +1,13 @@
-import { ERROR_MESSAGES } from '../../constants/errorMessage';
-import { STATUS_CODES } from '../../constants/statusCode';
-import IAdminTutorService from "../../service/admin/IAdminTutorService";
+import { ERROR_MESSAGES } from '../../../constants/errorMessage';
+import { STATUS_CODES } from '../../../constants/statusCode';
+import IAdminTutorService from "../../../service/admin/IAdminTutorService";
 import { Request, Response } from "express"; //
-import MailUtility from '../../utils/mailUtility';
+import MailUtility from '../../../utils/mailUtility';
+import IAdminTutorController from '../IAdminTutorController';
 
 
 
-class AdminTutorController {
+class AdminTutorController implements IAdminTutorController {
 
     private _adminTutorService: IAdminTutorService;
 
@@ -17,7 +18,6 @@ class AdminTutorController {
     async getPendingTutors(req: Request, res: Response): Promise<void> {
         try {
             const tutors = await this._adminTutorService.getPendingTutors()
-            console.log("Pending tutors", tutors)
             res.status(STATUS_CODES.OK).json({ success: true, message: "Pending tutors Retrived", data: tutors })
         } catch (error) {
             console.error("Error while retriving Tutors data.", error);
@@ -29,6 +29,7 @@ class AdminTutorController {
     async getTutor(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
+            console.log("entered get tutor")
             if (!id) {
                 res.status(STATUS_CODES.BAD_REQUEST).json({ error: ERROR_MESSAGES.BAD_REQUEST });
             }

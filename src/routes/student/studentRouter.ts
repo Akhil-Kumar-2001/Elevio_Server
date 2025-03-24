@@ -1,13 +1,22 @@
 import Router from 'express';
 import StudentRepository from '../../repository/student/implementation/StudentRepository';
 import StudentService from '../../service/student/implementation/StudentService';
-import StudentController from '../../controller/student/studentController';
+import StudentController from '../../controller/student/implementation/StudentController';
+import StudentCourseRepository from '../../repository/student/implementation/StudentCourseRepository';
+import StudentCourseController from '../../controller/student/implementation/StudentCourseController';
+import StudentCourseService from '../../service/student/implementation/StudentCourseService';
+import IStudentCourseController from '../../controller/student/IStudentCourseController';
+import IStudentController from '../../controller/student/IStudentController';
 
 
 const router = Router();
 const studentRepository = new StudentRepository();
 const studentService = new StudentService(studentRepository);
-const studentController = new StudentController(studentService);
+const studentController:IStudentController = new StudentController(studentService);
+
+const studentCourseRepository = new StudentCourseRepository();
+const studentCourseService = new StudentCourseService(studentCourseRepository);
+const studentCourseController:IStudentCourseController = new StudentCourseController(studentCourseService)
 
 // sign-up routes
 
@@ -31,6 +40,9 @@ router.post('/reset-password', studentController.resetPassword.bind(studentContr
 // Google Authentication 
 
 router.post("/callback", studentController.googleAuth.bind(studentController));
+
+
+router.get('/listed-courses',studentCourseController.getListedCourse.bind(studentCourseController));
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
 

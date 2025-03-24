@@ -1,14 +1,15 @@
-import IAdminService from "../../service/admin/IAdminService"
+import IAdminService from "../../../service/admin/IAdminService"
 import { Request, Response } from "express";
-import { Token } from "../../utils/adminTokenUtility"
-import { ERROR_MESSAGES } from "../../constants/errorMessage";
-import { STATUS_CODES } from "../../constants/statusCode";
+import { Token } from "../../../utils/adminTokenUtility"
+import { ERROR_MESSAGES } from "../../../constants/errorMessage";
+import { STATUS_CODES } from "../../../constants/statusCode";
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
+import IAdminController from "../IAdminController";
 
 dotenv.config();
 
-class AdminController {
+class AdminController implements IAdminController{
 
     private _adminService: IAdminService;
 

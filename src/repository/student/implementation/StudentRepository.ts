@@ -2,6 +2,7 @@ import IStudentRepository from "../IStudentRepository";
 import { Student, IStudent } from "../../../model/student/studentModel";
 import { OTP, OTPType } from "../../../model/otp/ otpModel";
 import { BaseRepository } from "../../base/implementation/BaseRepository";
+import { Course, ICourse } from "../../../model/course/courseModel";
 
 class StudentRepository extends BaseRepository<IStudent> implements IStudentRepository {
 constructor(){
@@ -47,6 +48,7 @@ constructor(){
         const user = await Student.findById({_id});
         return user?.status;
     }
+
 }
 
 export default StudentRepository;

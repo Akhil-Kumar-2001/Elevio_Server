@@ -1,3 +1,4 @@
+import { ICourse } from "../../model/course/courseModel";
 import { OTPType } from "../../model/otp/ otpModel";
 import { IStudent } from "../../model/student/studentModel";
 import { IBaseRepository } from "../base/IBaseRepository";

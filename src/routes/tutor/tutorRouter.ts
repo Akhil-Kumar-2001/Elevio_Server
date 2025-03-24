@@ -1,16 +1,19 @@
 import Router from 'express';
 import TutorRepository from '../../repository/tutor/implementation/TutorRepository';
 import TutorService from '../../service/tutor/implementation/TutorService';
-import TutorController from '../../controller/tutor/tutorController';
+import TutorController from '../../controller/tutor/implementation/TutorController';
 import TutorProfileRepository from '../../repository/tutor/implementation/TutorProfileRepository';
 import TutorProfileService from '../../service/tutor/implementation/TutorProfileService';
-import TutorProfileController from '../../controller/tutor/tutorProfileController';
+import TutorProfileController from '../../controller/tutor/implementation/TutorProfileController';
 import { validateToken } from '../../middleware/validateToken';
 import isBlocked  from '../../middleware/isBlocked';
 import TutorCourseRepository from '../../repository/tutor/implementation/TutorCourseRepository';
 import TutorCourseService from '../../service/tutor/implementation/TutorCourseService';
-import TutorCourseController from '../../controller/tutor/tutorCourseController';
+import TutorCourseController from '../../controller/tutor/implementation/TutorCourseController';
 import multer from 'multer';
+import ITutorController from '../../controller/tutor/ITutorController';
+import ITutorProfileController from '../../controller/tutor/ITutorProfileController';
+import ITutorCourseController from '../../controller/tutor/ITutorCourseController';
 
 
 
@@ -20,15 +23,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const tutorRepository = new TutorRepository()
 const tutorService = new TutorService(tutorRepository)
-const tutorController = new TutorController(tutorService)
+const tutorController:ITutorController = new TutorController(tutorService)
 
 const tutorProfileRepository = new TutorProfileRepository()
 const tutorProfileService = new TutorProfileService(tutorProfileRepository);
-const tutorProfileController = new TutorProfileController(tutorProfileService);
+const tutorProfileController : ITutorProfileController = new TutorProfileController(tutorProfileService);
 
 const tutorCourseRepository = new TutorCourseRepository();
 const tutorCourseService = new TutorCourseService(tutorCourseRepository);
-const tutorCourseController = new TutorCourseController(tutorCourseService)
+const tutorCourseController : ITutorCourseController = new TutorCourseController(tutorCourseService)
 
 
 // sign-up routes

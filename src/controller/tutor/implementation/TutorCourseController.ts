@@ -1,10 +1,11 @@
-import { ERROR_MESSAGES } from "../../constants/errorMessage";
-import { STATUS_CODES } from "../../constants/statusCode";
+import { ERROR_MESSAGES } from "../../../constants/errorMessage";
+import { STATUS_CODES } from "../../../constants/statusCode";
 import { Request, Response } from "express";
-import ITutorCourseService from "../../service/tutor/ITutorCourseService"
+import ITutorCourseService from "../../../service/tutor/ITutorCourseService"
+import ITutorCourseController from "../ITutorCourseController";
 
 
-class TutorCourseController {
+class TutorCourseController implements ITutorCourseController {
     private _tutorCourseService: ITutorCourseService
 
     constructor(tutorCourseService: ITutorCourseService) {
@@ -225,7 +226,6 @@ class TutorCourseController {
       async applyReview(req:Request,res:Response):Promise <void> {
         try {
             const  {courseId}   = req.body
-            console.log("id from the controller review",courseId)
             let response = await this._tutorCourseService.applyReview(courseId);
             if(response){
                 res.status(STATUS_CODES.OK).json({success:true,message:"Apply for Course Review Successfully",data:null})

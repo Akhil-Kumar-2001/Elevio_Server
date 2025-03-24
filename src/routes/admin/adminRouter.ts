@@ -1,20 +1,22 @@
 import Router from 'express';
 import AdminRepository from '../../repository/admin/implementation/AdminRepository';
 import AdminService from '../../service/admin/Implementation/AdminService';
-import AdminController from '../../controller/admin/adminController';
+import AdminController from '../../controller/admin/implementation/AdminController';
 import { validateToken } from '../../middleware/validateToken';
-import AdminTutorController from '../../controller/admin/admintutorController';
+import AdminTutorController from '../../controller/admin/implementation/AdminTutorController';
 import AdminTutorRepository from '../../repository/admin/implementation/AdminTutorRepository'
 import AdminTutorService from '../../service/admin/Implementation/AdminTutorService';
 import { error } from 'winston';
+import IAdminController from '../../controller/admin/IAdminController';
+import IAdminTutorController from '../../controller/admin/IAdminTutorController';
 
 const adminRepository = new AdminRepository();
 const adminService = new AdminService(adminRepository);
-const adminController = new AdminController(adminService);
+const adminController:IAdminController = new AdminController(adminService);
 
 const adminTutorRepository = new AdminTutorRepository()
 const adminTutorService = new AdminTutorService(adminTutorRepository);
-const adminTutorController = new AdminTutorController(adminTutorService)
+const adminTutorController:IAdminTutorController = new AdminTutorController(adminTutorService)
 
 
 
