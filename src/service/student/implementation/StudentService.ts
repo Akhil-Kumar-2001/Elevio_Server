@@ -2,6 +2,7 @@ import { ICourse } from "../../../model/course/courseModel";
 import { OTPType } from "../../../model/otp/ otpModel";
 import { IStudent } from "../../../model/student/studentModel";
 import IStudentRepository from "../../../repository/student/IStudentRepository";
+import { EditStudentType } from "../../../Types/basicTypes";
 import IStudentService from "../IStudentService";
 
 class StudentService implements IStudentService {
@@ -49,7 +50,6 @@ class StudentService implements IStudentService {
         const user = await this._studentRepository.isBlocked(_id);
         return user
     }
-    
 
 }
 export default StudentService;

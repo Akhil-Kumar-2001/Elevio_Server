@@ -13,6 +13,16 @@ class StudentCourseService implements IStudentCourseService {
             const courses = await this._studentCourseRepository.getListedCourse();
             return courses
         }
+
+        async addToCart(id: string,userId:string): Promise<boolean | null> {
+            const response = await this._studentCourseRepository.addToCart(id,userId);
+            return response;
+        }
+
+        async courseExist(id: string,userId:string): Promise<boolean | null> {
+            const response = await this._studentCourseRepository.courseExist(id,userId);
+            return response
+        }
 }
 
 export default StudentCourseService

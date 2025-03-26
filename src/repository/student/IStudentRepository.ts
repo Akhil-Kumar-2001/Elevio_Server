@@ -1,6 +1,7 @@
 import { ICourse } from "../../model/course/courseModel";
 import { OTPType } from "../../model/otp/ otpModel";
 import { IStudent } from "../../model/student/studentModel";
+import { EditStudentType } from "../../Types/basicTypes";
 import { IBaseRepository } from "../base/IBaseRepository";
 
 interface IStudentRepository extends IBaseRepository<IStudent> {

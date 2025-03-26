@@ -7,6 +7,11 @@ import StudentCourseController from '../../controller/student/implementation/Stu
 import StudentCourseService from '../../service/student/implementation/StudentCourseService';
 import IStudentCourseController from '../../controller/student/IStudentCourseController';
 import IStudentController from '../../controller/student/IStudentController';
+import StudentProfileRepository from '../../repository/student/implementation/StudentProfileRepository'
+import { validateToken } from '../../middleware/validateToken';
+import StudentProfileService from '../../service/student/implementation/StudentProfileService';
+import StudentProfileController from '../../controller/student/implementation/StudentProfileController';
+import IStudentProfileController from '../../controller/student/IStudentProfileController';
 
 
 const router = Router();
@@ -14,9 +19,14 @@ const studentRepository = new StudentRepository();
 const studentService = new StudentService(studentRepository);
 const studentController:IStudentController = new StudentController(studentService);
 
+const studentProfileRepository = new StudentProfileRepository()
+const studentProfileService = new StudentProfileService(studentProfileRepository);
+const studentProfileController:IStudentProfileController = new StudentProfileController(studentProfileService)
+
 const studentCourseRepository = new StudentCourseRepository();
 const studentCourseService = new StudentCourseService(studentCourseRepository);
 const studentCourseController:IStudentCourseController = new StudentCourseController(studentCourseService)
+
 
 // sign-up routes
 
@@ -42,7 +52,14 @@ router.post('/reset-password', studentController.resetPassword.bind(studentContr
 router.post("/callback", studentController.googleAuth.bind(studentController));
 
 
-router.get('/listed-courses',studentCourseController.getListedCourse.bind(studentCourseController));
+router.get('/listed-courses',validateToken('Student'),studentCourseController.getListedCourse.bind(studentCourseController));
+
+router.get('/get-student/:id',validateToken('Student'),studentProfileController.getStudent.bind(studentProfileController));
+router.patch('/edit-profile/:id',validateToken("Student"),studentProfileController.editProfile.bind(studentProfileController))
+
+router.post('/addtocart/:id',validateToken("Student"),studentCourseController.addToCart.bind(studentCourseController))
+
+
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
 

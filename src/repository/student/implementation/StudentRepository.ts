@@ -3,6 +3,7 @@ import { Student, IStudent } from "../../../model/student/studentModel";
 import { OTP, OTPType } from "../../../model/otp/ otpModel";
 import { BaseRepository } from "../../base/implementation/BaseRepository";
 import { Course, ICourse } from "../../../model/course/courseModel";
+import { EditStudentType } from "../../../Types/basicTypes";
 
 class StudentRepository extends BaseRepository<IStudent> implements IStudentRepository {
 constructor(){

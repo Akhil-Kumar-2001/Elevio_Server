@@ -32,3 +32,8 @@ export interface ILectureData {
   sectionId:string
 }
 
+export interface EditStudentType {
+  username:string;
+  profilePicture:string | null;
+}
+

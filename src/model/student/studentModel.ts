@@ -6,12 +6,12 @@ interface IStudent extends Document {
     password?: string;
     status?: number;
     role: string;  
-    subscription?: {
-        subscriptionId: ObjectId;
-        isActive: boolean;
-        startDate: Date;
-        endDate: Date;
-    };
+    // subscription?: {
+    //     subscriptionId: ObjectId;
+    //     isActive: boolean;
+    //     startDate: Date;
+    //     endDate: Date;
+    // };
     googleID?: String
     freeCourseCount?: number;
     profilePicture?: string;
@@ -44,12 +44,12 @@ const studentSchema = new Schema<IStudent>({
         enum: ["Student"],  
         default: "Student",
     },
-    subscription: {
-        subscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription" },
-        isActive: { type: Boolean, default: false },
-        startDate: { type: Date },
-        endDate: { type: Date },
-    },
+    // subscription: {
+    //     subscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription" },
+    //     isActive: { type: Boolean, default: false },
+    //     startDate: { type: Date },
+    //     endDate: { type: Date },
+    // },
     googleID: {
         type: String
     },
