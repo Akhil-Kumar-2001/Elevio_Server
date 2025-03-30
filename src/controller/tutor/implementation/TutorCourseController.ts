@@ -40,8 +40,17 @@ class TutorCourseController implements ITutorCourseController {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 5;
+            const {tutorId } = req.query;
 
-            const response = await this._tutorCourseService.getCourses(page,limit);
+            console.log("tutor id in contrller. get courses",tutorId)
+            console.log("tutor id in contrller. get courses",typeof(tutorId))
+            if (!tutorId) {
+                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Tutor ID is required" });
+                return
+            }
+            
+
+            const response = await this._tutorCourseService.getCourses(tutorId as string,page,limit);
             res.status(STATUS_CODES.OK).json({success:true,message:"Courses retrieved successfully",data:response})
         } catch (error) {
             console.log("Error fetching courses", error);

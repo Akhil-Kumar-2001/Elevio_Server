@@ -58,8 +58,16 @@ router.get('/get-student/:id',validateToken('Student'),studentProfileController.
 router.patch('/edit-profile/:id',validateToken("Student"),studentProfileController.editProfile.bind(studentProfileController))
 
 router.post('/addtocart/:id',validateToken("Student"),studentCourseController.addToCart.bind(studentCourseController))
+router.get(`/cart/:id`,validateToken("Student"),studentCourseController.getCart.bind(studentCourseController))
+router.delete('/remove-item/:id',validateToken("Student"),studentCourseController.removeItem.bind(studentCourseController))
 
 
+// Course Purchase
+
+router.post("/payment/create-order",validateToken("Student"),studentCourseController.createOrder.bind(studentCourseController))
+router.post("/payment/verify-payment",validateToken("Student"),studentCourseController.verifyPayment.bind(studentCourseController))
+router.get('/getcategories',validateToken("Student"),studentCourseController.getCategories.bind(studentCourseController))
+router.get('/courses',validateToken('Student'),studentCourseController.getCourses.bind(studentCourseController))
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
 

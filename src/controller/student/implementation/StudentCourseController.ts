@@ -26,15 +26,15 @@ class StudentCourseController implements IStudentCourseController {
 
     async addToCart(req: Request, res: Response): Promise<void> {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             const userId = req.body.userId;
-            const courseExist = await this._studentCourseService.courseExist(id,userId);
-            if(courseExist){
+            const courseExist = await this._studentCourseService.courseExist(id, userId);
+            if (courseExist) {
                 res.status(STATUS_CODES.CONFLICT).json({ success: true, message: "Course Already exist On Cart", data: courseExist })
                 return
 
             }
-            const response = await this._studentCourseService.addToCart(id,userId);
+            const response = await this._studentCourseService.addToCart(id, userId);
             if (response) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Add To Cart Successfully", data: response })
             }
@@ -42,6 +42,84 @@ class StudentCourseController implements IStudentCourseController {
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
 
+        }
+    }
+
+    async getCart(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const response = await this._studentCourseService.getCart(id);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Retrived cart details successfully", data: response ?? {} })
+
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+
+        }
+    }
+
+    async removeItem(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const studentId = req.query.studentId as string;
+            console.log(studentId)
+            const response = await this._studentCourseService.removeItem(id, studentId)
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Course Removed from cart successfully", data: response })
+
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+
+        }
+    }
+
+    async createOrder(req: Request, res: Response): Promise<void> {
+        try {
+            const { studentId, amount, courseIds } = req.body;
+            if (!studentId || !amount || !courseIds) {
+                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
+                return
+            }
+
+            const response = await this._studentCourseService.createOrder(studentId, amount, courseIds);
+            res.status(STATUS_CODES.CREATED).json({ success: true, message: "Order created successfully", data: response })
+
+
+
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async verifyPayment(req: Request, res: Response): Promise<void> {
+        console.log("Request data for verfiy payment", req.body)
+        try {
+            const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+            const response = await this._studentCourseService.verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+            console.log("controlelr response", response)
+            res.status(response == "success" ? STATUS_CODES.OK : STATUS_CODES.BAD_REQUEST).json({ success: response === "success", message: response === "success" ? "Payment successful" : "Payment failed", status: response })
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async getCategories(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this._studentCourseService.getCategories();
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Categories retrieved true", data: response });
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async getCourses(req: Request, res: Response): Promise<void> {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 8;
+            const response = await this._studentCourseService.getCourses(page, limit);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Courses retrieved successfully", data: response })
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
         }
     }
 

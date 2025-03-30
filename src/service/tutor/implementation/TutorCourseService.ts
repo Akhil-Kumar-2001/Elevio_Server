@@ -25,8 +25,8 @@ class TutorCourseService implements ITutorCourseService{
         return response
     }
 
-    async getCourses(page: number, limit: number): Promise<CourseResponseDataType | null> {
-        const response = await this._tutorProfileRepository.getCourses(page,limit);
+    async getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null> {
+        const response = await this._tutorProfileRepository.getCourses(tutorId,page,limit);
         return response;
     }
 

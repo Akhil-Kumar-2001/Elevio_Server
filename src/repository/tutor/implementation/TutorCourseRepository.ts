@@ -31,10 +31,10 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async getCourses(page: number, limit: number): Promise<CourseResponseDataType | null> {
+    async getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null> {
         try {
             const skip = (page - 1) * limit;
-            const courses = await Course.find().sort({ createAt: -1 }).skip(skip).limit(limit).exec()
+            const courses = await Course.find({tutorId}).sort({ createAt: -1 }).skip(skip).limit(limit).exec()
             const totalRecord = await Course.countDocuments()
             return { courses, totalRecord }
         } catch (error) {

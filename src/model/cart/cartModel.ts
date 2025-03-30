@@ -1,4 +1,5 @@
-import { Schema, Document, model,Types} from "mongoose";
+// model/cart/cartModel.ts
+import { Schema, Document, model, Types } from "mongoose";
 
 interface ICartItem {
     courseId: Types.ObjectId;
@@ -6,10 +7,14 @@ interface ICartItem {
 }
 
 interface ICart extends Document {
-    userId: Schema.Types.ObjectId;
+    userId: Types.ObjectId;
     items: ICartItem[];
     totalPrice: number;
     status: "active" | "converted" | "abandoned";
+    createdAt: Date; // Add this
+    updatedAt: Date; // Add this
+    _id: Types.ObjectId; // Explicitly define _id
+    __v: number; // Version key
 }
 
 const cartItemSchema = new Schema<ICartItem>({
@@ -46,7 +51,6 @@ const cartSchema = new Schema<ICart>({
     }
 }, { timestamps: true });
 
-// Pre-save middleware to calculate totals
 cartSchema.pre('save', function(next) {
     this.totalPrice = this.items.reduce((total, item) => total + item.price, 0);
     next();

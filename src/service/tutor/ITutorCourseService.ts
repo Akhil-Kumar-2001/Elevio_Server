@@ -8,7 +8,7 @@ import { CourseResponseDataType } from "../../Types/CategoryReturnType"
 interface ITutorCourseService {
     getCategories(): Promise<ICategory[] | null>
     createCourse(courseData: CourseData): Promise<boolean | null>
-    getCourses(page:number,limit:number): Promise<CourseResponseDataType | null>
+    getCourses(tutorId:string,page:number,limit:number): Promise<CourseResponseDataType | null>
     getCourseDetails(id:string):Promise<ICourse | null>
     editCourse(id:string,editedCourse:ICourse):Promise<ICourse | null>
     createSection(id:string,sectionData:ISectionData):Promise<ISection | null>
