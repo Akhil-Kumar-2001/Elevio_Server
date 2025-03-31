@@ -85,6 +85,7 @@ export const validateToken = (requiredRole?: string) => {
 
       jwt.verify(accessToken, JWT_KEY, async (err:unknown, data: any) => {
         if (err) {
+          console.log("acc",accessToken,err)
           return res.status(403).json({ message: "Invalid or expired token, please log in again." });
         }
 

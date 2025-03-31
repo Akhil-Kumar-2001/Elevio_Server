@@ -68,6 +68,13 @@ router.post("/payment/create-order",validateToken("Student"),studentCourseContro
 router.post("/payment/verify-payment",validateToken("Student"),studentCourseController.verifyPayment.bind(studentCourseController))
 router.get('/getcategories',validateToken("Student"),studentCourseController.getCategories.bind(studentCourseController))
 router.get('/courses',validateToken('Student'),studentCourseController.getCourses.bind(studentCourseController))
+router.get('/purchased-courses/:id',validateToken("Student"),studentCourseController.getPurchasedCourses.bind(studentCourseController))
+
+router.get('/getCourse/:id',validateToken("Student"),studentCourseController.getCourse.bind(studentCourseController));
+router.get('/sections/:courseId',validateToken('Student'),studentCourseController.getSections.bind(studentCourseController))
+router.get('/lectures/:courseId',validateToken('Student'),studentCourseController.getLectures.bind(studentCourseController))
+
+
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
 

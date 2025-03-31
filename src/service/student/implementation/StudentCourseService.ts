@@ -9,6 +9,8 @@ import { ICartWithDetails } from "../../../Types/basicTypes";
 import IStudentCourseService from "../IStudentCourseService";
 import { ICategory } from '../../../model/category/categoryModel';
 import { CourseResponseDataType } from '../../../Types/CategoryReturnType';
+import { ISection } from '../../../model/section/sectionModel';
+import { ILecture } from '../../../model/lecture/lectureModel';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -35,6 +37,11 @@ class StudentCourseService implements IStudentCourseService {
     async courseExist(id: string, userId: string): Promise<boolean | null> {
         const response = await this._studentCourseRepository.courseExist(id, userId);
         return response
+    }
+
+    async isPurchased(id: string, userId: string): Promise<boolean | null> {
+        const response = await this._studentCourseRepository.isPurchased(id, userId);
+        return response;
     }
 
     async getCart(studentId: string): Promise<ICartWithDetails | null> {
@@ -87,10 +94,10 @@ class StudentCourseService implements IStudentCourseService {
         console.log("payment status capture", payment.status)
 
         if (payment.status === "captured") {
-            const updatedOrder = await this._studentCourseRepository.updateByOrderId(razorpay_order_id,"success");
+            const updatedOrder = await this._studentCourseRepository.updateByOrderId(razorpay_order_id, "success");
             return updatedOrder;
-        }else{
-            const updatedOrder = await this._studentCourseRepository.updateByOrderId(razorpay_order_id,"failed");
+        } else {
+            const updatedOrder = await this._studentCourseRepository.updateByOrderId(razorpay_order_id, "failed");
             return updatedOrder
         }
     }
@@ -100,9 +107,29 @@ class StudentCourseService implements IStudentCourseService {
         return response;
     }
     async getCourses(page: number, limit: number): Promise<CourseResponseDataType | null> {
-        const response = await this._studentCourseRepository.getCourses(page,limit);
+        const response = await this._studentCourseRepository.getCourses(page, limit);
         return response;
     }
+
+    async getPurchasedCourses(userId: string): Promise<ICourse[] | null> {
+        const response = await this._studentCourseRepository.getPurchasedCourses(userId);
+        return response;
     }
+
+    async getSections(id: string): Promise<ISection[] | null> {
+        const sections = await this._studentCourseRepository.getSections(id);
+        return sections;
+    }
+
+    async getLectures(id: string): Promise<ILecture[] | null> {
+        const response = await this._studentCourseRepository.getLectures(id);
+        return response
+    }
+
+    async getCourse(id: string): Promise<ICourse | null> {
+        const response = await this._studentCourseRepository.getCourse(id);
+        return response;
+    }
+}
 
 export default StudentCourseService

@@ -28,6 +28,11 @@ class StudentCourseController implements IStudentCourseController {
         try {
             const { id } = req.params;
             const userId = req.body.userId;
+            const isPurchased = await this._studentCourseService.isPurchased(id, userId);
+            if (isPurchased) {
+                res.status(STATUS_CODES.CONFLICT).json({ success: true, message: "Course Already Purchased", data: isPurchased })
+                return
+            }
             const courseExist = await this._studentCourseService.courseExist(id, userId);
             if (courseExist) {
                 res.status(STATUS_CODES.CONFLICT).json({ success: true, message: "Course Already exist On Cart", data: courseExist })
@@ -120,6 +125,49 @@ class StudentCourseController implements IStudentCourseController {
             res.status(STATUS_CODES.OK).json({ success: true, message: "Courses retrieved successfully", data: response })
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async getPurchasedCourses(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const response = await this._studentCourseService.getPurchasedCourses(id as string);
+            console.log("purchased course", response)
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Purchased courses retrieved successfully", data: response })
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async getCourse(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const response = await this._studentCourseService.getCourse(id as string);
+        res.status(STATUS_CODES.OK).json({ success: true, message: "Course details retrieved successfully", data: response })
+    }
+
+    async getSections(req: Request, res: Response): Promise<void> {
+        try {
+            const { courseId } = req.params;
+            console.log(courseId)
+            const response = await this._studentCourseService.getSections(courseId)
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Sections retrieved Successfully", data: response })
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+
+        }
+    }
+
+
+    async getLectures(req: Request, res: Response): Promise<void> {
+        try {
+            const { courseId } = req.params;
+            const response = await this._studentCourseService.getLectures(courseId)
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Lectures retrieved successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching Lectures")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Lectures" });
         }
     }
 

@@ -10,6 +10,11 @@ interface IStudentCourseController{
     verifyPayment(req:Request,res:Response):Promise<void>;
     getCategories(req:Request,res:Response):Promise<void>;
     getCourses(req:Request,res:Response):Promise<void>;
+    getPurchasedCourses(req:Request,res:Response):Promise<void>;
+    getCourse(req:Request,res:Response):Promise<void>;
+    getSections(req:Request,res:Response):Promise<void>;
+    getLectures(req:Request,res:Response):Promise<void>
+
     
 }
 export default IStudentCourseController

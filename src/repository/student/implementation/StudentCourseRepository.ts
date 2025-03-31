@@ -7,11 +7,23 @@ import { IOrder, Order } from "../../../model/order/orderModel";
 import { ITransaction, TutorWallet } from "../../../model/wallet/walletModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
 import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
+import { ISection, Section } from "../../../model/section/sectionModel";
+import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
 
 class StudentCourseRepository implements IStudentCourseRepository {
     async getListedCourse(): Promise<ICourse[] | null> {
         const courses = await Course.find({ status: "listed" });
         return courses;
+    }
+
+    async isPurchased(id: string, userId: string): Promise<boolean | null> {
+        const order = await Order.findOne({
+            userId,
+            courseIds: id, // Check if courseId exists in courseIds array
+            status: "success" // Ensure the order is successful
+        });
+
+        return !!order;
     }
 
     async courseExist(id: string, userId: string): Promise<boolean | null> {
@@ -185,7 +197,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
                 // Process each course
                 for (const course of courses) {
-                    
+
                     // Add the student to the purchasedStudents array
                     await Course.findByIdAndUpdate(
                         course._id,
@@ -261,6 +273,57 @@ class StudentCourseRepository implements IStudentCourseRepository {
         }
     }
 
+    async getPurchasedCourses(userId: string): Promise<ICourse[] | null> {
+        try {
+            // Await the query to get actual results
+            const orders = await Order.find({ userId, status: "success" }).select("courseIds");
+
+            if (!orders || orders.length === 0) return null; // No successful orders found
+
+            // Extract all course IDs from orders
+            const courseIds = orders.map(order => order.courseIds).flat(); // Flatten array of arrays
+
+            if (courseIds.length === 0) return null; // No purchased courses found
+
+            // Fetch course details
+            const purchasedCourses = await Course.find({ _id: { $in: courseIds } });
+
+            return purchasedCourses;
+        } catch (error) {
+            console.error("Error fetching purchased courses:", error);
+            return null;
+        }
+    }
+
+    async getCourse(id: string): Promise<ICourse | null> {
+        try {
+            const course = await Course.findOne({_id:id});
+            return course
+        } catch (error) {
+            console.log("Error while getting Course details");
+            return null
+        }
+    }
+
+    async getSections(id: string): Promise<ISection[] | null> {
+        try {
+            const sections = await Section.find({ courseId: id })
+            return sections
+        } catch (error) {
+            console.log("Error while getting Sections");
+            return null
+        }
+    }
+
+    async getLectures(id: string): Promise<ILecture[] | null> {
+        try {
+            const lectures = await Lecture.find({ sectionId: id })
+            return lectures
+        } catch (error) {
+            console.log("Error while retrieving Sections ");
+            return null
+        }
+    }
 
 }
 
