@@ -2,7 +2,9 @@ import { Category, ICategory } from '../../../model/category/categoryModel';
 import { Course, ICourse } from '../../../model/course/courseModel';
 import { ILecture, Lecture } from '../../../model/lecture/lectureModel';
 import { ISection, Section } from '../../../model/section/sectionModel';
+import Subscription, { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ITutor, Tutor } from '../../../model/tutor/tutorModel';
+import { ISubscriptionPlan } from '../../../Types/basicTypes';
 import { CategoryResponseDataType, CourseResponseDataType } from '../../../Types/CategoryReturnType';
 import IAdminTutorRepository from '../IAdminTutorRepository'
 
@@ -112,15 +114,15 @@ class AdminTutorRepository implements IAdminTutorRepository {
         }
     }
 
-    async pendingCourse(page:number,limit:number): Promise<CourseResponseDataType | null> {
+    async pendingCourse(page: number, limit: number): Promise<CourseResponseDataType | null> {
 
         const skip = (page - 1) * limit;
         const courses = await Course.find({ status: "pending" })
             .sort({ updatedAt: -1 })
             .skip(skip)
-            .exec(); 
-                const totalRecord = await Course.countDocuments()
-                return { courses, totalRecord }
+            .exec();
+        const totalRecord = await Course.countDocuments()
+        return { courses, totalRecord }
     }
 
     async getCategory(): Promise<ICategory[] | null> {
@@ -172,14 +174,14 @@ class AdminTutorRepository implements IAdminTutorRepository {
 
     async getTutorMail(tutorId: string): Promise<string | null> {
         try {
-            const tutor = await Tutor.findOne({_id:tutorId})
+            const tutor = await Tutor.findOne({ _id: tutorId })
             if (!tutor) {
                 console.log("Tutor not found for ID:", tutorId);
                 return null;
             }
             const email = tutor.email;
             return email;
-            
+
         } catch (error) {
             console.log("Error while getting email of tutor:", error);
             return null;
@@ -198,6 +200,64 @@ class AdminTutorRepository implements IAdminTutorRepository {
             console.error("Error while approving course verification:", error);
             return null;
         }
+    }
+
+    async getSubscription(): Promise<ISubscription[] | null> {
+        try {
+            const subscriptions = await Subscription.find();
+            return subscriptions ?? null;
+        } catch (error) {
+            console.error("Error while approving course verification:", error);
+            return null;
+        }
+    }
+
+    async createSubscription(data: ISubscriptionPlan): Promise<boolean | null> {
+        // Create a new subscription document
+        const newSubscription = new Subscription({
+            planName: data.planName,
+            duration: {
+                value: data.duration.value,
+                unit: data.duration.unit
+            },
+            price: data.price,
+            features: data.features,
+            status: data.status
+        });
+
+        // Save the subscription to the database
+        await newSubscription.save();
+
+        return newSubscription ? true : null
+    }
+
+    async editSubscription(data: ISubscription): Promise<boolean | null> {
+        try {
+            const updatedSubscription = await Subscription.findByIdAndUpdate(
+                data._id,
+                {
+                    $set: {
+                        planName: data.planName,
+                        duration: data.duration,
+                        price: data.price,
+                        features: data.features,
+                        status: data.status,
+                        updatedAt: new Date()
+                    }
+                },
+                { new: true } // Returns the updated document
+            );
+
+            return updatedSubscription ? true : null;
+        } catch (error) {
+            console.error("Error updating subscription:", error);
+            return null;
+        }
+    }
+
+    async deleteSubscription(id: string): Promise<boolean | null> {
+        const response = await Subscription.findByIdAndDelete({_id:id});
+        return response ? true : null;
     }
 }
 

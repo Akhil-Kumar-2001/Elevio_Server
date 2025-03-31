@@ -58,6 +58,9 @@ router.get('/lectures/:id',validateToken('admin'),adminTutorController.getLectur
 router.patch('/reject-course/:id',validateToken('admin'),adminTutorController.rejectCourse.bind(adminTutorController))
 router.patch('/approve-course/:id',validateToken('admin'),adminTutorController.approveCourse.bind(adminTutorController))
 
-
+router.get('/subscriptions',validateToken('admin'),adminTutorController.getSubscription.bind(adminTutorController))
+router.post('/subscriptions',validateToken('admin'),adminTutorController.createSubscription.bind(adminTutorController))
+router.patch('/subscriptions',validateToken('admin'),adminTutorController.editSubscription.bind(adminTutorController))
+router.delete('/subscriptions/:id',validateToken('admin'),adminTutorController.deleteSubscription.bind(adminTutorController))
 
 export default router

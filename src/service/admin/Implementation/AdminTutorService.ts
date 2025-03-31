@@ -2,8 +2,10 @@ import { ICategory } from "../../../model/category/categoryModel";
 import { ICourse } from "../../../model/course/courseModel";
 import { ILecture } from "../../../model/lecture/lectureModel";
 import { ISection } from "../../../model/section/sectionModel";
+import { ISubscription } from "../../../model/subscription/subscriptionModel";
 import { ITutor } from "../../../model/tutor/tutorModel";
 import IAdminTutorRepository from "../../../repository/admin/IAdminTutorRepository";
+import { ISubscriptionPlan } from "../../../Types/basicTypes";
 import { CategoryResponseDataType, CourseResponseDataType } from "../../../Types/CategoryReturnType";
 import IAdminTutorService from "../IAdminTutorService";
 
@@ -97,6 +99,26 @@ class AdminTutorService implements IAdminTutorService {
     async approveCourse(id: string): Promise<boolean | null> {
         const response = await this._adminTutorRepository.approveCourse(id);
         return response;
+    }
+
+    async getSubscription(): Promise<ISubscription[] | null> {
+        const response = await this._adminTutorRepository.getSubscription();
+        return response;
+    }
+
+    async createSubscription(data: ISubscriptionPlan): Promise<boolean | null> {
+        const response = await this._adminTutorRepository.createSubscription(data);
+        return response
+    }
+
+    async editSubscription(data: ISubscriptionPlan): Promise<boolean | null> {
+        const response = await this._adminTutorRepository.editSubscription(data);
+        return response
+    }
+
+    async deleteSubscription(id:string): Promise<boolean | null> {
+        const response = await this._adminTutorRepository.deleteSubscription(id);
+        return response
     }
 }
 

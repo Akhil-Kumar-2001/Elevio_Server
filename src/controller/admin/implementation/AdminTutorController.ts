@@ -237,6 +237,49 @@ class AdminTutorController implements IAdminTutorController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while Rejecting course" });
         }
     }
+
+    async getSubscription(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this._adminTutorService.getSubscription();
+            res.status(STATUS_CODES.OK).json({ success: false, message: "Subscription retrieved successfully" , data: response })
+
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+
+        }
+    }
+
+    async createSubscription(req: Request, res: Response): Promise<void> {
+        try {
+            const data = req.body;
+            const response = await this._adminTutorService.createSubscription(data);
+            res.status(STATUS_CODES.CREATED).json({success:true, message:"Subscription created successfully", data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });       
+        }
+    }
+
+    async editSubscription(req: Request, res: Response): Promise<void> {
+        try {
+            const data = req.body;
+            console.log("Edited data",data)
+            const response = await this._adminTutorService.editSubscription(data);
+            res.status(STATUS_CODES.OK).json({success:true, message:"Subscription Edited successfully", data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });       
+        }
+    }
+
+    async deleteSubscription(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            console.log("Edited data",id)
+            const response = await this._adminTutorService.deleteSubscription(id);
+            res.status(STATUS_CODES.OK).json({success:true, message:"Subscription Edited successfully", data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });       
+        }
+    }
 }
 
 

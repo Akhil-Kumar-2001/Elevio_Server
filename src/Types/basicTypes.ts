@@ -71,3 +71,15 @@ export interface IOrderCreateData {
   status: "pending" | "success" | "failed";
   paymentMethod?: string; 
 }
+
+export interface ISubscriptionPlan {
+  id?: string;
+  planName: string;
+  duration: {
+    value: number;
+    unit: string;
+  };
+  price: number;
+  features: string[];
+  status: boolean;
+}

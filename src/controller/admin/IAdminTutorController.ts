@@ -16,6 +16,10 @@ interface IAdminTutorController {
     getLectures(req:Request,res:Response):Promise<void>
     rejectCourse(req:Request,res:Response):Promise<void>
     approveCourse(req:Request,res:Response):Promise<void>
+    getSubscription(req:Request,res:Response):Promise<void>
+    createSubscription(req:Request,res:Response):Promise<void>
+    editSubscription(req:Request,res:Response):Promise<void>
+    deleteSubscription(req:Request,res:Response):Promise<void>
 
 }
 
