@@ -255,7 +255,7 @@ class StudentController implements IStudentController {
                         httpOnly: false,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 12 * 60 * 60 * 1000,
+                        maxAge: 7 * 24 * 60 * 60 * 1000,
                     });
                     res
                         .status(STATUS_CODES.OK)
@@ -312,7 +312,7 @@ class StudentController implements IStudentController {
             });
         } catch (error) {
             console.error('Error refreshing token:', error);
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     };
     async logout(req: Request, res: Response): Promise<void> {

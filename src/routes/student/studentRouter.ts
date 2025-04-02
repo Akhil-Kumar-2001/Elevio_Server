@@ -39,7 +39,7 @@ router.post('/resend-otp', (req, res) => studentController.resendOtp(req, res));
 router.post('/signin', studentController.signinPost.bind(studentController));
 router.post('/logout', studentController.logout.bind(studentController));
 router.post('/refresh-token',studentController.refreshToken.bind(studentController));
-router.post('/refresh-token', (req, res) => studentController.refreshToken(req, res));
+// router.post('/refresh-token', (req, res) => studentController.refreshToken(req, res));
 
 // Forgot password
 
@@ -74,6 +74,10 @@ router.get('/getCourse/:id',validateToken("Student"),studentCourseController.get
 router.get('/sections/:courseId',validateToken('Student'),studentCourseController.getSections.bind(studentCourseController))
 router.get('/lectures/:courseId',validateToken('Student'),studentCourseController.getLectures.bind(studentCourseController))
 
+//Subsription
+router.get('/subscription',validateToken("Student"),studentCourseController.getSubscription.bind(studentCourseController))
+router.post('/subscription/create-order',validateToken('Student'),studentCourseController.createSubscritionOrder.bind(studentCourseController))
+router.post('/subscription/verify-payment',validateToken('Student'),studentCourseController.verifySubscriptionPayment.bind(studentCourseController))
 
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
