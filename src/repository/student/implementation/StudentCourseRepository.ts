@@ -2,13 +2,16 @@ import mongoose from "mongoose";
 import { Course, ICourse } from "../../../model/course/courseModel";
 import IStudentCourseRepository from "../IStudentCourseRepository";
 import { Cart, ICart } from "../../../model/cart/cartModel";
-import { ICartItemWithDetails, ICartWithDetails, IOrderCreateData } from "../../../Types/basicTypes";
+import { ICartItemWithDetails, ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData } from "../../../Types/basicTypes";
 import { IOrder, Order } from "../../../model/order/orderModel";
 import { ITransaction, TutorWallet } from "../../../model/wallet/walletModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
 import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
 import { ISection, Section } from "../../../model/section/sectionModel";
 import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
+import Subscription, { ISubscription } from "../../../model/subscription/subscriptionModel";
+import { ISubscriptionPurchased, SubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
+import { Student } from "../../../model/student/studentModel";
 
 class StudentCourseRepository implements IStudentCourseRepository {
     async getListedCourse(): Promise<ICourse[] | null> {
@@ -188,24 +191,29 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 return null;
             }
 
-            // If order is successful, credit the tutors' wallets
             if (status === 'success' && updatedOrder.courseIds && updatedOrder.courseIds.length > 0) {
-                // Fetch all courses in the order with tutorId, price, and title
+
                 const courses = await Course.find({
                     _id: { $in: updatedOrder.courseIds }
                 }).select('tutorId price title');
 
-                // Process each course
+                const numberOfCoursesPurchased = updatedOrder.courseIds.length;
+
+                await Student.findByIdAndUpdate(
+                    updatedOrder.userId,
+                    { $inc: { enrolledCourseCount: numberOfCoursesPurchased } },
+                    { new: true }
+                );
+
                 for (const course of courses) {
 
-                    // Add the student to the purchasedStudents array
                     await Course.findByIdAndUpdate(
                         course._id,
                         { $addToSet: { purchasedStudents: updatedOrder.userId } },
                         { new: true }
                     );
                     if (course.tutorId) {
-                        // Find or create tutor's wallet
+
                         let tutorWallet = await TutorWallet.findOne({ tutorId: course.tutorId });
 
                         if (!tutorWallet) {
@@ -218,7 +226,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
                             });
                         }
 
-                        // Create transaction with course title
                         const transaction: ITransaction = {
                             amount: course.price,
                             type: 'credit',
@@ -228,21 +235,17 @@ class StudentCourseRepository implements IStudentCourseRepository {
                             referenceId: updatedOrder._id
                         };
 
-                        // Update wallet
                         tutorWallet.balance += course.price;
                         tutorWallet.totalEarnings += course.price;
                         tutorWallet.transactions.push(transaction);
 
                         await tutorWallet.save();
 
-
-
-                        console.log("Tutor wallet after the transaction", tutorWallet)
+                        // console.log("Tutor wallet after the transaction", tutorWallet)
                     }
                 }
             }
 
-            // Clear the cart for the user who placed this order
             await Cart.findOneAndUpdate(
                 { userId: updatedOrder.userId },
                 { $set: { items: [], totalPrice: 0 } },
@@ -297,7 +300,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async getCourse(id: string): Promise<ICourse | null> {
         try {
-            const course = await Course.findOne({_id:id});
+            const course = await Course.findOne({ _id: id });
             return course
         } catch (error) {
             console.log("Error while getting Course details");
@@ -325,6 +328,54 @@ class StudentCourseRepository implements IStudentCourseRepository {
         }
     }
 
+    async getSubscription(): Promise<ISubscription[] | null> {
+        const subscriptions = await Subscription.find({ status: true });
+        return subscriptions ?? null;
+    }
+    async isValidPlan(studentId: string): Promise<boolean | null> {
+        const isValid = await SubscriptionPurchased.findOne({
+            userId: studentId,
+            endDate: { $gte: new Date() }
+        });
+
+        return !!isValid;
+    }
+
+    async createSubscritionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null> {
+        try {
+            // Create a new Order document with the provided orderData
+            const order = new SubscriptionPurchased(orderData);
+
+            // Save the order to the database
+            const savedOrder = await order.save();
+
+            // Return true if the order was saved successfully
+            return savedOrder;
+        } catch (error) {
+            console.error("Error creating order in repository:", error);
+            return null;
+        }
+    }
+
+    async findByOrderId(orderId: string): Promise<ISubscriptionPurchased | null> {
+        const order = await SubscriptionPurchased.findOne({ orderId });
+        return order;
+    }
+
+    async findPlanById(_id: string): Promise<ISubscription | null> {
+        const plan = await Subscription.findById({ _id });
+        return plan
+    }
+
+
+    async updateSubscriptionByOrderId(orderId: string, data: any): Promise<string | null> {
+        const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
+            { orderId: orderId },
+            data,
+            { new: true }
+        );
+        return updatedOrder ? updatedOrder.paymentStatus : null;
+    }
 }
 
 export default StudentCourseRepository;

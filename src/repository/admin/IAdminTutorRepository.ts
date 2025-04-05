@@ -5,10 +5,10 @@ import { ISection } from "../../model/section/sectionModel"
 import { ISubscription } from "../../model/subscription/subscriptionModel"
 import { ITutor } from "../../model/tutor/tutorModel"
 import { ISubscriptionPlan } from "../../Types/basicTypes"
-import { CategoryResponseDataType, CourseResponseDataType } from "../../Types/CategoryReturnType"
+import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType } from "../../Types/CategoryReturnType"
 
 interface IAdminTutorRepository {
-    getPendingTutors(): Promise<ITutor[] | null>
+    getPendingTutors(page:number,limit:number): Promise<TutorResponseDataType | null>
     getTutorById(id: string): Promise<ITutor | null>
     rejectTutor(id: string): Promise<boolean | null>
     approveTutor(id: string): Promise<boolean | null>
@@ -25,7 +25,7 @@ interface IAdminTutorRepository {
     rejectCourse(id:string,reason:string):Promise<boolean | null>
     getTutorMail(tutorId:string):Promise<string | null>
     approveCourse(id:string):Promise<boolean | null>
-    getSubscription():Promise<ISubscription[] | null>
+    getSubscription(page:number,limit:number):Promise<SubscriptionResponseDataType | null>
     createSubscription(data:ISubscriptionPlan):Promise<boolean | null>
     editSubscription(data:ISubscriptionPlan):Promise<boolean | null>
     deleteSubscription(id:string):Promise<boolean | null>

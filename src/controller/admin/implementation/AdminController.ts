@@ -43,13 +43,13 @@ class AdminController implements IAdminController{
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 24 * 60 * 60 * 1000,
+                        maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("admin-accessToken", accessToken, {
                         httpOnly: false,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 2 * 60 * 60 * 1000,
+                        maxAge: 15 * 60 * 1000,
                     });
                     res.status(STATUS_CODES.OK).json({successs: true, message: "Sign-in successful", data: { accessToken, user: email }});
                     return
@@ -63,38 +63,37 @@ class AdminController implements IAdminController{
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     }
-    async refreshToken(req: Request, res: Response): Promise<void> {
-        try {
-            const refreshToken = req.cookies.get('admin-refreshToken')?.value;
-            // const refreshToken = req.cookies.refreshToken;
-            if (!refreshToken) {
-                res.status(401).json({ success: false, message: 'Refresh token missing' });
-                return
-            }
-
-            // **Verify the refresh token**
-            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, decoded: any) => {
-                if (err) {
-                    return res.status(403).json({ success: false, message: 'Invalid refresh token' });
+        async refreshToken(req: Request, res: Response): Promise<void> {
+            try {
+                const refreshToken = req.cookies['admin-refreshToken'];
+                if (!refreshToken) {
+                    res.status(STATUS_CODES.UNAUTHORIZED).json({ success: false, message: 'Refresh token missing' });
+                    return
                 }
 
-                // Generate a new access token
-                const tokenInstance = new Token();
-                const newAccessToken = tokenInstance.generatingTokens(decoded.email, decoded.role).accessToken;
-                res.cookie("admin-accessToken", newAccessToken, {
-                    httpOnly: false,
-                    secure: true,
-                    sameSite: "none",
-                    maxAge: 120 * 60 * 1000,
-                });
+                // **Verify the refresh token**
+                jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, decoded: any) => {
+                    if (err) {
+                        return res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: 'Invalid refresh token' });
+                    }
+                    // Generate a new access token
+                    const tokenInstance = new Token();
+                    const newAccessToken = tokenInstance.generatingTokens(decoded.email, decoded.role).accessToken;
+                    console.log("new access token",newAccessToken)
+                    res.cookie("admin-accessToken", newAccessToken, {
+                        httpOnly: false,
+                        secure: true,
+                        sameSite: "none",
+                        maxAge: 15 * 60 * 1000,
+                    });
 
-                res.status(200).json({ success: true, accessToken: newAccessToken });
-            });
-        } catch (error) {
-            console.error('Error refreshing token:', error);
-            res.status(500).json({ success: false, message: 'Internal server error' });
-        }
-    };
+                    res.status(STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
+                });
+            } catch (error) {
+                console.error('Error refreshing token:', error);
+                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
+            }
+        };
 
     async logout(req: Request, res: Response): Promise<void> {
 
@@ -109,7 +108,7 @@ class AdminController implements IAdminController{
                 secure: true,
                 sameSite: "none",
             });
-            res.status(200).json({success: true,message: "Logout successful",});
+            res.status(STATUS_CODES.OK).json({success: true,message: "Logout successful",});
             return
         } catch (error) {
             console.error("Logout error:", error);
@@ -120,7 +119,9 @@ class AdminController implements IAdminController{
 
     async getStudents(req:Request, res:Response): Promise<void> {
         try {
-            const students = await this._adminService.getStudents()
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const students = await this._adminService.getStudents(page,limit)
             res.status(STATUS_CODES.OK).json({success:true,message:"Student data Retrived",data:students})
         } catch (error) {
             console.error("Error while retriving Student data.", error);
@@ -131,7 +132,9 @@ class AdminController implements IAdminController{
 
     async getTutors(req:Request, res:Response): Promise<void> {
         try {
-            const tutors = await this._adminService.getTutors()
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const tutors = await this._adminService.getTutors(page, limit)
             res.status(STATUS_CODES.OK).json({success:true,message:"Student data Retrived",data:tutors})
         } catch (error) {
             console.error("Error while retriving Tutors data.", error);

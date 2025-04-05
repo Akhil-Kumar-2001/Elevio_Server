@@ -249,13 +249,13 @@ class StudentController implements IStudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 24 * 60 * 60 * 1000,
+                        maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: false,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 7 * 24 * 60 * 60 * 1000,
+                        maxAge: 15 * 60 * 1000,
                     });
                     res
                         .status(STATUS_CODES.OK)

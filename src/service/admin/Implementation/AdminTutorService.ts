@@ -6,7 +6,7 @@ import { ISubscription } from "../../../model/subscription/subscriptionModel";
 import { ITutor } from "../../../model/tutor/tutorModel";
 import IAdminTutorRepository from "../../../repository/admin/IAdminTutorRepository";
 import { ISubscriptionPlan } from "../../../Types/basicTypes";
-import { CategoryResponseDataType, CourseResponseDataType } from "../../../Types/CategoryReturnType";
+import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType } from "../../../Types/CategoryReturnType";
 import IAdminTutorService from "../IAdminTutorService";
 
 class AdminTutorService implements IAdminTutorService {
@@ -17,8 +17,8 @@ class AdminTutorService implements IAdminTutorService {
         this._adminTutorRepository = adminTutorRepository;
 
     }
-    async getPendingTutors(): Promise<ITutor[] | null> {
-        const tutors = await this._adminTutorRepository.getPendingTutors()
+    async getPendingTutors(page:number,limit:number): Promise<TutorResponseDataType | null> {
+        const tutors = await this._adminTutorRepository.getPendingTutors(page,limit);
         return tutors
     }
     async getTutorById(id: string): Promise<ITutor | null> {
@@ -101,8 +101,8 @@ class AdminTutorService implements IAdminTutorService {
         return response;
     }
 
-    async getSubscription(): Promise<ISubscription[] | null> {
-        const response = await this._adminTutorRepository.getSubscription();
+    async getSubscription(page:number,limit:number): Promise<SubscriptionResponseDataType | null> {
+        const response = await this._adminTutorRepository.getSubscription(page,limit);
         return response;
     }
 

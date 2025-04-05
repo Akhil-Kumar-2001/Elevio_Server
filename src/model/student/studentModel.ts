@@ -13,7 +13,8 @@ interface IStudent extends Document {
     //     endDate: Date;
     // };
     googleID?: String
-    freeCourseCount?: number;
+    // freeCourseCount?: number;
+    enrolledCourseCount?: number;
     profilePicture?: string;
 }
 
@@ -53,7 +54,11 @@ const studentSchema = new Schema<IStudent>({
     googleID: {
         type: String
     },
-    freeCourseCount: {
+    // freeCourseCount: {
+    //     type: Number,
+    //     default: 0, 
+    // },
+    enrolledCourseCount: {
         type: Number,
         default: 0, 
     },

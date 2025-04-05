@@ -3,6 +3,7 @@ import IAdminRepository from "../../../repository/admin/IAdminRepository";
 import { IStudent } from "../../../model/student/studentModel"
 
 import IAdminService from "../IAdminService";
+import { StudentResponseDataType, TutorResponseDataType } from "../../../Types/CategoryReturnType";
 
 class AdminService implements IAdminService {
 
@@ -13,14 +14,14 @@ class AdminService implements IAdminService {
 
     }
 
-    async getStudents(): Promise<IStudent[] | null> {
-        const students = await this._adminRepository.getStudents()
+    async getStudents(page:number,limit:number): Promise<StudentResponseDataType | null> {
+        const students = await this._adminRepository.getStudents(page,limit)
         return students
     }
 
-    async getTutors(): Promise<IStudent[] | null> {
+    async getTutors(page:number,limit:number): Promise<TutorResponseDataType | null> {
 
-        const tutors = await this._adminRepository.getTutors()
+        const tutors = await this._adminRepository.getTutors(page,limit)
         return tutors
 
     }

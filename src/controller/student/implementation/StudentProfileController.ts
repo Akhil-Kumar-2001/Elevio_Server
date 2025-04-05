@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import IStudentProfileService from "../../../service/student/IStudentProfileService";
 import IStudentProfileController from "../IStudentProfileController";
 import { STATUS_CODES } from "../../../constants/statusCode";
+import { ERROR_MESSAGES } from "../../../constants/errorMessage";
 
 class StudentProfileController implements IStudentProfileController {
     private _studentProfileService: IStudentProfileService;
@@ -22,6 +23,18 @@ class StudentProfileController implements IStudentProfileController {
         }
     }
 
+
+    async getSubscriptionDetails(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const subscription = await this._studentProfileService.getSubscriptionDetails(id);
+            console.log("subsription details from controller",subscription)
+                res.status(STATUS_CODES.OK).json({success:true,message:"Student data retrieved successfully",data:subscription});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+        }
+    }
+
     async editProfile(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params
@@ -35,6 +48,7 @@ class StudentProfileController implements IStudentProfileController {
 
         }
     }
+
 }
 
 export default StudentProfileController

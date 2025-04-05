@@ -4,6 +4,8 @@ import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
 import { IOrder } from "../../model/order/orderModel"
 import { ISection } from "../../model/section/sectionModel"
+import { ISubscription } from "../../model/subscription/subscriptionModel"
+import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased"
 import { ICartWithDetails } from "../../Types/basicTypes"
 import { CourseResponseDataType } from "../../Types/CategoryReturnType"
 
@@ -22,6 +24,10 @@ interface IStudentCourseService {
     getCourse(id:string):Promise<ICourse | null>
     getSections(courseId: string): Promise<ISection[] | null>
     getLectures(courseId: string): Promise<ILecture[] | null>
+    getSubscription(): Promise<ISubscription[] | null>
+    isValidPlan(studentId:string):Promise<boolean | null>
+    createSubscritionOrder(studentId:string,amount:number,planId:string): Promise<ISubscriptionPurchased | null>
+    verifySubscriptionPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null>
 
 
 }

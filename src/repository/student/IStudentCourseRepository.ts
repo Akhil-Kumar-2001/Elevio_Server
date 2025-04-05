@@ -4,7 +4,9 @@ import { ICourse } from "../../model/course/courseModel";
 import { ILecture } from "../../model/lecture/lectureModel";
 import { IOrder } from "../../model/order/orderModel";
 import { ISection } from "../../model/section/sectionModel";
-import { ICartWithDetails, IOrderCreateData } from "../../Types/basicTypes";
+import { ISubscription } from "../../model/subscription/subscriptionModel";
+import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased";
+import { ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData } from "../../Types/basicTypes";
 import { CourseResponseDataType } from "../../Types/CategoryReturnType";
 
 interface IStudentCourseRepository {
@@ -22,6 +24,12 @@ interface IStudentCourseRepository {
     getCourse(id:string):Promise<ICourse | null>
     getSections(id:string):Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
+    getSubscription(): Promise<ISubscription[] | null>
+    createSubscritionOrder(orderData:IOrderCreateSubscriptionData):Promise<ISubscriptionPurchased | null>
+    isValidPlan(studentId:string):Promise<boolean | null>
+    findByOrderId(orderId:string):Promise<ISubscriptionPurchased | null>
+    findPlanById(_id:string):Promise<ISubscription | null>
+    updateSubscriptionByOrderId(orderId:string,data:any):Promise<string | null>
 
 }
 

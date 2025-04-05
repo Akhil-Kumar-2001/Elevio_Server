@@ -5,17 +5,24 @@ import { ISection, Section } from '../../../model/section/sectionModel';
 import Subscription, { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ITutor, Tutor } from '../../../model/tutor/tutorModel';
 import { ISubscriptionPlan } from '../../../Types/basicTypes';
-import { CategoryResponseDataType, CourseResponseDataType } from '../../../Types/CategoryReturnType';
+import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType } from '../../../Types/CategoryReturnType';
 import IAdminTutorRepository from '../IAdminTutorRepository'
 
 class AdminTutorRepository implements IAdminTutorRepository {
-    async getPendingTutors(): Promise<ITutor[] | null> {
-        return await Tutor.find({ isVerified: "pending" });
+    async getPendingTutors(page: number, limit: number): Promise<TutorResponseDataType | null> {
+        const skip = (page - 1) * limit;
+        const tutors = await Tutor.find({ isVerified: "pending" })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .exec();
+        const totalRecord = await Tutor.countDocuments()
+        return { tutors, totalRecord };
     }
 
     async getTutorById(id: string): Promise<ITutor | null> {
-        const tutor = await Tutor.findById(id)
-        return tutor
+        const tutor = await Tutor.findById(id);
+        return tutor;
     }
 
     async rejectTutor(id: string): Promise<boolean | null> {
@@ -202,10 +209,19 @@ class AdminTutorRepository implements IAdminTutorRepository {
         }
     }
 
-    async getSubscription(): Promise<ISubscription[] | null> {
+    async getSubscription(page: number, limit: number): Promise<SubscriptionResponseDataType | null> {
         try {
-            const subscriptions = await Subscription.find();
-            return subscriptions ?? null;
+            const skip = (page - 1) * limit;
+            const subscriptions = await Subscription.find()
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .exec();
+
+            const totalRecord = await Tutor.countDocuments()
+            
+            return { subscriptions, totalRecord }
+            // return subscriptions ?? null;
         } catch (error) {
             console.error("Error while approving course verification:", error);
             return null;
@@ -256,7 +272,7 @@ class AdminTutorRepository implements IAdminTutorRepository {
     }
 
     async deleteSubscription(id: string): Promise<boolean | null> {
-        const response = await Subscription.findByIdAndDelete({_id:id});
+        const response = await Subscription.findByIdAndDelete({ _id: id });
         return response ? true : null;
     }
 }

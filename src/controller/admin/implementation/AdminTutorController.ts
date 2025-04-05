@@ -17,7 +17,9 @@ class AdminTutorController implements IAdminTutorController {
 
     async getPendingTutors(req: Request, res: Response): Promise<void> {
         try {
-            const tutors = await this._adminTutorService.getPendingTutors()
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const tutors = await this._adminTutorService.getPendingTutors(page,limit);
             res.status(STATUS_CODES.OK).json({ success: true, message: "Pending tutors Retrived", data: tutors })
         } catch (error) {
             console.error("Error while retriving Tutors data.", error);
@@ -240,9 +242,10 @@ class AdminTutorController implements IAdminTutorController {
 
     async getSubscription(req: Request, res: Response): Promise<void> {
         try {
-            const response = await this._adminTutorService.getSubscription();
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 3;
+            const response = await this._adminTutorService.getSubscription(page,limit);
             res.status(STATUS_CODES.OK).json({ success: false, message: "Subscription retrieved successfully" , data: response })
-
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
 

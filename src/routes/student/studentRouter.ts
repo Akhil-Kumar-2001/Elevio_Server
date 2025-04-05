@@ -55,6 +55,7 @@ router.post("/callback", studentController.googleAuth.bind(studentController));
 router.get('/listed-courses',validateToken('Student'),studentCourseController.getListedCourse.bind(studentCourseController));
 
 router.get('/get-student/:id',validateToken('Student'),studentProfileController.getStudent.bind(studentProfileController));
+router.get('/get-subscription-details/:id',validateToken('Student'),studentProfileController.getSubscriptionDetails.bind(studentProfileController))
 router.patch('/edit-profile/:id',validateToken("Student"),studentProfileController.editProfile.bind(studentProfileController))
 
 router.post('/addtocart/:id',validateToken("Student"),studentCourseController.addToCart.bind(studentCourseController))

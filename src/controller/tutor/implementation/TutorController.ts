@@ -257,13 +257,13 @@ class TutorController implements ITutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 24 * 60 * 60 * 1000,
+                        maxAge: 2 * 24 * 60 * 60 * 1000, 
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: false,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 2 * 60 * 60 * 1000,
+                        maxAge:15 * 60 * 1000,
                     });
                     res
                         .status(STATUS_CODES.OK)
@@ -311,12 +311,18 @@ class TutorController implements ITutorController {
                 // Generate a new access token
                 const tokenInstance = new Token();
                 const newAccessToken = tokenInstance.generatingTokens(decoded.userId, decoded.role).accessToken;
-
-                res.status(200).json({ success: true, accessToken: newAccessToken });
+                
+                res.cookie("accessToken", newAccessToken, {
+                    httpOnly: false,
+                    secure: true,
+                    sameSite: "none",
+                    maxAge: 15 * 60 * 1000,
+                });
+                res.status(STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
             });
         } catch (error) {
             console.error('Error refreshing token:', error);
-            res.status(500).json({ success: false, message: 'Internal server error' });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
         }
     };
     async logout(req:Request,res:Response):Promise<void> {
@@ -332,14 +338,14 @@ class TutorController implements ITutorController {
               secure: true,
               sameSite: "none",
             });
-            res.status(200).json({
+            res.status(STATUS_CODES.OK).json({
               success: true,
               message: "Logout successful",
             });
             return 
           } catch (error) {
             console.error("Logout error:", error);
-            res.status(400).json({  error: "logout failed"});
+            res.status(STATUS_CODES.BAD_REQUEST).json({  error: "logout failed"});
             return 
           }
     }
@@ -349,13 +355,13 @@ class TutorController implements ITutorController {
             let { email } = req.body;
 
             if (!email) {
-                res.status(400).json({ success: false, message: "Email is Required", data: null });
+                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Email is Required", data: null });
                 return;
             }
 
             const user = await this._tutorService.findByEmail(email);
             if (!user) {
-                res.status(409).json({ success: false, message: "User not found.", data: null });
+                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "User not found.", data: null });
                 return
             }
 
@@ -371,19 +377,19 @@ class TutorController implements ITutorController {
 
                 try {
                     await MailUtility.sendMail(email, otp, "Verification OTP");
-                    res.status(200).json({ success: true, message: "OTP sent to the given email", email });
+                    res.status(STATUS_CODES.OK).json({ success: true, message: "OTP sent to the given email", email });
                 } catch (error) {
                     console.error("Failed to send OTP:", error);
-                    res.status(500).json({ success: false, message: "Failed to send the verification mail", data: null });
+                    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to send the verification mail", data: null });
                 }
             } else if (user.status === -1) {
-                res.status(403).json({ success: false, message: "User is blocked by the admin" });
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is blocked by the admin" });
             } else {
-                res.status(403).json({ success: false, message: "User is not verified" });
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is not verified" });
             }
         } catch (error) {
             console.error("Error in forgotPassword:", error);
-            res.status(500).json({success: false,message: "Internal Server Error",error: error instanceof Error ? error.message : "Unknown error",
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success: false,message: "Internal Server Error",error: error instanceof Error ? error.message : "Unknown error",
             });
         }
     }
@@ -393,47 +399,47 @@ class TutorController implements ITutorController {
             const { otp, email } = req.body;
 
             if (!otp) {
-                res.status(400).json({ message: "OTP is required" });
+                res.status(STATUS_CODES.BAD_REQUEST).json({ message: "OTP is required" });
                 return;
             }
             if (!email) {
-                res.status(400).json({ message: "Email is required" });
+                res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Email is required" });
                 return;
             }
             const response = await this._tutorService.getOtpByEmail(email);
             if (!response) {
-                res.status(400).json({ message: "OTP Timeout. Try again" });
+                res.status(STATUS_CODES.BAD_REQUEST).json({ message: "OTP Timeout. Try again" });
                 return;
             }
             const storedOtp = response.otp;
 
             if (storedOtp !== otp) {
-                res.status(400).json({ message: "Incorrect OTP" });
+                res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Incorrect OTP" });
                 return;
             }
 
             const currentUser = await this._tutorService.findByEmail(email);
 
             if (!currentUser) {
-                res.status(404).json({ message: "User not found" });
+                res.status(STATUS_CODES.NOT_FOUND).json({ message: "User not found" });
                 return;
             }
 
             if (currentUser.status === -1) {
-                res.status(403).json({ success: false, message: "User is blocked by admin" });
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is blocked by admin" });
                 return;
             }
 
             if (currentUser.status === 0) {
-                res.status(403).json({ success: false, message: "User is not verified" });
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is not verified" });
                 return;
             }
 
-            res.status(200).json({ success: true, message: "OTP verified successfully", email });
+            res.status(STATUS_CODES.OK).json({ success: true, message: "OTP verified successfully", email });
 
         } catch (error) {
             console.error("Error verifying OTP:", error);
-            res.status(500).json({ success: false, message: "Internal server error" });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal server error" });
         }
     }
 
@@ -444,7 +450,7 @@ class TutorController implements ITutorController {
             // Find user by email
             const user = await this._tutorService.findByEmail(email);
             if (!user) {
-                res.status(404).json({ success: false, message: "User not found", data: null });
+                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: "User not found", data: null });
                 return
             }
             const hashedPassword = await PasswordUtils.passwordHash(password);
@@ -452,13 +458,13 @@ class TutorController implements ITutorController {
             const updatedUser = await this._tutorService.updateUser(email, userData);
 
             if (updatedUser) {
-                res.status(200).json({success: true,message: "Reset Password Successful",});
+                res.status(STATUS_CODES.OK).json({success: true,message: "Reset Password Successful",});
             } else {
-                res.status(500).json({success: false,message: "Error while resetting the password",});
+                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success: false,message: "Error while resetting the password",});
             }
         } catch (error) {
             console.error("Error in resetPassword:", error);
-            res.status(500).json({success: false,message: "Internal Server Error",
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success: false,message: "Internal Server Error",
                 error: error instanceof Error ? error.message : "Unknown error",
             });
         }
@@ -469,13 +475,13 @@ class TutorController implements ITutorController {
         try {
             const {username,email,image} = req.body;
             if(!username || !email || ! image) {
-                res.status(400).json({success:false,message:"credential need to login",data:null});
+                res.status(STATUS_CODES.BAD_REQUEST).json({success:false,message:"credential need to login",data:null});
                 return;
             }
             let user = await this._tutorService.findByEmail(email);
             
             if(user?.status == -1){
-                res.status(403).json({success:false,message:"user is blocked by the admin",data:null})
+                res.status(STATUS_CODES.FORBIDDEN).json({success:false,message:"user is blocked by the admin",data:null})
                 return
             }
 
@@ -485,7 +491,7 @@ class TutorController implements ITutorController {
             }
     
             if (!user) {
-                res.status(500).json({ success: false, message: "Failed to create user", data: null });
+                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to create user", data: null });
                 return;
             }
 
@@ -518,7 +524,7 @@ class TutorController implements ITutorController {
                         maxAge: 15 * 60 * 1000,
                     });
                     res
-                    .status(200)
+                    .status(STATUS_CODES.OK)
                     .json({
                         success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
                     });
@@ -528,7 +534,7 @@ class TutorController implements ITutorController {
         }
      } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Internal Server Error", data: null });
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error", data: null });
     }
     }
 

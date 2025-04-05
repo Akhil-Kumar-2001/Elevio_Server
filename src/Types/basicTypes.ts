@@ -72,6 +72,21 @@ export interface IOrderCreateData {
   paymentMethod?: string; 
 }
 
+export interface IOrderCreateSubscriptionData {
+  userId: Types.ObjectId;
+  planId: Types.ObjectId;
+  orderId: string;
+  startDate: null;
+  endDate:null;
+  status: "pending" | "active" | "expired" | "canceled"; 
+  paymentStatus: "pending" | "paid" | "failed";
+  paymentDetails?: {
+    paymentId?: string;
+    paymentMethod: String ,
+    paymentAmount: Number ,
+},
+}
+
 export interface ISubscriptionPlan {
   id?: string;
   planName: string;
@@ -82,4 +97,33 @@ export interface ISubscriptionPlan {
   price: number;
   features: string[];
   status: boolean;
+}
+
+export interface IPlan {
+  planName: string;
+  duration: {
+    value: number;
+    unit: "day" | "month" | "quarter" | "year";
+  };
+}
+
+export interface ISubscription {
+  isActive: boolean;
+  startDate: Date | null;
+  endDate: Date | null;
+  planId: IPlan | null;
+}
+
+export interface IStudentResponse {
+  _id: string; 
+  username?: string;
+  email?: string;
+  status?: number;
+  role: string;
+  subscription: ISubscription | null;
+  enrolledCourseCount?: number;
+  profilePicture?: string;
+  createdAt?: Date; 
+  updatedAt?: Date; 
+  googleID?: string; 
 }

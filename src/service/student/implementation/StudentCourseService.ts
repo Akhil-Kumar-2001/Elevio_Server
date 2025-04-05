@@ -5,12 +5,14 @@ import { ICart } from "../../../model/cart/cartModel";
 import { ICourse } from "../../../model/course/courseModel";
 import { IOrder } from "../../../model/order/orderModel";
 import IStudentCourseRepository from "../../../repository/student/IStudentCourseRepository";
-import { ICartWithDetails } from "../../../Types/basicTypes";
+import { ICartWithDetails, IOrderCreateSubscriptionData } from "../../../Types/basicTypes";
 import IStudentCourseService from "../IStudentCourseService";
 import { ICategory } from '../../../model/category/categoryModel';
 import { CourseResponseDataType } from '../../../Types/CategoryReturnType';
 import { ISection } from '../../../model/section/sectionModel';
 import { ILecture } from '../../../model/lecture/lectureModel';
+import { ISubscription } from '../../../model/subscription/subscriptionModel';
+import { ISubscriptionPurchased } from '../../../model/subscription/SubscriptionPurchased';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -129,6 +131,115 @@ class StudentCourseService implements IStudentCourseService {
     async getCourse(id: string): Promise<ICourse | null> {
         const response = await this._studentCourseRepository.getCourse(id);
         return response;
+    }
+
+    async getSubscription(): Promise<ISubscription[] | null> {
+        const response = await this._studentCourseRepository.getSubscription();
+        return response
+    }
+
+    async isValidPlan(studentId: string): Promise<boolean | null> {
+        const response = await this._studentCourseRepository.isValidPlan(studentId);
+        return response;
+    }
+
+    async createSubscritionOrder(studentId: string, amount: number, planId: string): Promise<ISubscriptionPurchased | null> {
+
+        const options = {
+            amount: amount * 100,
+            currency: "INR",
+            receipt: `order_rcptid_${studentId}`,
+            payment_capture: 1,
+        }
+
+        const razorpayOrder = await this._razorpay.orders.create(options);
+        console.log("rz", razorpayOrder)
+
+        const orderData: IOrderCreateSubscriptionData = {
+            userId: new Types.ObjectId(studentId),
+            planId: new Types.ObjectId(planId),
+            startDate: null,
+            endDate: null,
+            orderId: razorpayOrder.id,
+            status: "pending",
+            paymentStatus: "pending",
+            paymentDetails: {
+                paymentAmount: Number(razorpayOrder.amount),
+                paymentMethod: "Razorpay"
+            }
+        };
+
+
+        const order = await this._studentCourseRepository.createSubscritionOrder(orderData)
+        return order;
+
+    }
+
+    async verifySubscriptionPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null> {
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+            .update(razorpay_order_id + "|" + razorpay_payment_id)
+            .digest("hex");
+
+        if (expectedSignature !== razorpay_signature) {
+            throw new Error("Payment signature verification failed");
+        }
+
+        const payment = await this._razorpay.payments.fetch(razorpay_payment_id);
+
+        console.log("payment status capture", payment.status)
+
+        if (payment.status === "captured") {
+
+            const subscription = await this._studentCourseRepository.findByOrderId(razorpay_order_id);
+
+            if (!subscription) {
+                return null
+            }
+
+            const plan = await this._studentCourseRepository.findPlanById(subscription.planId.toString());
+
+            if (!plan) {
+                return null
+            }
+
+            const endDate = new Date();
+            if (plan.duration.unit === "day") {
+                endDate.setDate(endDate.getDate() + plan.duration.value);
+            } else if (plan.duration.unit === "month") {
+                endDate.setMonth(endDate.getMonth() + plan.duration.value);
+            } else if (plan.duration.unit === "quarter") {
+                endDate.setMonth(endDate.getMonth() + (plan.duration.value * 3));
+            } else if (plan.duration.unit === "year") {
+                endDate.setFullYear(endDate.getFullYear() + plan.duration.value);
+            }
+
+            const updatedPaymentDetails = {
+                ...subscription.paymentDetails,  
+                paymentId: razorpay_payment_id  
+            };
+
+            const data = {
+                paymentStatus: "paid",
+                status: "active",
+                startDate: new Date(),
+                endDate: endDate,
+                paymentDetails: updatedPaymentDetails
+            }
+
+            const updatedSubscription = await this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id,data);
+            return updatedSubscription 
+        }else{
+            const updatedSubscription = await this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id, {
+                paymentStatus: "failed",
+                status: "canceled",
+                paymentDetails: {
+                    paymentId: razorpay_payment_id,
+                }
+            });
+            return updatedSubscription
+        }
+
     }
 }
 

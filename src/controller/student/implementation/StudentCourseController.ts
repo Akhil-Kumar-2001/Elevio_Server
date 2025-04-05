@@ -167,7 +167,52 @@ class StudentCourseController implements IStudentCourseController {
             res.status(STATUS_CODES.OK).json({ success: true, message: "Lectures retrieved successfully", data: response })
         } catch (error) {
             console.log("Error while fetching Lectures")
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Lectures" });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+
+    async getSubscription(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this._studentCourseService.getSubscription();
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Subscription retrieved successfully", data: response });
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+
+    async createSubscritionOrder(req: Request, res: Response): Promise<void> {
+        try {
+            const { studentId, amount, planId } = req.body;
+            if (!studentId || !amount || !planId) {
+                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
+                return
+            }
+
+            const validplan = await this._studentCourseService.isValidPlan(studentId);
+            if(validplan){
+                res.status(STATUS_CODES.CONFLICT).json({success:false,message:"You are currently in an active plan. Unable to purchase new plan!",data:null})
+                return
+            }
+
+            const response = await this._studentCourseService.createSubscritionOrder(studentId, amount, planId);
+            res.status(STATUS_CODES.CREATED).json({ success: true, message: "Order created successfully", data: response })
+
+
+
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async verifySubscriptionPayment(req: Request, res: Response): Promise<void> {
+        console.log("Request data for verfiy sub payment", req.body)
+        try {
+            const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+            const response = await this._studentCourseService.verifySubscriptionPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+            console.log("controlelr response", response)
+            res.status(response == "paid" ? STATUS_CODES.OK : STATUS_CODES.BAD_REQUEST).json({ success: response === "paid", message: response === "paid" ? "Payment successful" : "Payment failed", status: response })
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
         }
     }
 

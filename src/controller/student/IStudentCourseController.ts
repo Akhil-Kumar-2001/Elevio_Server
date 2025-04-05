@@ -14,6 +14,9 @@ interface IStudentCourseController{
     getCourse(req:Request,res:Response):Promise<void>;
     getSections(req:Request,res:Response):Promise<void>;
     getLectures(req:Request,res:Response):Promise<void>
+    getSubscription(req:Request,res:Response):Promise<void>
+    createSubscritionOrder(req:Request,res:Response):Promise<void>
+    verifySubscriptionPayment(req:Request,res:Response):Promise<void>
 
     
 }

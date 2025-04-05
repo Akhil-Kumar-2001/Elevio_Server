@@ -38,7 +38,7 @@ const tutorCourseController : ITutorCourseController = new TutorCourseController
 
 router.post('/signup',(req,res)=>tutorController.signupPost(req,res));
 router.post('/verify-otp',(req,res)=>tutorController.verifyOtp(req,res));
-router.post('/resend-otp',(req,res)=>tutorController.resendOtp(req,res));
+router.post('/refresh-token',tutorController.refreshToken.bind(tutorController));
 
 // sign-in routes
 

@@ -40,7 +40,7 @@ app.use("/api/admin", adminRouter);
 
 // Error Handling Middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.log(err);
+  console.log("Error handling middleware's errro in the app.ts file",err);
   res.status(500).json({ message: "Internal server error" });
   next()
 });
