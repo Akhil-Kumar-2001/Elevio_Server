@@ -127,3 +127,10 @@ export interface IStudentResponse {
   updatedAt?: Date; 
   googleID?: string; 
 }
+
+export type UserMinimal = {
+  _id: string;
+  username: string;
+  profilePicture?: string;
+  role: "Student" | "Tutor";
+};
