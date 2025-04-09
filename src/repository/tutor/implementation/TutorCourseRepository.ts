@@ -10,6 +10,7 @@ import s3 from '../../../Config/awsConfig'
 import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import { INotification, Notification } from "../../../model/notification/notification.Model";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -354,6 +355,31 @@ class TutorCourseRepository implements ITutorCourseRepository {
             return null;
         }
     }
+
+    async getNotifications(receiverId: string): Promise<INotification[] | null> {
+        try {
+            const notifications = await Notification.find({ receiverId }).sort({ createdAt: -1 });
+            return notifications;
+        } catch (error) {
+            console.log("Error fetching notifications:", error);
+            return null;
+        }
+    }
+
+    async readNotifications(id: string): Promise<boolean | null> {
+        try {
+            const notification = await Notification.findByIdAndUpdate(
+                id,
+                { isRead: true },
+                { new: true }
+            )
+            console.log("notification after read",notification);
+            return notification ? true :false
+        } catch (error) {
+            return null
+        }
+    }
+    
 
 
 

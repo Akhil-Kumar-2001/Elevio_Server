@@ -1,3 +1,4 @@
+import { getIO, getReceiverSocketId } from "../../../Config/socketConfig";
 import { ICategory } from "../../../model/category/categoryModel";
 import { ICourse } from "../../../model/course/courseModel";
 import { ILecture } from "../../../model/lecture/lectureModel";
@@ -88,7 +89,17 @@ class AdminTutorService implements IAdminTutorService {
 
     async rejectCourse(id: string, reason: string): Promise<boolean | null> {
         const response = await this._adminTutorRepository.rejectCourse(id,reason);
-        return response;
+            if (response) {
+                const receiverSocketId = getReceiverSocketId(response.receiverId.toString());
+                const io = getIO();
+                if (receiverSocketId && io) {
+                    io.to(receiverSocketId).emit("newNotification", response)
+                }
+            }
+        if(response){
+            return true
+        }
+        return null;
     }
 
     async getTutorMail(tutorId: string): Promise<string | null> {

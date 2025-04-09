@@ -1,6 +1,7 @@
 import { ICategory } from "../../model/category/categoryModel"
 import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
+import { INotification } from "../../model/notification/notification.Model"
 import { ISection } from "../../model/section/sectionModel"
 import { ISubscription } from "../../model/subscription/subscriptionModel"
 import { ITutor } from "../../model/tutor/tutorModel"
@@ -22,7 +23,7 @@ interface IAdminTutorRepository {
     courseDetails(id:string):Promise<ICourse | null>
     getSections(id:string):Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
-    rejectCourse(id:string,reason:string):Promise<boolean | null>
+    rejectCourse(id:string,reason:string):Promise<INotification | null>
     getTutorMail(tutorId:string):Promise<string | null>
     approveCourse(id:string):Promise<boolean | null>
     getSubscription(page:number,limit:number):Promise<SubscriptionResponseDataType | null>

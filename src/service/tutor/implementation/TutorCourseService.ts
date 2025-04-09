@@ -7,6 +7,7 @@ import { CourseData, ILectureData, ISectionData } from "../../../Types/basicType
 import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
 import ITutorCourseService from "../ITutorCourseService";
 import s3 from '../../../Config/awsConfig';
+import { INotification } from "../../../model/notification/notification.Model";
 
 class TutorCourseService implements ITutorCourseService{
 
@@ -101,6 +102,16 @@ class TutorCourseService implements ITutorCourseService{
     async applyReview(courseId:string): Promise<boolean | null> {
         const response = await this._tutorProfileRepository.applyReview(courseId);
         return response
+    }
+
+    async getNotifications(receiverId: string): Promise<INotification[] | null> {
+        const response = await this._tutorProfileRepository.getNotifications(receiverId);
+        return response;
+    }
+
+    async readNotifications(id: string): Promise<boolean | null> {
+        const response = await this._tutorProfileRepository.readNotifications(id);
+        return response;
     }
 }
 

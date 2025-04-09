@@ -15,6 +15,8 @@ interface ITutorCourseController{
     editSection(req:Request,res:Response):Promise<void>
     uploadLectureVideo(req:Request,res:Response):Promise<void>
     applyReview(req:Request,res:Response):Promise<void>
+    getNotifications(req:Request,res:Response):Promise<void>
+    readNotifications(req:Request,res:Response):Promise<void>
 
 }
 

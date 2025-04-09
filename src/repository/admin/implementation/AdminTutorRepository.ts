@@ -1,6 +1,7 @@
 import { Category, ICategory } from '../../../model/category/categoryModel';
 import { Course, ICourse } from '../../../model/course/courseModel';
 import { ILecture, Lecture } from '../../../model/lecture/lectureModel';
+import { INotification, Notification } from '../../../model/notification/notification.Model';
 import { ISection, Section } from '../../../model/section/sectionModel';
 import Subscription, { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ITutor, Tutor } from '../../../model/tutor/tutorModel';
@@ -162,7 +163,7 @@ class AdminTutorRepository implements IAdminTutorRepository {
         }
     }
 
-    async rejectCourse(id: string, reason: string): Promise<boolean | null> {
+    async rejectCourse(id: string, reason: string): Promise<INotification | null> {
         try {
             const course = await Course.findByIdAndUpdate(
                 id,
@@ -171,8 +172,19 @@ class AdminTutorRepository implements IAdminTutorRepository {
                     rejectedReason: reason
                 },
                 { new: true }
-            )
-            return course ? true : false;
+            );
+
+            if (course) {
+                // Create a notification for the tutor
+                const notification = await Notification.create({
+                    receiverId: course.tutorId,
+                    content: `Your course "${course.title}" has been rejected. Reason: ${reason}`,
+                });
+
+                return notification;
+            } else {
+                return null;
+            }
         } catch (error) {
             console.log("Error while rejecting course verification:", error);
             return null;
@@ -213,13 +225,14 @@ class AdminTutorRepository implements IAdminTutorRepository {
         try {
             const skip = (page - 1) * limit;
             const subscriptions = await Subscription.find()
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: 1 })
                 .skip(skip)
                 .limit(limit)
                 .exec();
 
-            const totalRecord = await Tutor.countDocuments()
-            
+            const totalRecord = await Subscription.countDocuments()
+            console.log("total record suscription",totalRecord);
+
             return { subscriptions, totalRecord }
             // return subscriptions ?? null;
         } catch (error) {

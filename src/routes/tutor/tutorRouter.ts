@@ -83,6 +83,8 @@ router.patch('/edit-sections/:id',isBlocked,validateToken("Tutor"),tutorCourseCo
 router.post('/lectures/upload-video',isBlocked,validateToken('Tutor'),upload.single('video'),tutorCourseController.uploadLectureVideo.bind(tutorCourseController));
 
 router.patch('/apply-review',isBlocked,validateToken('Tutor'),tutorCourseController.applyReview.bind(tutorCourseController))
+router.get('/notifications',isBlocked,validateToken("Tutor"),tutorCourseController.getNotifications.bind(tutorCourseController))
+router.patch('/notifications/:id',isBlocked,validateToken("Tutor"),tutorCourseController.readNotifications.bind(tutorCourseController))
 
 
 export default  router
