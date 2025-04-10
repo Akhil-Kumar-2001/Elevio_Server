@@ -12,9 +12,7 @@ class MessageController implements IMessageController{
     }
 
     async sendMessage(req: Request, res: Response): Promise<void> {
-        console.log("Working params=========>",req.params);
-        console.log("Working body =========>",req.body);
-        console.log("Working userId =========>",req.userId);
+
         try {
             const {id:receiverId} = req.params;
             const {message,imageUrl} = req.body;
