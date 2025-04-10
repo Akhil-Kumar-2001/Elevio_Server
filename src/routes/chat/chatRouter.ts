@@ -22,12 +22,10 @@ const messageController:IMessageController = new MessageController(messageServic
 
 
 router.post('/send/:id',authenticationMiddleware(),messageController.sendMessage.bind(messageController));
-
 router.get('/getChats',authenticationMiddleware(), chatController.getChats.bind(chatController));
-
 router.get('/get-messages/:id',authenticationMiddleware(),messageController.getMessages.bind(messageController));
-
 router.post('/create-chat/:id',authenticationMiddleware(),chatController.createChat.bind(chatController));
+router.delete('/delete-message/:id',authenticationMiddleware(),messageController.deleteMessages.bind(messageController));
 
 
 export default router;

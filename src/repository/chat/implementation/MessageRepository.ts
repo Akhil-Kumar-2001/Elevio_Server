@@ -40,6 +40,27 @@ class MessageRepository implements IMessageRepository {
       
         return chat ? chat.messages : [];
       }
+
+      async deleteMessages(messagesIds: string[]): Promise<IMessage[] | []> {
+        try {
+          // Convert string IDs to ObjectId
+          const objectIds = messagesIds.map(id => new mongoose.Types.ObjectId(id));
+      
+          // Perform the update
+          const updatedMessages = await Message.updateMany(
+            { _id: { $in: objectIds } },
+            { $set: { isDeleted: true } }
+          );
+      
+          // Optional: Return updated messages
+          const softDeletedMessages = await Message.find({ _id: { $in: objectIds } });
+      
+          return softDeletedMessages;
+        } catch (error) {
+          console.error("Error in deleteMessages:", error);
+          return [];
+        }
+      }
       
 }
 export default MessageRepository

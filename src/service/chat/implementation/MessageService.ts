@@ -1,3 +1,4 @@
+import { response } from "express";
 import { getReceiverSocketId,getIO } from "../../../Config/socketConfig";
 import { IMessage } from "../../../model/chat/message.model";
 import IMessageRepository from "../../../repository/chat/IMessageRepository";
@@ -21,8 +22,18 @@ class MessageService implements IMessageService{
     }
 
     async getMessage(userToChat: string, senderId: string): Promise<IMessage[] | []> {
-        const respnse = await this._messageRepository.getMessage(userToChat,senderId);
-        return respnse;    
+        const response = await this._messageRepository.getMessage(userToChat,senderId);
+        return response;    
+    }
+
+    async deleteMessages(receiverId:string,messagesIds: string[]): Promise<IMessage[] | []> {
+        const response = await this._messageRepository.deleteMessages(messagesIds);
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        const io = getIO();
+        if(receiverSocketId && io){
+            io.to(receiverSocketId).emit('deleteMessage',response)
+        }
+        return response;
     }
 }
 export default MessageService

@@ -36,6 +36,17 @@ class MessageController implements IMessageController{
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR,data:null})
         }
     }
+
+    async deleteMessages(req: Request, res: Response): Promise<void> {
+        try {
+            const {id:receiverId} = req.params;
+            const messagesIds = req.body.messageIds;
+            const response  = await this._messageService.deleteMessages(receiverId,messagesIds);
+            res.status(STATUS_CODES.OK).json({success:true,message:"messages Deleted successfully Successfully",data:response});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR,data:null})
+        }
+    }
 }
 
 export default MessageController
