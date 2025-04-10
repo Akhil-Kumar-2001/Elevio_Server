@@ -13,6 +13,7 @@ import { ISection } from '../../../model/section/sectionModel';
 import { ILecture } from '../../../model/lecture/lectureModel';
 import { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ISubscriptionPurchased } from '../../../model/subscription/SubscriptionPurchased';
+import { ITutor } from '../../../model/tutor/tutorModel';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -130,6 +131,11 @@ class StudentCourseService implements IStudentCourseService {
 
     async getCourse(id: string): Promise<ICourse | null> {
         const response = await this._studentCourseRepository.getCourse(id);
+        return response;
+    }
+
+    async getTutor(id: string): Promise<ITutor | null> {
+        const response = await this._studentCourseRepository.getTutor(id);
         return response;
     }
 

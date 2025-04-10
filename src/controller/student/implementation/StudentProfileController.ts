@@ -13,7 +13,7 @@ class StudentProfileController implements IStudentProfileController {
 
     async getStudent(req: Request, res: Response): Promise<void> {
              try {
-            const { id } = req.params;
+            const id = req.userId as string;
             const student = await this._studentProfileService.getStudent(id)
             if (student) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Student data retrieved successfull", data: student })
@@ -26,9 +26,9 @@ class StudentProfileController implements IStudentProfileController {
 
     async getSubscriptionDetails(req: Request, res: Response): Promise<void> {
         try {
-            const { id } = req.params;
+            // const { id } = req.params;
+            const id = req.userId as string
             const subscription = await this._studentProfileService.getSubscriptionDetails(id);
-            console.log("subsription details from controller",subscription)
                 res.status(STATUS_CODES.OK).json({success:true,message:"Student data retrieved successfully",data:subscription});
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR})

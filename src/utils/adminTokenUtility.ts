@@ -10,18 +10,18 @@ export class Token implements IAdminToken {
   private readonly refreshSecret: string =
     process.env.REFRESH_TOKEN_SECRET || " ";
 
-  generatingTokens( email:string,role="admin" ): {
+  generatingTokens( id:string,role="admin" ): {
     accessToken: string;
     refreshToken: string;
   } {
     const accessToken = jwt.sign(
-      { email,role },  
+      { id,role },  
       this.JWT_Key,
-      { expiresIn: "15m" }
+      { expiresIn: "30m" }
     );
 
     const refreshToken = jwt.sign(
-      { email,role},  // Adding role 
+      { id,role},  // Adding role 
       this.refreshSecret,
       { expiresIn: "7d" }
     );

@@ -51,7 +51,7 @@ class AdminController implements IAdminController{
                         sameSite: "none",
                         maxAge: 15 * 60 * 1000,
                     });
-                    res.status(STATUS_CODES.OK).json({successs: true, message: "Sign-in successful", data: { accessToken, user: email }});
+                    res.status(STATUS_CODES.OK).json({successs: true, message: "Sign-in successful", data: { accessToken, user:{id:email,role:"admin"} }});
                     return
                 }
             } else {
@@ -78,7 +78,7 @@ class AdminController implements IAdminController{
                     }
                     // Generate a new access token
                     const tokenInstance = new Token();
-                    const newAccessToken = tokenInstance.generatingTokens(decoded.email, decoded.role).accessToken;
+                    const newAccessToken = tokenInstance.generatingTokens(decoded.id, decoded.role).accessToken;
                     console.log("new access token",newAccessToken)
                     res.cookie("admin-accessToken", newAccessToken, {
                         httpOnly: false,

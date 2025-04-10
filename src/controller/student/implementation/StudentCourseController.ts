@@ -145,6 +145,12 @@ class StudentCourseController implements IStudentCourseController {
         res.status(STATUS_CODES.OK).json({ success: true, message: "Course details retrieved successfully", data: response })
     }
 
+    async getTutor(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        const response = await this._studentCourseService.getTutor(id as string);
+        res.status(STATUS_CODES.OK).json({ success: true, message: "Tutor details retrieved successfully", data: response })
+    }
+
     async getSections(req: Request, res: Response): Promise<void> {
         try {
             const { courseId } = req.params;

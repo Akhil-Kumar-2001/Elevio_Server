@@ -54,8 +54,8 @@ router.post("/callback", studentController.googleAuth.bind(studentController));
 
 router.get('/listed-courses',validateToken('Student'),studentCourseController.getListedCourse.bind(studentCourseController));
 
-router.get('/get-student/:id',validateToken('Student'),studentProfileController.getStudent.bind(studentProfileController));
-router.get('/get-subscription-details/:id',validateToken('Student'),studentProfileController.getSubscriptionDetails.bind(studentProfileController))
+router.get('/get-student',validateToken('Student'),studentProfileController.getStudent.bind(studentProfileController));
+router.get('/get-subscription-details',validateToken('Student'),studentProfileController.getSubscriptionDetails.bind(studentProfileController))
 router.patch('/edit-profile/:id',validateToken("Student"),studentProfileController.editProfile.bind(studentProfileController))
 
 router.post('/addtocart/:id',validateToken("Student"),studentCourseController.addToCart.bind(studentCourseController))
@@ -72,6 +72,7 @@ router.get('/courses',validateToken('Student'),studentCourseController.getCourse
 router.get('/purchased-courses/:id',validateToken("Student"),studentCourseController.getPurchasedCourses.bind(studentCourseController))
 
 router.get('/getCourse/:id',validateToken("Student"),studentCourseController.getCourse.bind(studentCourseController));
+router.get('/tutorDetails/:id',validateToken("Student"),studentCourseController.getTutor.bind(studentCourseController))
 router.get('/sections/:courseId',validateToken('Student'),studentCourseController.getSections.bind(studentCourseController))
 router.get('/lectures/:courseId',validateToken('Student'),studentCourseController.getLectures.bind(studentCourseController))
 

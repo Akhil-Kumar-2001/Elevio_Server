@@ -6,6 +6,7 @@ import { IOrder } from "../../model/order/orderModel";
 import { ISection } from "../../model/section/sectionModel";
 import { ISubscription } from "../../model/subscription/subscriptionModel";
 import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased";
+import { ITutor } from "../../model/tutor/tutorModel";
 import { ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData } from "../../Types/basicTypes";
 import { CourseResponseDataType } from "../../Types/CategoryReturnType";
 
@@ -22,6 +23,7 @@ interface IStudentCourseRepository {
     getCourses( page: number, limit: number): Promise<CourseResponseDataType | null>
     getPurchasedCourses( userId:string ): Promise<ICourse[] | null>
     getCourse(id:string):Promise<ICourse | null>
+    getTutor(id:string):Promise<ITutor | null>
     getSections(id:string):Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
     getSubscription(): Promise<ISubscription[] | null>
