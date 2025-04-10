@@ -84,7 +84,7 @@ const messageSchema = new Schema<IMessage>(
     },
     message: {
       type: String,
-      required: true,
+      // required: true,
     },
     imageUrl:{
       type:String,

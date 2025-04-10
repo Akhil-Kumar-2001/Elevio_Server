@@ -1,5 +1,4 @@
 import { getReceiverSocketId,getIO } from "../../../Config/socketConfig";
-// import configureSocket  from "../../../Config/socketConfig";
 import { IMessage } from "../../../model/chat/message.model";
 import IMessageRepository from "../../../repository/chat/IMessageRepository";
 import IMessageService from "../IMessageService";
@@ -11,8 +10,8 @@ class MessageService implements IMessageService{
         this._messageRepository = chatRepository;
     }
 
-    async sendMessage(receiverId: string, senderId: string, message: string) {
-        const response = await this._messageRepository.sendMessage(receiverId,senderId,message);
+    async sendMessage(receiverId: string, senderId: string, message: string,imageUrl:string) {
+        const response = await this._messageRepository.sendMessage(receiverId,senderId,message,imageUrl);
         const receiverSocketId = getReceiverSocketId(receiverId);
         const io = getIO();
         if(receiverSocketId && io){

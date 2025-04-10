@@ -1,6 +1,7 @@
 import { ICategory } from "../../model/category/categoryModel"
 import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
+import { INotification } from "../../model/notification/notification.Model"
 import { ISection } from "../../model/section/sectionModel"
 import { CourseData, ILectureData, ISectionData } from "../../Types/basicTypes"
 import { CourseResponseDataType } from "../../Types/CategoryReturnType"
@@ -22,6 +23,8 @@ interface ITutorCourseService {
     uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null>;
     
     applyReview(courseId:string):Promise<boolean | null>
+    getNotifications(receiverId:string):Promise<INotification[] | null>
+    readNotifications(id:string):Promise<boolean | null>
 
 }
 

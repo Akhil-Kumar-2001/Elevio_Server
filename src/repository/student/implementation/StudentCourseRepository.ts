@@ -12,6 +12,7 @@ import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
 import Subscription, { ISubscription } from "../../../model/subscription/subscriptionModel";
 import { ISubscriptionPurchased, SubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
 import { Student } from "../../../model/student/studentModel";
+import { ITutor, Tutor } from "../../../model/tutor/tutorModel";
 
 class StudentCourseRepository implements IStudentCourseRepository {
     async getListedCourse(): Promise<ICourse[] | null> {
@@ -300,10 +301,19 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async getCourse(id: string): Promise<ICourse | null> {
         try {
-            const course = await Course.findOne({ _id: id });
+            const course = await Course.findOne({ _id: id })
             return course
         } catch (error) {
             console.log("Error while getting Course details");
+            return null
+        }
+    }
+
+    async getTutor(id: string): Promise<ITutor | null> {
+        try {
+            const tutor = await Tutor.findOne({_id:id});
+            return tutor;
+        } catch (error) {
             return null
         }
     }

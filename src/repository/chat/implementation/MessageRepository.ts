@@ -4,13 +4,8 @@ import { IMessage, Message } from "../../../model/chat/message.model";
 import IMessageRepository from "../IMessageRepository";
 
 class MessageRepository implements IMessageRepository {
-    async sendMessage(receiverId: string, senderId: string, message: string): Promise<IMessage | null> {
-        // const participantIds = [id, senderId].sort().join("_");
-
-        // const chat = await Chat.findOne({ participantIds });
-        // console.log("find the chat from the repository",chat)
-
-        // return true
+    async sendMessage(receiverId: string, senderId: string, message: string,imageUrl:string): Promise<IMessage | null> {
+        
 
         let chat = await Chat.findOne({
             participants:{$all:[senderId,receiverId]}
@@ -24,8 +19,10 @@ class MessageRepository implements IMessageRepository {
         const newMessage = new Message({
             senderId,
             receiverId,
-            message
+            message,
+            imageUrl
         })
+        console.log("new message in repo",newMessage)
 
         if(newMessage){
             chat.messages.push(newMessage._id as mongoose.Types.ObjectId)

@@ -17,9 +17,9 @@ class MessageController implements IMessageController{
         console.log("Working userId =========>",req.userId);
         try {
             const {id:receiverId} = req.params;
-            const {message} = req.body;
+            const {message,imageUrl} = req.body;
             const senderId = req.userId;
-            const response = await this._messageService.sendMessage(receiverId,senderId as string,message);
+            const response = await this._messageService.sendMessage(receiverId,senderId as string,message,imageUrl);
             console.log("response after sending message successfully",response)
             res.status(STATUS_CODES.CREATED).json({success:true,message:"Message send successfully",data:response});
         } catch (error) {
