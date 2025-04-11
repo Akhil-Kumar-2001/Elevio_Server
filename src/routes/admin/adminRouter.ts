@@ -50,6 +50,7 @@ router.delete('/delete-category',validateToken("admin"),adminTutorController.del
 router.get('/pending-course',validateToken("admin"),adminTutorController.pendingCourse.bind(adminTutorController))
 router.get("/get-categories",validateToken("admin"),adminTutorController.getCategory.bind(adminTutorController))
 router.get('/course-details/:id',validateToken('admin'),adminTutorController.courseDetails.bind(adminTutorController))
+router.get(`/get-categoryname/:id`,validateToken("admin"),adminTutorController.getCategoryName.bind(adminTutorController))
 router.get('/sections/:id',validateToken('admin'),adminTutorController.getSections.bind(adminTutorController))
 router.get('/lectures/:id',validateToken('admin'),adminTutorController.getLectures.bind(adminTutorController))
 

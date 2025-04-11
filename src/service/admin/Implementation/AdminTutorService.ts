@@ -77,6 +77,12 @@ class AdminTutorService implements IAdminTutorService {
         const course = await this._adminTutorRepository.courseDetails(id);
         return course;
     }
+
+    async getCategoryName(id: string): Promise<string | null> {
+        const response = await this._adminTutorRepository.getCategoryName(id);
+        return response;    
+    }
+
     async getSections(id: string): Promise<ISection[] | null> {
         const sections = await this._adminTutorRepository.getSections(id);
         return sections;

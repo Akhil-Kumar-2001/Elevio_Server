@@ -143,6 +143,12 @@ class AdminTutorRepository implements IAdminTutorRepository {
         return course;
     }
 
+    async getCategoryName(id: string): Promise<string | null> {
+        const category = await Category.findOne({_id:id});
+        return  category?.name ?? null
+
+    }
+
     async getSections(id: string): Promise<ISection[] | null> {
         try {
             const sections = await Section.find({ courseId: id })

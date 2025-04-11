@@ -21,6 +21,7 @@ interface IAdminTutorService {
     pendingCourse(page:number,limit:number): Promise<CourseResponseDataType | null>
     getCategory(): Promise<ICategory[] | null>
     courseDetails(id: string): Promise<ICourse | null>
+    getCategoryName(id: string): Promise<string | null>
     getSections(id: string): Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
     rejectCourse(id:string,reason:string):Promise<boolean | null>

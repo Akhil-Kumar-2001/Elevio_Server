@@ -162,7 +162,6 @@ class AdminTutorController implements IAdminTutorController {
     async courseDetails(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params
-            console.log(id)
             const response = await this._adminTutorService.courseDetails(id)
             if (response) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Course details retrieved Successfully", data: response })
@@ -172,6 +171,17 @@ class AdminTutorController implements IAdminTutorController {
 
         }
     }
+
+    async getCategoryName(req: Request, res: Response): Promise<void> {
+        try {
+            const {id} = req.params;
+            const response = await this._adminTutorService.getCategoryName(id);
+            res.status(STATUS_CODES.OK).json({success:true,message:"Category name retrieved successfully",data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR,data:null})
+        }
+    }
+
     async getSections(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
