@@ -4,6 +4,7 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 interface IChat extends Document {
   participants: Types.ObjectId[];
   messages: Types.ObjectId[];
+  lastMessage: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -25,14 +26,17 @@ const chatSchema = new Schema<IChat>(
         default: [],
       },
     ],
+    lastMessage: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Model
+
 const Chat = mongoose.model<IChat>("Chat", chatSchema);
 
-// Exports
+
 export { Chat, IChat };

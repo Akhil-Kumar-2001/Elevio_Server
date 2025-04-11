@@ -26,6 +26,7 @@ class MessageRepository implements IMessageRepository {
 
         if(newMessage){
             chat.messages.push(newMessage._id as mongoose.Types.ObjectId)
+            chat.lastMessage = message;
         }
 
         await Promise.all([chat.save(),newMessage.save()]);
