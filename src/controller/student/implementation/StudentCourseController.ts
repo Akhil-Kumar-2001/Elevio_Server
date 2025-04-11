@@ -132,7 +132,6 @@ class StudentCourseController implements IStudentCourseController {
         try {
             const { id } = req.params;
             const response = await this._studentCourseService.getPurchasedCourses(id as string);
-            console.log("purchased course", response)
             res.status(STATUS_CODES.OK).json({ success: true, message: "Purchased courses retrieved successfully", data: response })
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
