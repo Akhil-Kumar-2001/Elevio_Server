@@ -1,67 +1,188 @@
-import mongoose from "mongoose";
-import { Chat } from "../../../model/chat/chat.model";
-import { IMessage, Message } from "../../../model/chat/message.model";
-import IMessageRepository from "../IMessageRepository";
+// import mongoose from "mongoose";
+// import { Chat } from "../../../model/chat/chat.model";
+// import { IMessage, Message } from "../../../model/chat/message.model";
+// import IMessageRepository from "../IMessageRepository";
 
-class MessageRepository implements IMessageRepository {
-    async sendMessage(receiverId: string, senderId: string, message: string,imageUrl:string): Promise<IMessage | null> {
+// class MessageRepository implements IMessageRepository {
+//     async sendMessage(receiverId: string, senderId: string, message: string,imageUrl:string): Promise<IMessage | null> {
         
 
-        let chat = await Chat.findOne({
-            participants:{$all:[senderId,receiverId]}
-        })
-        if(!chat){
-            chat = await Chat.create({
-                participants:[senderId,receiverId],
-            })
-        }
+//         let chat = await Chat.findOne({
+//             participants:{$all:[senderId,receiverId]}
+//         })
+//         if(!chat){
+//             chat = await Chat.create({
+//                 participants:[senderId,receiverId],
+//             })
+//         }
 
-        const newMessage = new Message({
-            senderId,
-            receiverId,
-            message,
-            imageUrl
-        })
-        console.log("new message in repo",newMessage)
+//         const newMessage = new Message({
+//             senderId,
+//             receiverId,
+//             message,
+//             imageUrl,
+//             isRead: false,
+//         })
+//         console.log("new message in repo",newMessage)
 
-        if(newMessage){
-            chat.messages.push(newMessage._id as mongoose.Types.ObjectId)
-            chat.lastMessage = message;
-        }
+//         if(newMessage){
+//             chat.messages.push(newMessage._id as mongoose.Types.ObjectId)
+//             chat.lastMessage = message;
+//         }
 
-        await Promise.all([chat.save(),newMessage.save()]);
+//         await Promise.all([chat.save(),newMessage.save()]);
 
-        return newMessage;
+//         return newMessage;
+//     }
+
+//     async getMessage(userToChat: string, senderId: string): Promise<IMessage[] | []> {
+//         const chat = await Chat.findOne({
+//           participants: { $all: [senderId, userToChat] }
+//         }).populate<{ messages: IMessage[] }>("messages");
+      
+//         return chat ? chat.messages : [];
+//       }
+
+//       async deleteMessages(messagesIds: string[]): Promise<IMessage[] | []> {
+//         try {
+//           // Convert string IDs to ObjectId
+//           const objectIds = messagesIds.map(id => new mongoose.Types.ObjectId(id));
+      
+//           // Perform the update
+//           const updatedMessages = await Message.updateMany(
+//             { _id: { $in: objectIds } },
+//             { $set: { isDeleted: true } }
+//           );
+      
+//           // Optional: Return updated messages
+//           const softDeletedMessages = await Message.find({ _id: { $in: objectIds } });
+      
+//           return softDeletedMessages;
+//         } catch (error) {
+//           console.error("Error in deleteMessages:", error);
+//           return [];
+//         }
+//       }
+
+//       async markMessagesAsRead(receiverId: string, senderId: string): Promise<boolean | null> {
+//         try {
+//           const chat = await Chat.findOne({
+//             participants: { $all: [receiverId, senderId] },
+//           });
+    
+//           if (chat) {
+//             await Message.updateMany(
+//               {
+//                 chatId: chat._id,
+//                 receiverId,
+//                 isRead: false,
+//                 isDeleted: { $ne: true },
+//               },
+//               { $set: { isRead: true } }
+//             );
+//           }
+//           return true
+//         } catch (error) {
+//           return null
+//         }
+//       }
+      
+// }
+// export default MessageRepository
+
+
+
+import mongoose from 'mongoose';
+import { Chat } from '../../../model/chat/chat.model';
+import { IMessage, Message } from '../../../model/chat/message.model';
+import IMessageRepository from '../IMessageRepository';
+import { getIO, getReceiverSocketId } from '../../../Config/socketConfig';
+
+class MessageRepository implements IMessageRepository {
+  async sendMessage(receiverId: string, senderId: string, message: string, imageUrl: string): Promise<IMessage | null> {
+    let chat = await Chat.findOne({
+      participants: { $all: [senderId, receiverId] },
+    });
+
+    if (!chat) {
+      chat = await Chat.create({
+        participants: [senderId, receiverId],
+      });
     }
 
-    async getMessage(userToChat: string, senderId: string): Promise<IMessage[] | []> {
-        const chat = await Chat.findOne({
-          participants: { $all: [senderId, userToChat] }
-        }).populate<{ messages: IMessage[] }>("messages");
-      
-        return chat ? chat.messages : [];
+    const newMessage = new Message({
+      senderId,
+      receiverId,
+      message,
+      imageUrl,
+      isRead: false,
+    });
+
+    if (newMessage) {
+      chat.messages.push(newMessage._id as mongoose.Types.ObjectId);
+      chat.lastMessage = message || (imageUrl ? '[Image]' : '');
+      chat.updatedAt = new Date();
+    }
+
+    await Promise.all([chat.save(), newMessage.save()]);
+
+    return newMessage;
+  }
+
+  async getMessage(userToChat: string, senderId: string): Promise<IMessage[] | []> {
+    const chat = await Chat.findOne({
+      participants: { $all: [senderId, userToChat] },
+    }).populate<{ messages: IMessage[] }>('messages');
+
+    return chat ? chat.messages : [];
+  }
+
+  async deleteMessages(messagesIds: string[]): Promise<IMessage[] | []> {
+    try {
+      const objectIds = messagesIds.map((id) => new mongoose.Types.ObjectId(id));
+      const updatedMessages = await Message.updateMany(
+        { _id: { $in: objectIds } },
+        { $set: { isDeleted: true } }
+      );
+
+      const softDeletedMessages = await Message.find({ _id: { $in: objectIds } });
+
+      return softDeletedMessages;
+    } catch (error) {
+      console.error('Error in deleteMessages:', error);
+      return [];
+    }
+  }
+
+  async markMessagesAsRead(receiverId: string, senderId: string): Promise<boolean | null> {
+    try {
+      const result = await Message.updateMany(
+        {
+          senderId: receiverId, // Messages sent by the other user
+          receiverId: senderId, // Received by the current user
+          isRead: false,
+          isDeleted: { $ne: true },
+        },
+        { $set: { isRead: true } }
+      );
+
+      // Emit Socket.IO event to notify the sender
+      const io = getIO();
+      const receiverSocketId = getReceiverSocketId(receiverId);
+      if (io && receiverSocketId) {
+        io.to(receiverSocketId).emit('messagesRead', {
+          senderId,
+          receiverId,
+          unreadCount: 0, // Notify that unread count is now 0
+        });
       }
 
-      async deleteMessages(messagesIds: string[]): Promise<IMessage[] | []> {
-        try {
-          // Convert string IDs to ObjectId
-          const objectIds = messagesIds.map(id => new mongoose.Types.ObjectId(id));
-      
-          // Perform the update
-          const updatedMessages = await Message.updateMany(
-            { _id: { $in: objectIds } },
-            { $set: { isDeleted: true } }
-          );
-      
-          // Optional: Return updated messages
-          const softDeletedMessages = await Message.find({ _id: { $in: objectIds } });
-      
-          return softDeletedMessages;
-        } catch (error) {
-          console.error("Error in deleteMessages:", error);
-          return [];
-        }
-      }
-      
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+      return null;
+    }
+  }
 }
-export default MessageRepository
+
+export default MessageRepository;

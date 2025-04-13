@@ -5,5 +5,6 @@ import { UserMinimal } from "../../Types/basicTypes";
 interface IChatRepository {
     getChats(userId:string,role:string):Promise<UserMinimal[] | null>;
     createChat(receiverId:string,userId:string):Promise<IChat | null>;
+
 }
 export default IChatRepository

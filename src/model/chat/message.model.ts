@@ -7,6 +7,7 @@ interface IMessage extends Document {
   message: string;
   imageUrl?:string;
   isDeleted?:boolean;
+  isRead: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -16,12 +17,10 @@ const messageSchema = new Schema<IMessage>(
   {
     senderId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
       required: true,
     },
     receiverId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
       required: true,
     },
     message: {
@@ -35,7 +34,11 @@ const messageSchema = new Schema<IMessage>(
     isDeleted:{
       type:Boolean,
       default:false
-    }
+    },
+    isRead: {
+      type: Boolean,
+      default: false, 
+    },
   },
   {
     timestamps: true,

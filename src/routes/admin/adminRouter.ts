@@ -6,7 +6,6 @@ import { validateToken } from '../../middleware/validateToken';
 import AdminTutorController from '../../controller/admin/implementation/AdminTutorController';
 import AdminTutorRepository from '../../repository/admin/implementation/AdminTutorRepository'
 import AdminTutorService from '../../service/admin/Implementation/AdminTutorService';
-import { error } from 'winston';
 import IAdminController from '../../controller/admin/IAdminController';
 import IAdminTutorController from '../../controller/admin/IAdminTutorController';
 

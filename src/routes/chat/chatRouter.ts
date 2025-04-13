@@ -26,6 +26,6 @@ router.get('/getChats',authenticationMiddleware(), chatController.getChats.bind(
 router.get('/get-messages/:id',authenticationMiddleware(),messageController.getMessages.bind(messageController));
 router.post('/create-chat/:id',authenticationMiddleware(),chatController.createChat.bind(chatController));
 router.delete('/delete-message/:id',authenticationMiddleware(),messageController.deleteMessages.bind(messageController));
-
+router.post('/mark-read/:id',authenticationMiddleware(),messageController.markMessagesAsRead.bind(messageController))
 
 export default router;

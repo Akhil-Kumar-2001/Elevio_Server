@@ -23,9 +23,14 @@ class TutorCourseRepository implements ITutorCourseRepository {
 
     async createCourse(courseData: CourseData): Promise<boolean | null> {
         try {
-            const newCourse = new Course(courseData);
-            await newCourse.save();
-            return true;
+            const existingCourse = await Course.find({title:courseData.courseName});
+            if(existingCourse){
+                return false
+            }else{
+                const newCourse = new Course(courseData);
+                await newCourse.save();
+                return true;
+            }
         } catch (error) {
             console.error("Error creating course:", error);
             return null;

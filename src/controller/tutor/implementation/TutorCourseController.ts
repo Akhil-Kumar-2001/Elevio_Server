@@ -27,7 +27,11 @@ class TutorCourseController implements ITutorCourseController {
     async createCourse(req: Request, res: Response): Promise<void> {
         try {
             const courseData = req.body;
+
             const response = await this._tutorCourseService.createCourse(courseData);
+            if(!response){
+                res.status(STATUS_CODES.CONFLICT).json({success:false,message:"course alredy existed",data:null})
+            }
             if (response) {
                 res.status(STATUS_CODES.CREATED).json({ success: true, message: "Course created Successfully", data: response })
             }
