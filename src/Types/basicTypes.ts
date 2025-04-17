@@ -137,3 +137,65 @@ export type UserMinimal = {
   unreadCount?:number;
   updatedAt?:string;
 };
+
+export interface review {
+  courseId: string;
+  userId: string;
+  rating: number;
+  review: string;
+}
+
+export interface PaymentDetails {
+  paymentId?: string;
+  paymentMethod?: string;
+  paymentAmount?: number;
+}
+
+export interface PaymentData {
+  paymentStatus: 'paid' | 'unpaid' | 'pending' | 'failed';
+  status: 'active' | 'inactive' | 'expired' | 'suspended' | 'canceled';
+  startDate?: Date;
+  endDate?: Date;
+  paymentDetails?: PaymentDetails;
+}
+
+
+export interface DashboardData {
+  totalStudents: number;
+  totalTutors: number;
+  totalCourses: number;
+  tutorTotalIncome: number;
+  adminTotalIncome: number;
+  adminBalance: number;
+}
+
+
+export interface CategoryIncome {
+  _id?: string
+  name: string;  
+  value: number; 
+}
+
+
+export interface MonthlyIncome {
+  month: string; 
+  income: number;
+}
+
+export interface MonthlyIncome {
+  month: string; 
+  income: number;
+}
+
+export interface StudentsCount {
+  name: string; 
+  students: number;
+}
+
+export interface IDashboardDetails {
+  courseCount: number;
+  totalStudents: number;
+  totalIncome: number;
+  totalTransactions: number;
+  lastTransactionDate: Date | null;
+}

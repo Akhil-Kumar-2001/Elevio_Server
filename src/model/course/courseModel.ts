@@ -15,6 +15,8 @@ interface ICourse extends Document {
     status?: "pending" | "accepted" | "rejected" | "draft" | "listed";
     rejectedReason?: string;
     imageThumbnail: string;
+    avgRating?: number;
+    totalReviews?: number;
     createdAt: Date;
     updatedAt: Date;
     _id: Types.ObjectId;
@@ -80,6 +82,14 @@ const courseSchema = new Schema<ICourse>({
     imageThumbnail: {
         type: String,
         required: true,
+    },
+    avgRating: {
+        type: Number,
+        default: 0,
+    },
+    totalReviews: {
+        type: Number,
+        default: 0,
     },
 }, { timestamps: true });
 

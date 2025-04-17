@@ -5,8 +5,9 @@ import { INotification, Notification } from '../../../model/notification/notific
 import { ISection, Section } from '../../../model/section/sectionModel';
 import Subscription, { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ITutor, Tutor } from '../../../model/tutor/tutorModel';
+import { ITutorWallet, TutorWallet } from '../../../model/wallet/walletModel';
 import { ISubscriptionPlan } from '../../../Types/basicTypes';
-import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType } from '../../../Types/CategoryReturnType';
+import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType, TutorWalletsResponseDataType } from '../../../Types/CategoryReturnType';
 import IAdminTutorRepository from '../IAdminTutorRepository'
 
 class AdminTutorRepository implements IAdminTutorRepository {
@@ -20,7 +21,7 @@ class AdminTutorRepository implements IAdminTutorRepository {
         const totalRecord = await Tutor.countDocuments()
         return { tutors, totalRecord };
     }
-
+    
     async getTutorById(id: string): Promise<ITutor | null> {
         const tutor = await Tutor.findById(id);
         return tutor;
@@ -231,14 +232,14 @@ class AdminTutorRepository implements IAdminTutorRepository {
         try {
             const skip = (page - 1) * limit;
             const subscriptions = await Subscription.find()
-                .sort({ createdAt: 1 })
+            .sort({ createdAt: 1 })
                 .skip(skip)
                 .limit(limit)
                 .exec();
 
-            const totalRecord = await Subscription.countDocuments()
+                const totalRecord = await Subscription.countDocuments()
             console.log("total record suscription",totalRecord);
-
+            
             return { subscriptions, totalRecord }
             // return subscriptions ?? null;
         } catch (error) {
@@ -293,6 +294,22 @@ class AdminTutorRepository implements IAdminTutorRepository {
     async deleteSubscription(id: string): Promise<boolean | null> {
         const response = await Subscription.findByIdAndDelete({ _id: id });
         return response ? true : null;
+    }
+
+    async getTutorsWalltes(page: number, limit: number): Promise<TutorWalletsResponseDataType | null> {
+        const skip = (page - 1) * limit;
+        const wallets = await TutorWallet.find()
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .exec();
+        const totalRecord = await TutorWallet.countDocuments()
+        return { wallets, totalRecord };
+    }
+
+    async getTutorsList(): Promise<ITutor[] | null> {
+        const tutor = await Tutor.find();
+        return tutor;
     }
 }
 

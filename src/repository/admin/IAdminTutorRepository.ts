@@ -5,8 +5,9 @@ import { INotification } from "../../model/notification/notification.Model"
 import { ISection } from "../../model/section/sectionModel"
 import { ISubscription } from "../../model/subscription/subscriptionModel"
 import { ITutor } from "../../model/tutor/tutorModel"
+import { ITutorWallet } from "../../model/wallet/walletModel"
 import { ISubscriptionPlan } from "../../Types/basicTypes"
-import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType } from "../../Types/CategoryReturnType"
+import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType, TutorWalletsResponseDataType } from "../../Types/CategoryReturnType"
 
 interface IAdminTutorRepository {
     getPendingTutors(page:number,limit:number): Promise<TutorResponseDataType | null>
@@ -31,7 +32,8 @@ interface IAdminTutorRepository {
     createSubscription(data:ISubscriptionPlan):Promise<boolean | null>
     editSubscription(data:ISubscriptionPlan):Promise<boolean | null>
     deleteSubscription(id:string):Promise<boolean | null>
-
+    getTutorsWalltes(page:number,limit:number): Promise<TutorWalletsResponseDataType | null>
+    getTutorsList():Promise<ITutor[] | null>
 }
 
 export default IAdminTutorRepository
