@@ -14,6 +14,10 @@ import multer from 'multer';
 import ITutorController from '../../controller/tutor/ITutorController';
 import ITutorProfileController from '../../controller/tutor/ITutorProfileController';
 import ITutorCourseController from '../../controller/tutor/ITutorCourseController';
+import TutorDashboardRepository from '../../repository/tutor/implementation/TutorDashboardRepository';
+import TutorDashboardService from '../../service/tutor/implementation/TutorDashboardService';
+import TutorDashboardController from '../../controller/tutor/implementation/TutorDashboardController';
+import ITutorDashboardController from '../../controller/tutor/ITutorDashboardController';
 
 
 
@@ -32,6 +36,10 @@ const tutorProfileController : ITutorProfileController = new TutorProfileControl
 const tutorCourseRepository = new TutorCourseRepository();
 const tutorCourseService = new TutorCourseService(tutorCourseRepository);
 const tutorCourseController : ITutorCourseController = new TutorCourseController(tutorCourseService)
+
+const tutorDashboardRepository = new TutorDashboardRepository();
+const tutorDashboardService = new TutorDashboardService(tutorDashboardRepository);
+const tutorDashboardController:ITutorDashboardController = new TutorDashboardController(tutorDashboardService)
 
 
 // sign-up routes
@@ -82,9 +90,19 @@ router.delete('/delete-lecture/:id',isBlocked,validateToken('Tutor'),tutorCourse
 router.patch('/edit-sections/:id',isBlocked,validateToken("Tutor"),tutorCourseController.editSection.bind(tutorCourseController))
 router.post('/lectures/upload-video',isBlocked,validateToken('Tutor'),upload.single('video'),tutorCourseController.uploadLectureVideo.bind(tutorCourseController));
 
+// Apply for Course Review
 router.patch('/apply-review',isBlocked,validateToken('Tutor'),tutorCourseController.applyReview.bind(tutorCourseController))
 router.get('/notifications',isBlocked,validateToken("Tutor"),tutorCourseController.getNotifications.bind(tutorCourseController))
 router.patch('/notifications/:id',isBlocked,validateToken("Tutor"),tutorCourseController.readNotifications.bind(tutorCourseController))
+
+
+// Tutor Dashboard
+router.get(`/monthly-income`,isBlocked,validateToken('Tutor'),tutorDashboardController.getMonthlyIncome.bind(tutorDashboardController))
+router.get(`/students-count`,isBlocked,validateToken('Tutor'),tutorDashboardController.getStudentsCount.bind(tutorDashboardController))
+router.get(`/transactions`,isBlocked,validateToken('Tutor'),tutorDashboardController.getTransactions.bind(tutorDashboardController));
+router.get(`/dahboard-data`,isBlocked,validateToken('Tutor'),tutorDashboardController.getDashboradDetails.bind(tutorDashboardController));
+
+
 
 
 export default  router
