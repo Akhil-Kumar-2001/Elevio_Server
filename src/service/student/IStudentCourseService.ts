@@ -3,11 +3,12 @@ import { ICategory } from "../../model/category/categoryModel"
 import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
 import { IOrder } from "../../model/order/orderModel"
+import { IReview } from "../../model/review/review.model"
 import { ISection } from "../../model/section/sectionModel"
 import { ISubscription } from "../../model/subscription/subscriptionModel"
 import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased"
 import { ITutor } from "../../model/tutor/tutorModel"
-import { ICartWithDetails } from "../../Types/basicTypes"
+import { ICartWithDetails, review } from "../../Types/basicTypes"
 import { CourseResponseDataType } from "../../Types/CategoryReturnType"
 
 interface IStudentCourseService {
@@ -30,6 +31,8 @@ interface IStudentCourseService {
     isValidPlan(studentId:string):Promise<boolean | null>
     createSubscritionOrder(studentId:string,amount:number,planId:string): Promise<ISubscriptionPurchased | null>
     verifySubscriptionPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null>
+    getReviews(id:string):Promise<IReview[] | null>
+    createReview(formData:review):Promise<IReview | null>
 
 
 }

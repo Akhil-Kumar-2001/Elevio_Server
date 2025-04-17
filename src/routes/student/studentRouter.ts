@@ -81,6 +81,11 @@ router.get('/subscription',validateToken("Student"),studentCourseController.getS
 router.post('/subscription/create-order',validateToken('Student'),studentCourseController.createSubscritionOrder.bind(studentCourseController))
 router.post('/subscription/verify-payment',validateToken('Student'),studentCourseController.verifySubscriptionPayment.bind(studentCourseController))
 
+router.get('/reviews/:id',validateToken("Student"),studentCourseController.getReviews.bind(studentCourseController));
+router.post('/reviews',validateToken("Student"),studentCourseController.createReview.bind(studentCourseController));
+
+
+
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
 

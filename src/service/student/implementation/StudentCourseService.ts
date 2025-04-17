@@ -5,7 +5,7 @@ import { ICart } from "../../../model/cart/cartModel";
 import { ICourse } from "../../../model/course/courseModel";
 import { IOrder } from "../../../model/order/orderModel";
 import IStudentCourseRepository from "../../../repository/student/IStudentCourseRepository";
-import { ICartWithDetails, IOrderCreateSubscriptionData } from "../../../Types/basicTypes";
+import { ICartWithDetails, IOrderCreateSubscriptionData, review } from "../../../Types/basicTypes";
 import IStudentCourseService from "../IStudentCourseService";
 import { ICategory } from '../../../model/category/categoryModel';
 import { CourseResponseDataType } from '../../../Types/CategoryReturnType';
@@ -14,6 +14,7 @@ import { ILecture } from '../../../model/lecture/lectureModel';
 import { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ISubscriptionPurchased } from '../../../model/subscription/SubscriptionPurchased';
 import { ITutor } from '../../../model/tutor/tutorModel';
+import { IReview } from '../../../model/review/review.model';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -224,10 +225,11 @@ class StudentCourseService implements IStudentCourseService {
                 ...subscription.paymentDetails,  
                 paymentId: razorpay_payment_id  
             };
+            console.log("updated paymentdetails",updatedPaymentDetails)
 
             const data = {
-                paymentStatus: "paid",
-                status: "active",
+                paymentStatus: "paid" as const,
+                status: "active" as const,
                 startDate: new Date(),
                 endDate: endDate,
                 paymentDetails: updatedPaymentDetails
@@ -246,6 +248,16 @@ class StudentCourseService implements IStudentCourseService {
             return updatedSubscription
         }
 
+    }
+
+    async getReviews(id: string): Promise<IReview[] | null> {
+        const response = await this._studentCourseRepository.getReviews(id);
+        return response
+    }
+
+    async createReview(formData: review): Promise<IReview | null> {
+        const response = await this._studentCourseRepository.createReview(formData);
+        return response
     }
 }
 

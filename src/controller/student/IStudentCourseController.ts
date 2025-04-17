@@ -18,6 +18,8 @@ interface IStudentCourseController{
     getSubscription(req:Request,res:Response):Promise<void>
     createSubscritionOrder(req:Request,res:Response):Promise<void>
     verifySubscriptionPayment(req:Request,res:Response):Promise<void>
+    getReviews(req:Request,res:Response):Promise<void>
+    createReview(req:Request,res:Response):Promise<void>
 
     
 }

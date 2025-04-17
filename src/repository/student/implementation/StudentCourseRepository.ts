@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Course, ICourse } from "../../../model/course/courseModel";
 import IStudentCourseRepository from "../IStudentCourseRepository";
 import { Cart, ICart } from "../../../model/cart/cartModel";
-import { ICartItemWithDetails, ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData } from "../../../Types/basicTypes";
+import { ICartItemWithDetails, ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData, PaymentData, review } from "../../../Types/basicTypes";
 import { IOrder, Order } from "../../../model/order/orderModel";
 import { ITransaction, TutorWallet } from "../../../model/wallet/walletModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
@@ -13,6 +13,8 @@ import Subscription, { ISubscription } from "../../../model/subscription/subscri
 import { ISubscriptionPurchased, SubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
 import { Student } from "../../../model/student/studentModel";
 import { ITutor, Tutor } from "../../../model/tutor/tutorModel";
+import { IReview, Review } from "../../../model/review/review.model";
+import { AdminWallet, IAdminTransaction } from "../../../model/adminwallet/adminwallet";
 
 class StudentCourseRepository implements IStudentCourseRepository {
     async getListedCourse(): Promise<ICourse[] | null> {
@@ -311,7 +313,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async getTutor(id: string): Promise<ITutor | null> {
         try {
-            const tutor = await Tutor.findOne({_id:id});
+            const tutor = await Tutor.findOne({ _id: id });
             return tutor;
         } catch (error) {
             return null
@@ -378,13 +380,119 @@ class StudentCourseRepository implements IStudentCourseRepository {
     }
 
 
-    async updateSubscriptionByOrderId(orderId: string, data: any): Promise<string | null> {
+    // async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
+    //     console.log("data of update subscription",data)
+    //     const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
+    //         { orderId: orderId },
+    //         data,
+    //         { new: true }
+    //     );
+    //     return updatedOrder ? updatedOrder.paymentStatus : null;
+    // }
+
+    async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
+        console.log("data of update subscription", data);
+        
         const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
-            { orderId: orderId },
-            data,
-            { new: true }
+          { orderId: orderId },
+          data,
+          { new: true }
         );
+      
+        // Add payment to admin wallet if payment status is 'paid'
+        if (updatedOrder && data.paymentStatus === 'paid' && data.paymentDetails?.paymentAmount) {
+          try {
+            // Find admin wallet or create if doesn't exist
+            let adminWallet = await AdminWallet.findOne({ email: process.env.ADMIN_MAIL });
+            
+            if (!adminWallet) {
+              adminWallet = new AdminWallet({
+                email: process.env.ADMIN_MAIL,
+                balance: 0,
+                totalRevenue: 0,
+                totalOutflow: 0,
+                transactions: []
+              });
+            }
+            
+            const amount = (data.paymentDetails.paymentAmount)/100;
+            
+            // Create transaction record
+            const transaction: IAdminTransaction = {
+              amount: amount,
+              type: 'credit',
+              description: `Subscription payment received for order: ${orderId}`,
+              date: new Date(),
+              relatedUserId: updatedOrder.userId || undefined,
+              userType: 'Student',
+              referenceId: updatedOrder._id
+            };
+            
+            // Update wallet balances
+            adminWallet.balance += amount;
+            adminWallet.totalRevenue += amount;
+            adminWallet.transactions.push(transaction);
+            adminWallet.lastTransactionDate = new Date();
+            
+            // Save the admin wallet
+            await adminWallet.save();
+            
+            console.log(`Added ${amount} to admin wallet for subscription payment`);
+          } catch (error) {
+            console.error("Error updating admin wallet:", error);
+          
+          }
+        }
+        
         return updatedOrder ? updatedOrder.paymentStatus : null;
+      }
+
+    async getReviews(id: string): Promise<IReview[] | null> {
+        try {
+            const reviews = await Review.find({ courseId: id, isVisible: true })
+                .populate('userId', 'username') // Populate username from User model
+                .sort({ createdAt: -1 }); // Sort by newest first
+            console.log("=============++>>>>>>>>>>>>>>>>>>>reviews in repository", reviews)
+            return reviews.length > 0 ? reviews : null;
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+            return null;
+        }
+    }
+
+
+
+    async createReview(formData: review): Promise<IReview | null> {
+        try {
+            // Step 1: Create the new review
+            const newReview = await Review.create({
+                courseId: new Types.ObjectId(formData.courseId),
+                userId: new Types.ObjectId(formData.userId),
+                rating: formData.rating,
+                review: formData.review,
+            });
+
+            // Step 2: Fetch all reviews of the course to recalculate avgRating
+            const courseReviews = await Review.find({ courseId: formData.courseId });
+
+            const totalReviews = courseReviews.length;
+            const totalRating = courseReviews.reduce((sum, review) => sum + review.rating, 0);
+            const avgRating = parseFloat((totalRating / totalReviews).toFixed(1)); // rounded to 1 decimal
+
+            // Step 3: Update the course with new average rating and total reviews
+            await Course.findByIdAndUpdate(formData.courseId, {
+                avgRating,
+                totalReviews,
+            });
+            
+            // Populate the user data (e.g., username) from the "Student" model
+            const populatedReview = await newReview.populate('userId', 'username');
+
+            return populatedReview;
+        } catch (error) {
+            console.error('Error creating reviews:', error);
+            return null;
+        }
     }
 }
 

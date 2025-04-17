@@ -3,11 +3,12 @@ import { ICategory } from "../../model/category/categoryModel";
 import { ICourse } from "../../model/course/courseModel";
 import { ILecture } from "../../model/lecture/lectureModel";
 import { IOrder } from "../../model/order/orderModel";
+import { IReview } from "../../model/review/review.model";
 import { ISection } from "../../model/section/sectionModel";
 import { ISubscription } from "../../model/subscription/subscriptionModel";
 import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased";
 import { ITutor } from "../../model/tutor/tutorModel";
-import { ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData } from "../../Types/basicTypes";
+import { ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData, PaymentData, review } from "../../Types/basicTypes";
 import { CourseResponseDataType } from "../../Types/CategoryReturnType";
 
 interface IStudentCourseRepository {
@@ -31,7 +32,9 @@ interface IStudentCourseRepository {
     isValidPlan(studentId:string):Promise<boolean | null>
     findByOrderId(orderId:string):Promise<ISubscriptionPurchased | null>
     findPlanById(_id:string):Promise<ISubscription | null>
-    updateSubscriptionByOrderId(orderId:string,data:any):Promise<string | null>
+    updateSubscriptionByOrderId(orderId:string,data:PaymentData):Promise<string | null>
+    getReviews(id:string):Promise<IReview[] | null>
+    createReview(formData:review):Promise<IReview | null>
 
 }
 
