@@ -3,6 +3,7 @@ import { ICategory } from "../../model/category/categoryModel";
 import { ICourse } from "../../model/course/courseModel";
 import { ILecture } from "../../model/lecture/lectureModel";
 import { IOrder } from "../../model/order/orderModel";
+import { IProgress } from "../../model/progress/progress.model";
 import { IReview } from "../../model/review/review.model";
 import { ISection } from "../../model/section/sectionModel";
 import { ISubscription } from "../../model/subscription/subscriptionModel";
@@ -13,6 +14,7 @@ import { CourseResponseDataType } from "../../Types/CategoryReturnType";
 
 interface IStudentCourseRepository {
     getListedCourse(): Promise<ICourse[] | null>
+    getTopRatedCourse(): Promise<ICourse[] | null>
     addToCart(id: string, userId: string): Promise<boolean | null>
     courseExist(id: string, userId: string): Promise<boolean | null>
     isPurchased(id: string, userId: string): Promise<boolean | null>
@@ -35,6 +37,8 @@ interface IStudentCourseRepository {
     updateSubscriptionByOrderId(orderId:string,data:PaymentData):Promise<string | null>
     getReviews(id:string):Promise<IReview[] | null>
     createReview(formData:review):Promise<IReview | null>
+    getProgress(courseId:string,userId:string):Promise<IProgress | null>
+    addLectureToProgress(userId:string,courseId:string,lectureId:string):Promise<IProgress | null>
 
 }
 

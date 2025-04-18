@@ -24,6 +24,18 @@ class StudentCourseController implements IStudentCourseController {
         }
     }
 
+    async getTopRatedCourse(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this._studentCourseService.getTopRatedCourse();
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Listed course Retrieved successfully", data: response })
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+
+        }
+    }
+
     async addToCart(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
@@ -246,6 +258,28 @@ class StudentCourseController implements IStudentCourseController {
             }
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+
+    async getProgress(req: Request, res: Response): Promise<void> {
+        try {
+            const {id} = req.params;
+            const userId = req.userId as string;
+            const response = await this._studentCourseService.getProgress(id,userId );
+            res.status(STATUS_CODES.OK).json({success:true,message:"progress get Successfully",data:response});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+        }
+    }
+
+    async addLectureToProgress(req: Request, res: Response): Promise<void> {
+        try {
+            const {courseId,lectureId} = req.body;
+            const userId = req.userId as string;
+            const response = await this._studentCourseService.addLectureToProgress(userId,courseId,lectureId);
+            res.status(STATUS_CODES.OK).json({success:true,message:"progress updated Successfully",data:response});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
     }
 

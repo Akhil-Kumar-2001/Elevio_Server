@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 
 interface IStudentCourseController{
     getListedCourse(req:Request,res:Response):Promise<void>;
+    getTopRatedCourse(req:Request,res:Response):Promise<void>;
     addToCart(req:Request,res:Response):Promise<void>;
     getCart(req:Request,res:Response):Promise<void>;
     removeItem(req:Request,res:Response):Promise<void>;
@@ -20,6 +21,8 @@ interface IStudentCourseController{
     verifySubscriptionPayment(req:Request,res:Response):Promise<void>
     getReviews(req:Request,res:Response):Promise<void>
     createReview(req:Request,res:Response):Promise<void>
+    getProgress(req:Request,res:Response):Promise<void>
+    addLectureToProgress(req:Request,res:Response):Promise<void>
 
     
 }

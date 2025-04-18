@@ -15,10 +15,17 @@ import { Student } from "../../../model/student/studentModel";
 import { ITutor, Tutor } from "../../../model/tutor/tutorModel";
 import { IReview, Review } from "../../../model/review/review.model";
 import { AdminWallet, IAdminTransaction } from "../../../model/adminwallet/adminwallet";
+import { IProgress, Progress } from "../../../model/progress/progress.model";
 
 class StudentCourseRepository implements IStudentCourseRepository {
+
     async getListedCourse(): Promise<ICourse[] | null> {
         const courses = await Course.find({ status: "listed" });
+        return courses;
+    }
+
+    async getTopRatedCourse(): Promise<ICourse[] | null> {
+        const courses = await Course.find({ status: "listed" }).sort({ avgRating: -1 });
         return courses;
     }
 
@@ -195,6 +202,33 @@ class StudentCourseRepository implements IStudentCourseRepository {
             }
 
             if (status === 'success' && updatedOrder.courseIds && updatedOrder.courseIds.length > 0) {
+
+                try {
+                    for (const courseId of updatedOrder.courseIds) {
+                        // Check if progress already exists for this student and course
+                        const existingProgress = await Progress.findOne({
+                            studentId: updatedOrder.userId,
+                            courseId: courseId
+                        });
+
+                        if (!existingProgress) {
+                            // Create new progress record
+                            const newProgress = new Progress({
+                                studentId: updatedOrder.userId,
+                                courseId: courseId,
+                                completedLectures: [],
+                                progressPercentage: 0,
+                                isCompleted: false,
+                                startDate: new Date()
+                            });
+
+                            await newProgress.save();
+                            console.log(`Initialized progress for course ${courseId} for user ${updatedOrder.userId}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error initializing progress:", error);
+                }
 
                 const courses = await Course.find({
                     _id: { $in: updatedOrder.courseIds }
@@ -392,60 +426,62 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
         console.log("data of update subscription", data);
-        
+
         const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
-          { orderId: orderId },
-          data,
-          { new: true }
+            { orderId: orderId },
+            data,
+            { new: true }
         );
-      
+        console.log("Updated order", updatedOrder)
+
         // Add payment to admin wallet if payment status is 'paid'
         if (updatedOrder && data.paymentStatus === 'paid' && data.paymentDetails?.paymentAmount) {
-          try {
-            // Find admin wallet or create if doesn't exist
-            let adminWallet = await AdminWallet.findOne({ email: process.env.ADMIN_MAIL });
-            
-            if (!adminWallet) {
-              adminWallet = new AdminWallet({
-                email: process.env.ADMIN_MAIL,
-                balance: 0,
-                totalRevenue: 0,
-                totalOutflow: 0,
-                transactions: []
-              });
+            try {
+                // Find admin wallet or create if doesn't exist
+                let adminWallet = await AdminWallet.findOne({ email: process.env.ADMIN_MAIL });
+
+                if (!adminWallet) {
+                    adminWallet = new AdminWallet({
+                        email: process.env.ADMIN_MAIL,
+                        balance: 0,
+                        totalRevenue: 0,
+                        totalOutflow: 0,
+                        transactions: []
+                    });
+                }
+
+                const amount = (data.paymentDetails.paymentAmount) / 100;
+
+                // Create transaction record
+                const transaction: IAdminTransaction = {
+                    amount: amount,
+                    type: 'credit',
+                    description: `Subscription payment received for order: ${orderId}`,
+                    date: new Date(),
+                    relatedUserId: updatedOrder.userId || undefined,
+                    userType: 'Student',
+                    referenceId: updatedOrder._id
+                };
+
+                // Update wallet balances
+                adminWallet.balance += amount;
+                adminWallet.totalRevenue += amount;
+                adminWallet.transactions.push(transaction);
+                adminWallet.lastTransactionDate = new Date();
+
+                // Save the admin wallet
+                await adminWallet.save();
+
+                console.log(`Added ${amount} to admin wallet for subscription payment`);
+
+            } catch (error) {
+                console.error("Error updating admin wallet:", error);
+
             }
-            
-            const amount = (data.paymentDetails.paymentAmount)/100;
-            
-            // Create transaction record
-            const transaction: IAdminTransaction = {
-              amount: amount,
-              type: 'credit',
-              description: `Subscription payment received for order: ${orderId}`,
-              date: new Date(),
-              relatedUserId: updatedOrder.userId || undefined,
-              userType: 'Student',
-              referenceId: updatedOrder._id
-            };
-            
-            // Update wallet balances
-            adminWallet.balance += amount;
-            adminWallet.totalRevenue += amount;
-            adminWallet.transactions.push(transaction);
-            adminWallet.lastTransactionDate = new Date();
-            
-            // Save the admin wallet
-            await adminWallet.save();
-            
-            console.log(`Added ${amount} to admin wallet for subscription payment`);
-          } catch (error) {
-            console.error("Error updating admin wallet:", error);
-          
-          }
         }
-        
+
         return updatedOrder ? updatedOrder.paymentStatus : null;
-      }
+    }
 
     async getReviews(id: string): Promise<IReview[] | null> {
         try {
@@ -484,13 +520,68 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 avgRating,
                 totalReviews,
             });
-            
+
             // Populate the user data (e.g., username) from the "Student" model
             const populatedReview = await newReview.populate('userId', 'username');
 
             return populatedReview;
         } catch (error) {
             console.error('Error creating reviews:', error);
+            return null;
+        }
+    }
+
+    async getProgress(courseId: string,userId:string): Promise<IProgress | null> {
+        const progress = await Progress.findOne({courseId,studentId:userId});
+        return progress ?? null ;
+    }
+
+    async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgress | null> {
+        try {
+            // Find the progress record for the given user and course
+            const progress = await Progress.findOne({
+                studentId: new Types.ObjectId(userId),
+                courseId: new Types.ObjectId(courseId)
+            });
+    
+            if (!progress) {
+                console.error(`Progress not found for user ${userId} and course ${courseId}`);
+                return null;
+            }
+    
+            // Convert lectureId to ObjectId
+            const lectureObjectId = new Types.ObjectId(lectureId);
+    
+            // Check if lecture is already in completedLectures to avoid duplicates
+            if (!progress.completedLectures.includes(lectureObjectId)) {
+                // Add lectureId to completedLectures
+                progress.completedLectures.push(lectureObjectId);
+                progress.lastAccessedLecture = lectureObjectId;
+                progress.lastAccessDate = new Date();
+    
+                // Get total number of lectures for the course from Lecture collection
+                const totalLectures = await Lecture.countDocuments({
+                    courseId: new Types.ObjectId(courseId)
+                });
+    
+                if (totalLectures > 0) {
+                    // Calculate progress percentage
+                    progress.progressPercentage = (progress.completedLectures.length / totalLectures) * 100;
+    
+                    // Check if course is completed
+                    if (progress.completedLectures.length === totalLectures && !progress.isCompleted) {
+                        progress.isCompleted = true;
+                        progress.completionDate = new Date();
+                    }
+                }
+                // Save the updated progress
+                await progress.save();
+                console.log(`Lecture ${lectureId} added to progress for user ${userId} and course ${courseId}`);
+            }
+    
+            return progress;
+        } catch (error) {
+            console.error("Error adding lecture to progress:", error);
             return null;
         }
     }

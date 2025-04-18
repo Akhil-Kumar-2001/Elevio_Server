@@ -15,6 +15,7 @@ import { ISubscription } from '../../../model/subscription/subscriptionModel';
 import { ISubscriptionPurchased } from '../../../model/subscription/SubscriptionPurchased';
 import { ITutor } from '../../../model/tutor/tutorModel';
 import { IReview } from '../../../model/review/review.model';
+import { IProgress } from '../../../model/progress/progress.model';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -30,6 +31,11 @@ class StudentCourseService implements IStudentCourseService {
 
     async getListedCourse(): Promise<ICourse[] | null> {
         const courses = await this._studentCourseRepository.getListedCourse();
+        return courses
+    }
+
+    async getTopRatedCourse(): Promise<ICourse[] | null> {
+        const courses = await this._studentCourseRepository.getTopRatedCourse();
         return courses
     }
 
@@ -258,6 +264,16 @@ class StudentCourseService implements IStudentCourseService {
     async createReview(formData: review): Promise<IReview | null> {
         const response = await this._studentCourseRepository.createReview(formData);
         return response
+    }
+
+    async getProgress(courseId: string,userId:string): Promise<IProgress | null> {
+        const response = await this._studentCourseRepository.getProgress(courseId,userId);
+        return response
+    }
+
+    async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgress | null> {
+        const response = await this._studentCourseRepository.addLectureToProgress(userId,courseId,lectureId);
+        return response;
     }
 }
 

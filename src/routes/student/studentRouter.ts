@@ -53,6 +53,8 @@ router.post("/callback", studentController.googleAuth.bind(studentController));
 
 
 router.get('/listed-courses',validateToken('Student'),studentCourseController.getListedCourse.bind(studentCourseController));
+router.get('/top-rated',validateToken('Student'),studentCourseController.getTopRatedCourse.bind(studentCourseController));
+
 
 router.get('/get-student',validateToken('Student'),studentProfileController.getStudent.bind(studentProfileController));
 router.get('/get-subscription-details',validateToken('Student'),studentProfileController.getSubscriptionDetails.bind(studentProfileController))
@@ -84,7 +86,9 @@ router.post('/subscription/verify-payment',validateToken('Student'),studentCours
 router.get('/reviews/:id',validateToken("Student"),studentCourseController.getReviews.bind(studentCourseController));
 router.post('/reviews',validateToken("Student"),studentCourseController.createReview.bind(studentCourseController));
 
-
+// Course Progress
+router.get('/progress/:id',validateToken("Student"),studentCourseController.getProgress.bind(studentCourseController))
+router.post("/update-progress",validateToken("Student"),studentCourseController.addLectureToProgress.bind(studentCourseController))
 
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
