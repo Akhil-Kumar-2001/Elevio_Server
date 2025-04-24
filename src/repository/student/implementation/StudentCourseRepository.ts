@@ -566,7 +566,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
     
                 if (totalLectures > 0) {
                     // Calculate progress percentage
-                    progress.progressPercentage = (progress.completedLectures.length / totalLectures) * 100;
+                    progress.progressPercentage = Math.round((progress.completedLectures.length / totalLectures) * 100);
     
                     // Check if course is completed
                     if (progress.completedLectures.length === totalLectures && !progress.isCompleted) {
