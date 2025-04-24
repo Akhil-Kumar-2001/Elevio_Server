@@ -207,3 +207,10 @@ export interface IDashboardDetails {
   lastTransactionDate: Date | null;
 }
 
+export interface SessionInfo {
+  studentName?: string;
+  tutorName?:string;
+  startTime: Date;
+  duration: number;
+  status: string;
+}

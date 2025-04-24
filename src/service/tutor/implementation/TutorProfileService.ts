@@ -1,8 +1,9 @@
 import { ITutor } from '../../../model/tutor/tutorModel';
 import ITutorProfileRepository from '../../../repository/tutor/ITutorProfileRepository'
 import ITutorProfileService from '../ITutorProfileService';
-import { TutorVerificationFormData } from '../../../Types/basicTypes';
+import { SessionInfo, TutorVerificationFormData } from '../../../Types/basicTypes';
 import { ICategory } from '../../../model/category/categoryModel';
+import { ISession } from '../../../model/sessiion/sessionModel';
 
 class TutorProfileService implements ITutorProfileService{
 
@@ -28,6 +29,20 @@ class TutorProfileService implements ITutorProfileService{
         return updatedTutor
     }
     
+    async sessionExist(sessionData: ISession): Promise<boolean | null> {
+        const response = await this._tutorProfileRepository.sessionExist(sessionData);
+        return response;
+    }
+
+    async createSession(sessionData: ISession): Promise<boolean | null> {
+        const response = await this._tutorProfileRepository.createSession(sessionData);
+        return response;
+    }
+
+    async getSessions(tutorId: string): Promise<SessionInfo[] | null> {
+        const response = await this._tutorProfileRepository.getSessions(tutorId);
+        return response;
+    }
 }
 
 export default TutorProfileService;

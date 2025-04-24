@@ -101,8 +101,10 @@ router.get(`/monthly-income`,isBlocked,validateToken('Tutor'),tutorDashboardCont
 router.get(`/students-count`,isBlocked,validateToken('Tutor'),tutorDashboardController.getStudentsCount.bind(tutorDashboardController))
 router.get(`/transactions`,isBlocked,validateToken('Tutor'),tutorDashboardController.getTransactions.bind(tutorDashboardController));
 router.get(`/dahboard-data`,isBlocked,validateToken('Tutor'),tutorDashboardController.getDashboradDetails.bind(tutorDashboardController));
+router.get(`/yearly-income`,isBlocked,validateToken("Tutor"),tutorDashboardController.getYearlyIncome.bind(tutorDashboardController));
 
-
+router.post(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.createSession.bind(tutorProfileController))
+router.get(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.getSessions.bind(tutorProfileController))
 
 
 export default  router

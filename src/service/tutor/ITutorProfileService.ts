@@ -1,11 +1,15 @@
 import { ICategory } from "../../model/category/categoryModel"
+import { ISession } from "../../model/sessiion/sessionModel"
 import { ITutor } from "../../model/tutor/tutorModel"
-import { TutorVerificationFormData } from "../../Types/basicTypes"
+import { SessionInfo, TutorVerificationFormData } from "../../Types/basicTypes"
 
 interface ITutorProfileService{
     getTutorById(id:string):Promise<ITutor | null>
     verifyTutor(formData:TutorVerificationFormData):Promise<ITutor | null>
     updateProfile(id:string,formData:ITutor):Promise<boolean | null>
+    sessionExist(sessionData:ISession):Promise<boolean | null>
+    createSession(sessionData:ISession):Promise<boolean | null>
+    getSessions(tutorId:string):Promise<SessionInfo[] | null>
 }
 
 export default ITutorProfileService

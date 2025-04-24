@@ -4,6 +4,8 @@ interface ITutorProfileController{
     getTutor(req:Request,res:Response):Promise<void>;
     verifyTutor(req:Request,res:Response):Promise<void>;
     updateProfile(req:Request,res:Response):Promise<void>;
+    createSession(req:Request,res:Response):Promise<void>;
+    getSessions(req:Request,res:Response):Promise<void>;
 
 }
 
