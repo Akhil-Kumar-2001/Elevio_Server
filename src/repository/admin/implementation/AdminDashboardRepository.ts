@@ -5,7 +5,7 @@ import { Order } from "../../../model/order/orderModel";
 import { IStudent, Student } from "../../../model/student/studentModel";
 import { Tutor } from "../../../model/tutor/tutorModel";
 import { TutorWallet } from "../../../model/wallet/walletModel";
-import { CategoryIncome, DashboardData, MonthlyIncome } from "../../../Types/basicTypes";
+import { CategoryIncome, DashboardData, MonthlyIncome, YearlyIncome } from "../../../Types/basicTypes";
 import IAdminDashboardRepository from "../IAdminDashboardRepository";
 
 class AdminDashboardRepository implements IAdminDashboardRepository {
@@ -201,6 +201,7 @@ class AdminDashboardRepository implements IAdminDashboardRepository {
           });
       
           console.log("monthly income on repository", monthlyIncome);
+          console.log("monthly formated data", formattedData)
           return formattedData; // Return the formatted data instead of raw aggregation result
           
         } catch (error) {
@@ -208,6 +209,56 @@ class AdminDashboardRepository implements IAdminDashboardRepository {
           return null;
         }
       }
+
+      async getAdminYearlyIncome(currentYear: number): Promise<YearlyIncome[] | null> {
+        try {
+          const startYear = currentYear - 5;
+          const startDate = new Date(startYear, 0, 1);
+          const endDate = new Date(currentYear, 11, 31, 23, 59, 59);
+      
+          const yearlyIncome = await AdminWallet.aggregate([
+            { $match: { isActive: true } },
+            { $unwind: "$transactions" },
+            {
+              $match: {
+                "transactions.date": { $gte: startDate, $lte: endDate },
+                "transactions.type": { $in: ["credit"] }
+              }
+            },
+            {
+              $project: {
+                year: { $year: "$transactions.date" },
+                amount: "$transactions.amount"
+              }
+            },
+            {
+              $group: {
+                _id: "$year",
+                income: { $sum: "$amount" }
+              }
+            },
+            { $sort: { _id: 1 } }
+          ]);
+      
+          const formattedData: YearlyIncome[] = [];
+          for (let y = startYear; y <= currentYear; y++) {
+            const data = yearlyIncome.find(item => item._id === y);
+            formattedData.push({
+              year: y.toString(),
+              income: data ? data.income : 0
+            });
+          }
+      
+          console.log("yearly income on repository", yearlyIncome);
+          console.log("formatted yearly data", formattedData);
+      
+          return formattedData;
+        } catch (error) {
+          console.error("Error fetching admin yearly income:", error);
+          return null;
+        }
+      }
+      
 }
 
 export default AdminDashboardRepository

@@ -57,6 +57,16 @@ class AdminDashboardController implements IAdminDashboardController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
     }
+
+    async getAdminYearlyIncome(req: Request, res: Response): Promise<void> {
+        try {
+            const currentYear = new Date().getFullYear();
+            const response = await this._adminDashboardService.getAdminYearlyIncome(currentYear);
+            res.status(STATUS_CODES.OK).json({success:true,message:"Admin yearly income retrived successfully",data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+        }
+    }
 }
 
 export default AdminDashboardController;

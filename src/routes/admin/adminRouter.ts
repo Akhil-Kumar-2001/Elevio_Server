@@ -82,5 +82,6 @@ router.get(`/wallet`, validateToken('admin'), adminDashboardController.getWallet
 router.get('/getstudentsdata',validateToken('admin'),adminDashboardController.getStudents.bind(adminDashboardController));
 router.get(`/category-income`,validateToken('admin'),adminDashboardController.getCategoryIncomeDistribution.bind(adminDashboardController));
 router.get(`/admin-monlty-income`,validateToken('admin'),adminDashboardController.getAdminMonthlyIncome.bind(adminDashboardController))
+router.get(`/admin-yearly-income`,validateToken('admin'),adminDashboardController.getAdminYearlyIncome.bind(adminDashboardController))
 
 export default router

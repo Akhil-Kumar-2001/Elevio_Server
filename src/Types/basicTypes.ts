@@ -182,6 +182,13 @@ export interface MonthlyIncome {
   income: number;
 }
 
+export interface YearlyIncome {
+  year: string; 
+  income: number;
+}
+
+
+
 export interface MonthlyIncome {
   month: string; 
   income: number;
@@ -199,3 +206,4 @@ export interface IDashboardDetails {
   totalTransactions: number;
   lastTransactionDate: Date | null;
 }
+

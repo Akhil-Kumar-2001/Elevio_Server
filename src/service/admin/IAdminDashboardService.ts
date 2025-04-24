@@ -1,6 +1,6 @@
 import { IAdminWallet } from "../../model/adminwallet/adminwallet";
 import { IStudent } from "../../model/student/studentModel";
-import { CategoryIncome, DashboardData, MonthlyIncome } from "../../Types/basicTypes"
+import { CategoryIncome, DashboardData, MonthlyIncome, YearlyIncome } from "../../Types/basicTypes"
 
 interface IAdminDashboardService {
     getDashboardData(): Promise<DashboardData | null>;
@@ -8,6 +8,7 @@ interface IAdminDashboardService {
     getStudents(): Promise<IStudent[] | null>;
     getCategoryIncomeDistribution(): Promise<CategoryIncome[] | null>
     getAdminMonthlyIncome(year:number): Promise<MonthlyIncome[] | null>
+    getAdminYearlyIncome(year:number): Promise<YearlyIncome[] | null>
 
 }
 
