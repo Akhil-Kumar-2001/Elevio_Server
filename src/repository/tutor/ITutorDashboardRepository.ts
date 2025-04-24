@@ -1,9 +1,10 @@
 import { ITransaction } from "../../model/wallet/walletModel";
-import { IDashboardDetails, MonthlyIncome, StudentsCount } from "../../Types/basicTypes"
+import { IDashboardDetails, MonthlyIncome, StudentsCount, YearlyIncome } from "../../Types/basicTypes"
 import { TutorTransaction } from "../../Types/CategoryReturnType";
 
 interface ITutorDashboardRepository{
     getMonthlyIncome(tutorId:string):Promise<MonthlyIncome[] | null>;
+    getYearlyIncome(tutorId:string):Promise<YearlyIncome[] | null>;
     getStudentsCount(tutorId:string):Promise<StudentsCount[] | null>;
     getTransactions(tutorId:string,page:number,limit:number):Promise<TutorTransaction | null>;
     getDashboradDetails(tutorId:string):Promise<IDashboardDetails | null>;

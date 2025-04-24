@@ -1,6 +1,6 @@
 import { ITransaction } from "../../../model/wallet/walletModel";
 import ITutorDashboardRepository from "../../../repository/tutor/ITutorDashboardRepository";
-import { IDashboardDetails, MonthlyIncome, StudentsCount } from "../../../Types/basicTypes";
+import { IDashboardDetails, MonthlyIncome, StudentsCount, YearlyIncome } from "../../../Types/basicTypes";
 import { TutorTransaction } from "../../../Types/CategoryReturnType";
 import ITutorDashboardService from "../ITutorDashboardService";
 
@@ -13,6 +13,11 @@ class TutorDashboardService implements ITutorDashboardService {
 
     async getMonthlyIncome(tutorId: string): Promise<MonthlyIncome[] | null> {
         const response = await this._tutorDashboardRepository.getMonthlyIncome(tutorId);
+        return response;
+    }
+
+    async getYearlyIncome(tutorId: string): Promise<YearlyIncome[] | null> {
+        const response = await this._tutorDashboardRepository.getYearlyIncome(tutorId);
         return response;
     }
 

@@ -5,6 +5,7 @@ interface ITutorDashboardController{
     getStudentsCount(req:Request,res:Response):Promise<void>;
     getTransactions(req:Request,res:Response):Promise<void>;
     getDashboradDetails(req:Request,res:Response):Promise<void>;
+    getYearlyIncome(req:Request,res:Response):Promise<void>;
 
 }
 

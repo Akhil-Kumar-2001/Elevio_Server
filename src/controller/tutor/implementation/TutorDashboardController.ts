@@ -53,6 +53,17 @@ class TutorDashboardController implements ITutorDashboardController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR,data:null});
         }
     }
+    
+    async getYearlyIncome(req: Request, res: Response): Promise<void> {
+        try {
+            const tutorId = req.userId as string;
+            const response = await this._tutorDashboardService.getYearlyIncome(tutorId);
+            console.log("in controller",response)
+            res.status(STATUS_CODES.OK).json({success:true,message:"Monthly income retrieved successfully",data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR,data:null});
+        }
+    }
 
 }
 

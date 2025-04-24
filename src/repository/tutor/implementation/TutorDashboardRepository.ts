@@ -1,6 +1,6 @@
 import { Course } from "../../../model/course/courseModel";
 import { ITransaction, TutorWallet } from "../../../model/wallet/walletModel";
-import { IDashboardDetails, MonthlyIncome, StudentsCount } from "../../../Types/basicTypes";
+import { IDashboardDetails, MonthlyIncome, StudentsCount, YearlyIncome } from "../../../Types/basicTypes";
 import { TutorTransaction } from "../../../Types/CategoryReturnType";
 import ITutorDashboardRepository from "../ITutorDashboardRepository";
 import { Types } from 'mongoose'
@@ -64,6 +64,151 @@ class TutorDashboardRepository implements ITutorDashboardRepository {
       return null;
     }
   }
+
+  // async getYearlyIncome(tutorId: string): Promise<YearlyIncome[] | null> {
+  //   try {
+  //     // Convert string ID to ObjectId
+  //     const tutorObjectId = new Types.ObjectId(tutorId);
+  
+  //     const yearlyIncome = await TutorWallet.aggregate([
+  //       { $match: { tutorId: tutorObjectId, isActive: true } },
+  //       { $unwind: "$transactions" },
+  //       {
+  //         $match: {
+  //           "transactions.type": "credit" // Only count credits as income
+  //         }
+  //       },
+  //       {
+  //         $project: {
+  //           _id: 0,
+  //           year: { $year: "$transactions.date" },
+  //           amount: "$transactions.amount"
+  //         }
+  //       },
+  //       {
+  //         $group: {
+  //           _id: "$year",
+  //           income: { $sum: "$amount" }
+  //         }
+  //       },
+  //       { $sort: { _id: 1 } }
+  //     ]);
+  
+  //     // Format the results
+  //     const formattedData = yearlyIncome.map(item => ({
+  //       year: item._id,
+  //       income: item.income
+  //     }));
+  
+  //     console.log("Yearly income for tutor:", tutorId, formattedData);
+  //     return formattedData;
+  
+  //   } catch (error) {
+  //     console.error("Error fetching tutor yearly income:", error);
+  //     return null;
+  //   }
+  // }
+
+
+  async getYearlyIncome(tutorId: string): Promise<YearlyIncome[] | null> {
+    try {
+      const tutorObjectId = new Types.ObjectId(tutorId);
+  
+      const currentYear = new Date().getFullYear(); // 2025
+      const yearsRange = Array.from({ length: 5 }, (_, i) => currentYear - (4 - i)); // [2021, 2022, 2023, 2024, 2025]
+  
+      const yearlyIncome = await TutorWallet.aggregate([
+        // Match the tutor and active transactions
+        { $match: { tutorId: tutorObjectId, isActive: true } },
+        { $unwind: "$transactions" },
+        {
+          $match: {
+            "transactions.type": "credit", // Only count credits as income
+            "transactions.date": { $lte: new Date() } // Filter out future dates
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            year: { $year: "$transactions.date" },
+            amount: "$transactions.amount",
+            fullDate: "$transactions.date" // For debugging
+          }
+        },
+        {
+          $group: {
+            _id: "$year",
+            income: { $sum: "$amount" },
+            transactions: { $push: { date: "$fullDate", amount: "$amount" } } // Debug: Capture transactions
+          }
+        },
+        // Log the grouped data before facet
+        {
+          $facet: {
+            incomeData: [{ $project: { _id: 1, income: 1, transactions: 1 } }], // Capture grouped data
+            allYears: [
+              {
+                $project: {
+                  year: { $literal: yearsRange }
+                }
+              },
+              { $unwind: "$year" }
+            ]
+          }
+        },
+        {
+          $project: {
+            results: {
+              $map: {
+                input: "$allYears",
+                as: "yearObj",
+                in: {
+                  year: "$$yearObj.year",
+                  income: {
+                    $let: {
+                      vars: {
+                        incomeIndex: { $indexOfArray: ["$incomeData._id", "$$yearObj.year"] }
+                      },
+                      in: {
+                        $cond: {
+                          if: { $gte: ["$$incomeIndex", 0] },
+                          then: { $arrayElemAt: ["$incomeData.income", "$$incomeIndex"] },
+                          else: 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            debug: "$incomeData" // Capture debug data
+          }
+        },
+        { $unwind: "$results" },
+        { $replaceRoot: { newRoot: "$results" } },
+        { $sort: { year: 1 } }
+      ]);
+  
+      // Log debug data
+      console.log("Debug data for tutor:", tutorId, yearlyIncome[0]?.debug);
+  
+      const formattedData = yearlyIncome.length > 0 ? yearlyIncome : yearsRange.map(year => ({ year, income: 0 }));
+  
+      // Ensure all years are present
+      const finalData = yearsRange.map(year => {
+        const found = formattedData.find((item: any) => item.year === year);
+        return found || { year, income: 0 };
+      });
+  
+      console.log("Yearly income for tutor:", tutorId, finalData);
+      return finalData;
+  
+    } catch (error) {
+      console.error("Error fetching tutor yearly income:", error);
+      return null;
+    }
+  }
+  
 
 
   async getStudentsCount(tutorId: string): Promise<StudentsCount[] | null> {
