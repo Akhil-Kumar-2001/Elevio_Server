@@ -1,7 +1,7 @@
 import { IStudent } from "../../../model/student/studentModel";
 import { ISubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
 import IStudentProfileRepository from "../../../repository/student/IStudentProfileRepository";
-import { EditStudentType } from "../../../Types/basicTypes";
+import { EditStudentType, SessionInfo } from "../../../Types/basicTypes";
 import IStudentProfileService from "../IStudentProfileService";
 
 class StudentProfileService implements IStudentProfileService {
@@ -25,6 +25,11 @@ class StudentProfileService implements IStudentProfileService {
     async editProfile(id: string, formData: EditStudentType): Promise<IStudent | null> {
         const student = await this._studentProfileRepository.editProfile(id, formData);
         return student
+    }
+
+    async getSessions(studentId: string): Promise<SessionInfo[] | null> {
+        const response = await this._studentProfileRepository.getSessions(studentId);
+        return response;
     }
 }
 
