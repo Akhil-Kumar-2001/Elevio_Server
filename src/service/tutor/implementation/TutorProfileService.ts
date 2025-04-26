@@ -43,6 +43,17 @@ class TutorProfileService implements ITutorProfileService{
         const response = await this._tutorProfileRepository.getSessions(tutorId);
         return response;
     }
+
+    async getSessionDetails(id: string): Promise<ISession | null> {
+        const response = await this._tutorProfileRepository.getSessionDetails(id);
+        return response;
+    }
+
+    async updateSessionStatus(_id: string,status:string): Promise<boolean | null> {
+        const response = await this._tutorProfileRepository.updateSessionStatus(_id,status);
+        return response;
+    }
+
 }
 
 export default TutorProfileService;

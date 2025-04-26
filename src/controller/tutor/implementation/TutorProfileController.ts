@@ -81,12 +81,40 @@ class TutorProfileController implements ITutorProfileController {
         try {
             const tutorId = req.userId;
             const response = await this._tutorProfileService.getSessions(tutorId as string);
-            console.log("retrived session sorted",response)
+            console.log("retrived session sorted", response)
             if (response) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Scheduled session retrieved Successfully", data: response })
             }
         } catch (error) {
             console.log("Error while fetching session data :", error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+
+    async getSessionDetails(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const response = await this._tutorProfileService.getSessionDetails(id);
+            console.log("retrived session details", response)
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Session details retrieved Successfully", data: response })
+            }
+        } catch (error) {
+            console.log("Error while fetching session details :", error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+        }
+    }
+
+    async updateSessionStatus(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            const response = await this._tutorProfileService.updateSessionStatus(id, status);
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Session details retrieved Successfully", data: response })
+            }
+        } catch (error) {
+            console.log("Error while fetching session details :", error);
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     }

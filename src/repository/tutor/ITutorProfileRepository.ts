@@ -10,6 +10,8 @@ interface ITutorProfileRepository{
     sessionExist(sessionData:ISession) : Promise<boolean | null>
     createSession(sessionData:ISession) : Promise<boolean | null>
     getSessions(tutorId:string) : Promise<SessionInfo[] | null>
+    getSessionDetails(id:string) : Promise<ISession | null>
+    updateSessionStatus(_id:string,status:string):Promise<boolean | null>
 }
 
 export default ITutorProfileRepository

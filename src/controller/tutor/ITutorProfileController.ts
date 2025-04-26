@@ -6,6 +6,8 @@ interface ITutorProfileController{
     updateProfile(req:Request,res:Response):Promise<void>;
     createSession(req:Request,res:Response):Promise<void>;
     getSessions(req:Request,res:Response):Promise<void>;
+    getSessionDetails(req:Request,res:Response):Promise<void>;
+    updateSessionStatus(req:Request,res:Response):Promise<void>
 
 }
 

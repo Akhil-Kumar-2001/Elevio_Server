@@ -105,6 +105,8 @@ router.get(`/yearly-income`,isBlocked,validateToken("Tutor"),tutorDashboardContr
 
 router.post(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.createSession.bind(tutorProfileController))
 router.get(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.getSessions.bind(tutorProfileController))
+router.get(`/session-details/:id`,validateToken("Tutor"),tutorProfileController.getSessionDetails.bind(tutorProfileController))
+router.put(`/session-status/:id`,validateToken("Tutor"),tutorProfileController.updateSessionStatus.bind(tutorProfileController))
 
 
 export default  router

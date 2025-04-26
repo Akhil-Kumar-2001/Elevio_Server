@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Tutor, ITutor } from '../../../model/tutor/tutorModel';
 import ITutorProfileRepository from '../ITutorProfileRepository'
 import { SessionInfo, TutorVerificationFormData } from '../../../Types/basicTypes';
@@ -80,34 +81,59 @@ class TutorProfileRepository implements ITutorProfileRepository {
 
     async getSessions(tutorId: string): Promise<SessionInfo[] | null> {
         try {
-            // First get the session documents
+            // Get current time
+            const currentTime = new Date();
+            // Find sessions that are scheduled or active and have not ended
             const sessions = await Session.find({
                 tutorId,
-                status: 'scheduled',
+                status: { $in: ['scheduled', 'active'] },
+                // Ensure the session's end time (startTime + duration) is less than current time
+                $expr: {
+                    $gte: [
+                        { $add: ["$startTime", { $multiply: ["$duration", 60000] }] }, // duration in milliseconds
+                        currentTime
+                    ]
+                }
             });
-
             // For each session, get the student information
             const result = await Promise.all(sessions.map(async (session) => {
                 const student = await Student.findById(session.studentId);
-
                 return {
+                    _id: session._id,
                     studentName: student?.username || 'Unknown',
                     startTime: session.startTime,
                     duration: session.duration,
-                    status: session.status
+                    status: session.status,
+                    roomId: session.roomId,
                 };
             }));
-
             // Sort the results by startTime in ascending order
             const sortedResult = result.sort((a, b) => {
                 return a.startTime.getTime() - b.startTime.getTime();
             });
-
+            console.log("sortedResult", sortedResult)
             return sortedResult;
         } catch (error) {
             console.error("Error getting sessions:", error);
             return null;
         }
+    }
+
+    async getSessionDetails(_id: string): Promise<ISession | null> {
+        const session = await Session.findOne({ _id });
+        return session;
+    }
+
+
+    async updateSessionStatus(_id: string, status: string): Promise<boolean | null> {
+        console.log("iam here on update session repo", status)
+        const session = await Session.findOneAndUpdate(
+            { _id: new Types.ObjectId(_id) },
+            { $set: { status } },
+            { new: true }
+        );
+        console.log("iam here on update session repo session", session)
+        return session ? true : null
     }
 }
 
