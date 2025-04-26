@@ -1,3 +1,4 @@
+import { ISession } from "../../../model/sessiion/sessionModel";
 import { IStudent } from "../../../model/student/studentModel";
 import { ISubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
 import IStudentProfileRepository from "../../../repository/student/IStudentProfileRepository";
@@ -31,6 +32,17 @@ class StudentProfileService implements IStudentProfileService {
         const response = await this._studentProfileRepository.getSessions(studentId);
         return response;
     }
+
+    async getSessionDetails(_id: string): Promise<ISession | null> {
+        const response = await this._studentProfileRepository.getSessionDetails(_id);
+        return response;
+    }
+
+    async updateSessionStatus(_id: string,status:string): Promise<boolean | null> {
+        const response = await this._studentProfileRepository.updateSessionStatus(_id,status);
+        return response;
+    }
+
 }
 
 export default StudentProfileService

@@ -91,6 +91,8 @@ router.get('/progress/:id',validateToken("Student"),studentCourseController.getP
 router.post("/update-progress",validateToken("Student"),studentCourseController.addLectureToProgress.bind(studentCourseController))
 
 router.get('/sessions',validateToken("Student"),studentProfileController.getSessions.bind(studentProfileController))
+router.get(`/session-details/:id`,validateToken("Student"),studentProfileController.getSessionDetails.bind(studentProfileController))
+router.put(`/session-status/:id`,validateToken("Student"),studentProfileController.updateSessionStatus.bind(studentProfileController))
 // router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
 
 
