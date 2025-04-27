@@ -337,7 +337,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async getCourse(id: string): Promise<ICourse | null> {
         try {
-            const course = await Course.findOne({ _id: id })
+            const course = await Course.findOne({ _id: id }).populate('tutorId', 'username');
             return course
         } catch (error) {
             console.log("Error while getting Course details");
@@ -488,7 +488,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const reviews = await Review.find({ courseId: id, isVisible: true })
                 .populate('userId', 'username') // Populate username from User model
                 .sort({ createdAt: -1 }); // Sort by newest first
-            console.log("=============++>>>>>>>>>>>>>>>>>>>reviews in repository", reviews)
             return reviews.length > 0 ? reviews : null;
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -531,9 +530,9 @@ class StudentCourseRepository implements IStudentCourseRepository {
         }
     }
 
-    async getProgress(courseId: string,userId:string): Promise<IProgress | null> {
-        const progress = await Progress.findOne({courseId,studentId:userId});
-        return progress ?? null ;
+    async getProgress(courseId: string, userId: string): Promise<IProgress | null> {
+        const progress = await Progress.findOne({ courseId, studentId: userId });
+        return progress ?? null;
     }
 
     async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgress | null> {
@@ -543,31 +542,31 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 studentId: new Types.ObjectId(userId),
                 courseId: new Types.ObjectId(courseId)
             });
-    
+
             if (!progress) {
                 console.error(`Progress not found for user ${userId} and course ${courseId}`);
                 return null;
             }
-    
+
             // Convert lectureId to ObjectId
             const lectureObjectId = new Types.ObjectId(lectureId);
-    
+
             // Check if lecture is already in completedLectures to avoid duplicates
             if (!progress.completedLectures.includes(lectureObjectId)) {
                 // Add lectureId to completedLectures
                 progress.completedLectures.push(lectureObjectId);
                 progress.lastAccessedLecture = lectureObjectId;
                 progress.lastAccessDate = new Date();
-    
+
                 // Get total number of lectures for the course from Lecture collection
                 const totalLectures = await Lecture.countDocuments({
                     courseId: new Types.ObjectId(courseId)
                 });
-    
+
                 if (totalLectures > 0) {
                     // Calculate progress percentage
                     progress.progressPercentage = Math.round((progress.completedLectures.length / totalLectures) * 100);
-    
+
                     // Check if course is completed
                     if (progress.completedLectures.length === totalLectures && !progress.isCompleted) {
                         progress.isCompleted = true;
@@ -578,10 +577,83 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 await progress.save();
                 console.log(`Lecture ${lectureId} added to progress for user ${userId} and course ${courseId}`);
             }
-    
+
             return progress;
         } catch (error) {
             console.error("Error adding lecture to progress:", error);
+            return null;
+        }
+    }
+
+    async editReview(id: string, formData: review): Promise<IReview | null> {
+        try {
+            // Find the review first to get the courseId
+            const oldReview = await Review.findById(id);
+            if (!oldReview) {
+                return null;
+            }   
+            const courseId = oldReview.courseId; // Assuming review has courseId field
+            // Update the review
+            const updatedReview = await Review.findByIdAndUpdate(
+                id,
+                {
+                    rating: formData.rating,
+                    review: formData.review
+                },
+                { new: true }
+            );
+            if (!updatedReview) {
+                return null;
+            }
+            // Find all reviews for this course to recalculate average
+            const allCourseReviews = await Review.find({ courseId });
+            // Calculate new average rating
+            let newAvgRating = 0;
+            if (allCourseReviews.length > 0) {
+                const totalRating = allCourseReviews.reduce((sum, review) => sum + review.rating, 0);
+                newAvgRating = totalRating / allCourseReviews.length;
+            }
+            // Update the course with new avgRating
+            await Course.findByIdAndUpdate(courseId, {
+                avgRating: newAvgRating
+            });
+            return updatedReview;
+        } catch (error) {
+            console.error("Error while editing review", error);
+            return null;
+        }
+    }
+
+    async deleteReview(id: string): Promise<boolean | null> {
+        try {
+            // First, find the review to get its courseId and rating
+            const review = await Review.findById(id);
+            if (!review) {
+                return false;
+            }
+            const courseId = review.courseId; // Assuming review has courseId field
+            // Delete the review
+            const deletedReview = await Review.findByIdAndDelete(id);
+            if (!deletedReview) {
+                return false;
+            }
+            // Find all remaining reviews for this course
+            const remainingReviews = await Review.find({ courseId });
+
+            // Calculate new average rating
+            let newAvgRating = 0;
+            if (remainingReviews.length > 0) {
+                const totalRating = remainingReviews.reduce((sum, review) => sum + review.rating, 0);
+                newAvgRating = totalRating / remainingReviews.length;
+            }
+            // Update the course with new totalReviews and avgRating
+            await Course.findByIdAndUpdate(courseId, {
+                totalReviews: remainingReviews.length,
+                avgRating: newAvgRating
+            });
+            return true;
+        } catch (error) {
+            console.error("Error while deleting review", error);
             return null;
         }
     }

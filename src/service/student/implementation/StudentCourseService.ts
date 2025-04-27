@@ -275,6 +275,17 @@ class StudentCourseService implements IStudentCourseService {
         const response = await this._studentCourseRepository.addLectureToProgress(userId,courseId,lectureId);
         return response;
     }
+
+
+    async editReview(id: string, formData: review): Promise<IReview | null> {
+        const response = await this._studentCourseRepository.editReview(id, formData);
+        return response
+    }
+
+    async deleteReview(id: string): Promise<boolean | null> {
+        const response = await this._studentCourseRepository.deleteReview(id);
+        return response
+    }
 }
 
 export default StudentCourseService

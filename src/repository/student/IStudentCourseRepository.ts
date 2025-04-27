@@ -39,6 +39,8 @@ interface IStudentCourseRepository {
     createReview(formData:review):Promise<IReview | null>
     getProgress(courseId:string,userId:string):Promise<IProgress | null>
     addLectureToProgress(userId:string,courseId:string,lectureId:string):Promise<IProgress | null>
+    editReview(id:string,formData:review):Promise<IReview | null>
+    deleteReview(id:string):Promise<boolean | null>
 
 }
 

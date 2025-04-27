@@ -214,3 +214,8 @@ export interface SessionInfo {
   duration: number;
   status: string;
 }
+
+export interface EditReview {
+  rating: number;
+  review: string;
+}

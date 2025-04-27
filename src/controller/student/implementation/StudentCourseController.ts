@@ -283,6 +283,27 @@ class StudentCourseController implements IStudentCourseController {
         }
     }
 
+    async editReview(req: Request, res: Response): Promise<void> {
+        try {
+            const {id} = req.params;
+            const {formData} = req.body;
+            const response = await this._studentCourseService.editReview(id,formData);
+            res.status(STATUS_CODES.OK).json({success:true,message:"Review updated Successfully",data:response});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+        }
+    }
+
+    async deleteReview(req: Request, res: Response): Promise<void> {
+        try {
+            const {id} = req.params;
+            const response = await this._studentCourseService.deleteReview(id);
+            res.status(STATUS_CODES.OK).json({success:true,message:"Review deleted Successfully",data:response});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+        }
+    }
+
 }
 
 export default StudentCourseController

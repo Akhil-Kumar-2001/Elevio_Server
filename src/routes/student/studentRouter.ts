@@ -93,11 +93,8 @@ router.post("/update-progress",validateToken("Student"),studentCourseController.
 router.get('/sessions',validateToken("Student"),studentProfileController.getSessions.bind(studentProfileController))
 router.get(`/session-details/:id`,validateToken("Student"),studentProfileController.getSessionDetails.bind(studentProfileController))
 router.put(`/session-status/:id`,validateToken("Student"),studentProfileController.updateSessionStatus.bind(studentProfileController))
-// router.get("/auth/google/callback", studentController.googleAuthCallback.bind(studentController));
-
-
-// router.post('/is-Blocked',studentController.isBlocked.bind(studentController));
-// router.post('/is-Blocked',validateToken)
+router.put(`/edit-review/:id`,validateToken("Student"),studentCourseController.editReview.bind(studentCourseController))
+router.delete(`/delete-review/:id`,validateToken("Student"),studentCourseController.deleteReview.bind(studentCourseController))
 
 
 

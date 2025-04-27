@@ -23,7 +23,8 @@ interface IStudentCourseController{
     createReview(req:Request,res:Response):Promise<void>
     getProgress(req:Request,res:Response):Promise<void>
     addLectureToProgress(req:Request,res:Response):Promise<void>
-
+    editReview(req:Request,res:Response):Promise<void>
+    deleteReview(req:Request,res:Response):Promise<void>
     
 }
 export default IStudentCourseController

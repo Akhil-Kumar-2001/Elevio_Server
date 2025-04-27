@@ -9,7 +9,7 @@ import { ISection } from "../../model/section/sectionModel"
 import { ISubscription } from "../../model/subscription/subscriptionModel"
 import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased"
 import { ITutor } from "../../model/tutor/tutorModel"
-import { ICartWithDetails, review } from "../../Types/basicTypes"
+import { EditReview, ICartWithDetails, review } from "../../Types/basicTypes"
 import { CourseResponseDataType } from "../../Types/CategoryReturnType"
 
 interface IStudentCourseService {
@@ -37,6 +37,8 @@ interface IStudentCourseService {
     createReview(formData:review):Promise<IReview | null>
     getProgress(courseId:string,userId:string):Promise<IProgress | null>
     addLectureToProgress(userId:string,courseId:string,lectureId:string):Promise<IProgress | null>
+    editReview(id:string,formData:EditReview):Promise<IReview | null>
+    deleteReview(id:string):Promise<boolean | null>
 
 
 }
