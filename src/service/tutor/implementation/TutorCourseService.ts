@@ -8,41 +8,42 @@ import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
 import ITutorCourseService from "../ITutorCourseService";
 import s3 from '../../../Config/awsConfig';
 import { INotification } from "../../../model/notification/notification.Model";
+import { IReview } from "../../../model/review/review.model";
 
-class TutorCourseService implements ITutorCourseService{
+class TutorCourseService implements ITutorCourseService {
 
-    private _tutorProfileRepository:ITutorCourseRepository;
-    constructor(tutorProfileRepository:ITutorCourseRepository){
+    private _tutorProfileRepository: ITutorCourseRepository;
+    constructor(tutorProfileRepository: ITutorCourseRepository) {
         this._tutorProfileRepository = tutorProfileRepository
     }
 
-    async getCategories():Promise<ICategory[] | null> {
-            const categories = await this._tutorProfileRepository.getCategories();
-            return categories
-        }
+    async getCategories(): Promise<ICategory[] | null> {
+        const categories = await this._tutorProfileRepository.getCategories();
+        return categories
+    }
 
     async createCourse(courseData: CourseData): Promise<boolean | null> {
         const response = await this._tutorProfileRepository.createCourse(courseData);
         return response
     }
 
-    async getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null> {
-        const response = await this._tutorProfileRepository.getCourses(tutorId,page,limit);
+    async getCourses(tutorId: string, page: number, limit: number): Promise<CourseResponseDataType | null> {
+        const response = await this._tutorProfileRepository.getCourses(tutorId, page, limit);
         return response;
     }
 
-    async getCourseDetails(id:string):Promise<ICourse | null> {
+    async getCourseDetails(id: string): Promise<ICourse | null> {
         const response = await this._tutorProfileRepository.getCourseDetails(id);
         return response;
     }
 
     async editCourse(id: string, editedCourse: ICourse): Promise<ICourse | null> {
-        const response = await this._tutorProfileRepository.editCourse(id,editedCourse);
+        const response = await this._tutorProfileRepository.editCourse(id, editedCourse);
         return response
     }
 
-    async createSection(id: string,sectionData:ISectionData): Promise<ISection | null> {
-        const response = await this._tutorProfileRepository.createSection(id,sectionData);
+    async createSection(id: string, sectionData: ISectionData): Promise<ISection | null> {
+        const response = await this._tutorProfileRepository.createSection(id, sectionData);
         return response
     }
 
@@ -51,19 +52,19 @@ class TutorCourseService implements ITutorCourseService{
         return response
     }
 
-    async getSections(id:string):Promise<ISection[] | null > {
+    async getSections(id: string): Promise<ISection[] | null> {
         const response = await this._tutorProfileRepository.getSections(id);
         return response
     }
 
-    async getLectures(id:string):Promise<ILecture[] | null > {
+    async getLectures(id: string): Promise<ILecture[] | null> {
         const response = await this._tutorProfileRepository.getLectures(id);
         return response
     }
 
     async editLecture(id: string, title: string): Promise<ILecture | null> {
-        const response = await this._tutorProfileRepository.editLecture(id,title);
-       
+        const response = await this._tutorProfileRepository.editLecture(id, title);
+
         return response;
     }
     async deleteLecture(id: string): Promise<boolean | null> {
@@ -72,7 +73,7 @@ class TutorCourseService implements ITutorCourseService{
     }
 
     async editSection(id: string, data: ISectionData): Promise<ISection | null> {
-        const response = await this._tutorProfileRepository.editSection(id,data);
+        const response = await this._tutorProfileRepository.editSection(id, data);
         return response;
     }
 
@@ -85,7 +86,7 @@ class TutorCourseService implements ITutorCourseService{
             ContentType: videoFile.mimetype,
             ACL: 'public-read',
         };
-    
+
         try {
             // Delegate the entire upload and update process to the repository
             const videoUrl = await this._tutorProfileRepository.uploadLectureVideo(lectureId, videoFile);
@@ -99,7 +100,7 @@ class TutorCourseService implements ITutorCourseService{
         }
     }
 
-    async applyReview(courseId:string): Promise<boolean | null> {
+    async applyReview(courseId: string): Promise<boolean | null> {
         const response = await this._tutorProfileRepository.applyReview(courseId);
         return response
     }
@@ -112,6 +113,34 @@ class TutorCourseService implements ITutorCourseService{
     async readNotifications(id: string): Promise<boolean | null> {
         const response = await this._tutorProfileRepository.readNotifications(id);
         return response;
+    }
+
+    async getCoursePreview(courseId: string): Promise<ICourse | null> {
+        const response = await this._tutorProfileRepository.getCoursePreview(courseId);
+        return response;
+    }
+
+    async getSectionsPreview(courseId: string): Promise<ISection[] | null> {
+        const response = await this._tutorProfileRepository.getSectionsPreview(courseId);
+        return response;
+    }
+
+    async getLecturesPreview(sectionId: string): Promise<ILecture[] | null> {
+        const response = await this._tutorProfileRepository.getLecturesPreview(sectionId);
+        return response;
+    }
+    
+    async getReviews(courseId: string): Promise<any | null> {
+        const response = await this._tutorProfileRepository.getReviews(courseId);
+        return response;
+    }
+
+    async replyReview(reviewId: string, reply: string): Promise<IReview | null> {
+        return this._tutorProfileRepository.replyReview(reviewId, reply);
+    }
+
+    async deleteReply(reviewId: string): Promise<boolean | null> {
+        return this._tutorProfileRepository.deleteReply(reviewId);
     }
 }
 

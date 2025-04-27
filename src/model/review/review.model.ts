@@ -5,6 +5,7 @@ interface IReview extends Document {
     userId: Types.ObjectId;
     rating: number;
     review: string;
+    reply:string;
     isVisible: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -35,6 +36,10 @@ const reviewSchema = new Schema<IReview>({
     review: {
         type: String,
         required: true,
+    },
+    reply: {
+        type: String,
+        default: null,
     },
     isVisible: {
         type: Boolean,

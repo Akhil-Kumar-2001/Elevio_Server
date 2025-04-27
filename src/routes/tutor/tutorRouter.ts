@@ -103,10 +103,18 @@ router.get(`/transactions`,isBlocked,validateToken('Tutor'),tutorDashboardContro
 router.get(`/dahboard-data`,isBlocked,validateToken('Tutor'),tutorDashboardController.getDashboradDetails.bind(tutorDashboardController));
 router.get(`/yearly-income`,isBlocked,validateToken("Tutor"),tutorDashboardController.getYearlyIncome.bind(tutorDashboardController));
 
+//session routes
 router.post(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.createSession.bind(tutorProfileController))
 router.get(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.getSessions.bind(tutorProfileController))
 router.get(`/session-details/:id`,validateToken("Tutor"),tutorProfileController.getSessionDetails.bind(tutorProfileController))
 router.put(`/session-status/:id`,validateToken("Tutor"),tutorProfileController.updateSessionStatus.bind(tutorProfileController))
 
+//course preview
+router.get('/getcourse/:courseId',isBlocked,validateToken("Tutor"),tutorCourseController.getCoursePreview.bind(tutorCourseController))
+router.get('/getsections/:courseId',isBlocked,validateToken("Tutor"),tutorCourseController.getSectionsPreview.bind(tutorCourseController))
+router.get('/getlectures/:sectionId',isBlocked,validateToken("Tutor"),tutorCourseController.getLecturesPreview.bind(tutorCourseController))
+router.get('/reviews/:courseId',isBlocked,validateToken("Tutor"),tutorCourseController.getReviews.bind(tutorCourseController))
+router.post('/reply-review/:reviewId',isBlocked,validateToken("Tutor"),tutorCourseController.replyReview.bind(tutorCourseController))
+router.delete('/delete-reply/:reviewId',isBlocked,validateToken("Tutor"),tutorCourseController.deleteReply.bind(tutorCourseController))
 
 export default  router

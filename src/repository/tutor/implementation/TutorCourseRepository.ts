@@ -11,6 +11,7 @@ import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { INotification, Notification } from "../../../model/notification/notification.Model";
+import { IReview, Review } from "../../../model/review/review.model";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -23,10 +24,10 @@ class TutorCourseRepository implements ITutorCourseRepository {
 
     async createCourse(courseData: CourseData): Promise<boolean | null> {
         try {
-            const existingCourse = await Course.find({title:courseData.courseName});
-            if(existingCourse){
+            const existingCourse = await Course.find({ title: courseData.courseName });
+            if (existingCourse) {
                 return false
-            }else{
+            } else {
                 const newCourse = new Course(courseData);
                 await newCourse.save();
                 return true;
@@ -37,10 +38,10 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null> {
+    async getCourses(tutorId: string, page: number, limit: number): Promise<CourseResponseDataType | null> {
         try {
             const skip = (page - 1) * limit;
-            const courses = await Course.find({tutorId}).sort({ createAt: -1 }).skip(skip).limit(limit).exec()
+            const courses = await Course.find({ tutorId }).sort({ createAt: -1 }).skip(skip).limit(limit).exec()
             const totalRecord = await Course.countDocuments()
             return { courses, totalRecord }
         } catch (error) {
@@ -378,13 +379,96 @@ class TutorCourseRepository implements ITutorCourseRepository {
                 { isRead: true },
                 { new: true }
             )
-            console.log("notification after read",notification);
-            return notification ? true :false
+            console.log("notification after read", notification);
+            return notification ? true : false
         } catch (error) {
             return null
         }
     }
-    
+
+
+    async getCoursePreview(courseId: string): Promise<ICourse | null> {
+        try {
+            const course = await Course.findOne({ _id: courseId })
+                .populate('tutorId', 'username email profilePicture')
+                .populate('category', 'name')
+            return course
+        } catch (error) {
+            console.log("Error while getting Course details");
+            return null
+        }
+    }
+
+
+    async getSectionsPreview(courseId: string): Promise<ISection[] | null> {
+        try {
+            const sections = await Section.find({ courseId })
+            return sections
+        } catch (error) {
+            console.log("Error while getting Sections");
+            return null
+        }
+    }
+
+    async getLecturesPreview(sectionId: string): Promise<ILecture[] | null> {
+        try {
+            const lectures = await Lecture.find({ sectionId: sectionId })
+            return lectures
+        } catch (error) {
+            console.log("Error while retrieving Sections ");
+            return null
+        }
+    }
+
+    async getReviews(courseId: string): Promise<any | null> {
+        try {
+            const reviews = await Review.find({ courseId, isVisible: true })
+                .populate('userId', 'username')
+                .sort({ createdAt: -1 });
+            return reviews.length > 0 ? reviews : null;
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+            return null;
+        }
+    }
+
+    async replyReview(reviewId: string, reply: string): Promise<IReview | null> {
+        try {
+            const updatedReview = await Review.findByIdAndUpdate(
+                { _id: reviewId },
+                { reply },
+                { new: true }
+            );
+            return updatedReview ?? null;
+        } catch (error) {
+            console.error('Error replying to review:', error);
+            return null;
+        }
+    }
+
+
+    async deleteReply(reviewId: string): Promise<boolean | null> {
+        try {
+            const result = await Review.findByIdAndUpdate(
+                reviewId,
+                { $set: { reply: null } },
+                { new: true }
+            );
+
+            if (!result) {
+                console.error('Review not found for ID:', reviewId);
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting reply:', error);
+            return null;
+
+        }
+    }
+
+
 
 
 

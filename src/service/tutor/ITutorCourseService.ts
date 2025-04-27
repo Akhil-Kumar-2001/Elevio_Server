@@ -1,3 +1,4 @@
+import { get } from "http"
 import { ICategory } from "../../model/category/categoryModel"
 import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
@@ -5,6 +6,7 @@ import { INotification } from "../../model/notification/notification.Model"
 import { ISection } from "../../model/section/sectionModel"
 import { CourseData, ILectureData, ISectionData } from "../../Types/basicTypes"
 import { CourseResponseDataType } from "../../Types/CategoryReturnType"
+import { IReview } from "../../model/review/review.model"
 
 interface ITutorCourseService {
     getCategories(): Promise<ICategory[] | null>
@@ -25,6 +27,12 @@ interface ITutorCourseService {
     applyReview(courseId:string):Promise<boolean | null>
     getNotifications(receiverId:string):Promise<INotification[] | null>
     readNotifications(id:string):Promise<boolean | null>
+    getCoursePreview(courseId:string):Promise<ICourse | null>
+    getSectionsPreview(courseId:string):Promise<ISection[] | null>
+    getLecturesPreview(sectionId:string):Promise<ILecture[] | null>
+    getReviews(courseId:string):Promise<any | null>
+    replyReview(reviewId:string,reply:string):Promise<IReview | null>
+    deleteReply(reviewId:string):Promise<boolean | null>
 
 }
 
