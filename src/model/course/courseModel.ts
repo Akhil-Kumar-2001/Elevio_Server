@@ -26,7 +26,7 @@ interface ICourse extends Document {
 const courseSchema = new Schema<ICourse>({
     tutorId: {
         type: Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Tutor",
         required: true,
     },
     title: {
