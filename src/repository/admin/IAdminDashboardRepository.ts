@@ -9,6 +9,7 @@ interface IAdminDashboardRepository {
     getCategoryIncomeDistribution(): Promise<CategoryIncome[] | null>
     getAdminMonthlyIncome(year:number):Promise<MonthlyIncome[] | null>
     getAdminYearlyIncome(year:number):Promise<YearlyIncome[] | null>
+    getAdminIncomeByDateRange(startDate:string,endDate:string):Promise<MonthlyIncome[] | null>
 }
 
 export default IAdminDashboardRepository

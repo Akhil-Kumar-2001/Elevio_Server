@@ -7,6 +7,7 @@ import { Tutor } from "../../../model/tutor/tutorModel";
 import { TutorWallet } from "../../../model/wallet/walletModel";
 import { CategoryIncome, DashboardData, MonthlyIncome, YearlyIncome } from "../../../Types/basicTypes";
 import IAdminDashboardRepository from "../IAdminDashboardRepository";
+import { startOfMonth, endOfMonth, format, parseISO, eachMonthOfInterval } from 'date-fns';
 
 class AdminDashboardRepository implements IAdminDashboardRepository {
 
@@ -255,6 +256,76 @@ class AdminDashboardRepository implements IAdminDashboardRepository {
           return formattedData;
         } catch (error) {
           console.error("Error fetching admin yearly income:", error);
+          return null;
+        }
+      }
+
+      async  getAdminIncomeByDateRange(startDate: string, endDate: string): Promise<MonthlyIncome[] | null> {
+        try {
+          // Parse the input dates
+          const start = parseISO(startDate);
+          const end = parseISO(endDate);
+      
+          // Validate dates
+          if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+            console.error('Invalid date range');
+            return null;
+          }
+      
+          // Find the admin wallet (assuming there's a single admin wallet or you filter by email)
+          const adminWallet = await AdminWallet.findOne({ isActive: true }).lean();
+          if (!adminWallet) {
+            console.error('No active admin wallet found');
+            return null;
+          }
+      
+          // Filter transactions within the date range and of type 'credit' or 'commission'
+          const incomeTransactions = adminWallet.transactions.filter(
+            (transaction) =>
+              transaction.date >= start &&
+              transaction.date <= end &&
+              ['credit', 'commission'].includes(transaction.type)
+          );
+      
+          // If no transactions found, return an empty array or null
+          if (!incomeTransactions.length) {
+            return [];
+          }
+      
+          // Group transactions by month
+          const monthlyIncomeMap: { [key: string]: number } = {};
+      
+          // Generate all months in the date range to ensure every month is represented
+          const monthsInRange = eachMonthOfInterval({ start, end });
+      
+          // Initialize the map with zero income for each month
+          monthsInRange.forEach((month) => {
+            const monthKey = format(month, 'MMMM yyyy'); // e.g., "January 2025"
+            monthlyIncomeMap[monthKey] = 0;
+          });
+      
+          // Aggregate income by month
+          incomeTransactions.forEach((transaction) => {
+            const monthKey = format(transaction.date, 'MMMM yyyy');
+            monthlyIncomeMap[monthKey] = (monthlyIncomeMap[monthKey] || 0) + transaction.amount;
+          });
+      
+          // Convert the map to the MonthlyIncome array format
+          const monthlyIncome: MonthlyIncome[] = Object.entries(monthlyIncomeMap).map(([month, income]) => ({
+            month,
+            income,
+          }));
+      
+          // Sort by month for consistent display
+          monthlyIncome.sort((a, b) => {
+            const dateA = parseISO(a.month);
+            const dateB = parseISO(b.month);
+            return dateA.getTime() - dateB.getTime();
+          });
+      
+          return monthlyIncome;
+        } catch (error) {
+          console.error('Error fetching admin income by date range:', error);
           return null;
         }
       }

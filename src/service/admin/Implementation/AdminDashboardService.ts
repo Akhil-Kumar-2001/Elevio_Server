@@ -39,6 +39,11 @@ class AdminDashboardService implements IAdminDashboardService {
         const response = await this._adminDashboardRepository.getAdminYearlyIncome(year);
         return response
     }
+
+    async getAdminIncomeByDateRange(startDate: string, endDate: string): Promise<MonthlyIncome[] | null> {
+        const response = await this._adminDashboardRepository.getAdminIncomeByDateRange(startDate, endDate);
+        return response
+    }
 }
 
 export default AdminDashboardService;

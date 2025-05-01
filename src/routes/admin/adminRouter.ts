@@ -83,5 +83,7 @@ router.get('/getstudentsdata',validateToken('admin'),adminDashboardController.ge
 router.get(`/category-income`,validateToken('admin'),adminDashboardController.getCategoryIncomeDistribution.bind(adminDashboardController));
 router.get(`/admin-monlty-income`,validateToken('admin'),adminDashboardController.getAdminMonthlyIncome.bind(adminDashboardController))
 router.get(`/admin-yearly-income`,validateToken('admin'),adminDashboardController.getAdminYearlyIncome.bind(adminDashboardController))
+router.get(`/admin-income-by-date-range`,validateToken('admin'),adminDashboardController.getAdminIncomeByDateRange.bind(adminDashboardController))
+
 
 export default router

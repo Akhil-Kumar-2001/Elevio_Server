@@ -67,6 +67,22 @@ class AdminDashboardController implements IAdminDashboardController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
     }
+
+    async getAdminIncomeByDateRange(req: Request, res: Response): Promise<void> {
+        try {
+            const { startDate, endDate } = req.query;
+            if (!startDate || !endDate) {
+                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Start date and end date are required", data: null });
+                return;
+            }
+            const start = new Date(startDate as string);
+            const end = new Date(endDate as string);
+            const response = await this._adminDashboardService.getAdminIncomeByDateRange(start.toISOString(), end.toISOString());
+            res.status(STATUS_CODES.OK).json({success:true,message:"Admin income by date range retrived successfully",data:response})
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+        }
+    }
 }
 
 export default AdminDashboardController;
