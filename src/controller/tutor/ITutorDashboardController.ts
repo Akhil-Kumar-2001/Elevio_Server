@@ -6,6 +6,7 @@ interface ITutorDashboardController{
     getTransactions(req:Request,res:Response):Promise<void>;
     getDashboradDetails(req:Request,res:Response):Promise<void>;
     getYearlyIncome(req:Request,res:Response):Promise<void>;
+    getIncomeByDateRange(req:Request,res:Response):Promise<void>;
 
 }
 

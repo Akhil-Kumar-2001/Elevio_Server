@@ -8,6 +8,7 @@ interface ITutorDashboardService {
     getStudentsCount(tutorId:string):Promise<StudentsCount[] | null>;
     getTransactions(tutorId:string,page:number,limit:number):Promise<TutorTransaction | null>;
     getDashboradDetails(tutorId:string):Promise<IDashboardDetails | null>;
+    getIncomeByDateRange(tutorId:string,startDate:Date,endDate:Date):Promise<MonthlyIncome[] | null>;
 }
 
 export default ITutorDashboardService;

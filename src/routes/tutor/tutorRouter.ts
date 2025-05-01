@@ -102,6 +102,7 @@ router.get(`/students-count`,isBlocked,validateToken('Tutor'),tutorDashboardCont
 router.get(`/transactions`,isBlocked,validateToken('Tutor'),tutorDashboardController.getTransactions.bind(tutorDashboardController));
 router.get(`/dahboard-data`,isBlocked,validateToken('Tutor'),tutorDashboardController.getDashboradDetails.bind(tutorDashboardController));
 router.get(`/yearly-income`,isBlocked,validateToken("Tutor"),tutorDashboardController.getYearlyIncome.bind(tutorDashboardController));
+router.get(`/income-by-date-range`,isBlocked,validateToken("Tutor"),tutorDashboardController.getIncomeByDateRange.bind(tutorDashboardController));
 
 //session routes
 router.post(`/sessions`,isBlocked,validateToken("Tutor"),tutorProfileController.createSession.bind(tutorProfileController))

@@ -4,6 +4,7 @@ import { IDashboardDetails, MonthlyIncome, StudentsCount, YearlyIncome } from ".
 import { TutorTransaction } from "../../../Types/CategoryReturnType";
 import ITutorDashboardRepository from "../ITutorDashboardRepository";
 import { Types } from 'mongoose'
+import { parseISO, format, eachMonthOfInterval } from 'date-fns';
 
 class TutorDashboardRepository implements ITutorDashboardRepository {
 
@@ -316,6 +317,76 @@ class TutorDashboardRepository implements ITutorDashboardRepository {
 
     } catch (error) {
       console.error("Error fetching dashboard details:", error);
+      return null;
+    }
+  }
+
+  async getIncomeByDateRange(tutorId: string, startDate: Date, endDate: Date): Promise<MonthlyIncome[] | null> {
+    try {
+      // Convert Date objects to ISO strings for consistency
+      const start = startDate;
+      const end = endDate;
+  
+      // Validate dates
+      if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+        console.error('Invalid date range');
+        return null;
+      }
+  
+      // Find the tutor wallet by tutorId
+      const tutorWallet = await TutorWallet.findOne({ tutorId: tutorId, isActive: true }).lean();
+      if (!tutorWallet) {
+        console.error('No active tutor wallet found for the given tutorId');
+        return null;
+      }
+  
+      // Filter transactions within the date range and of type 'credit' (or other income types)
+      const incomeTransactions = tutorWallet.transactions.filter(
+        (transaction) =>
+          transaction.date >= start &&
+          transaction.date <= end &&
+          ['credit'].includes(transaction.type) // Adjust types as needed (e.g., add 'commission')
+      );
+  
+      // If no transactions found, return an empty array
+      if (!incomeTransactions.length) {
+        return [];
+      }
+  
+      // Group transactions by month
+      const monthlyIncomeMap: { [key: string]: number } = {};
+  
+      // Generate all months in the date range to ensure every month is represented
+      const monthsInRange = eachMonthOfInterval({ start, end });
+  
+      // Initialize the map with zero income for each month
+      monthsInRange.forEach((month) => {
+        const monthKey = format(month, 'MMMM yyyy'); // e.g., "January 2025"
+        monthlyIncomeMap[monthKey] = 0;
+      });
+  
+      // Aggregate income by month
+      incomeTransactions.forEach((transaction) => {
+        const monthKey = format(transaction.date, 'MMMM yyyy');
+        monthlyIncomeMap[monthKey] = (monthlyIncomeMap[monthKey] || 0) + transaction.amount;
+      });
+  
+      // Convert the map to the MonthlyIncome array format
+      const monthlyIncome: MonthlyIncome[] = Object.entries(monthlyIncomeMap).map(([month, income]) => ({
+        month,
+        income,
+      }));
+  
+      // Sort by month for consistent display
+      monthlyIncome.sort((a, b) => {
+        const dateA = parseISO(a.month);
+        const dateB = parseISO(b.month);
+        return dateA.getTime() - dateB.getTime();
+      });
+  
+      return monthlyIncome;
+    } catch (error) {
+      console.error('Error fetching tutor income by date range:', error);
       return null;
     }
   }

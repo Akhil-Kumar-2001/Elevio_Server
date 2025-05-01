@@ -65,6 +65,23 @@ class TutorDashboardController implements ITutorDashboardController {
         }
     }
 
+    async getIncomeByDateRange(req: Request, res: Response): Promise<void> {
+        try {
+            const tutorId = req.userId as string;
+            const { startDate, endDate } = req.query;
+            if (!startDate || !endDate) {
+                res.status(STATUS_CODES.BAD_REQUEST).json({success:false,message:"Please provide start and end date",data:null});
+                return;
+            }
+            const start = new Date(startDate as string);
+            const end = new Date(endDate as string);
+            const response = await this._tutorDashboardService.getIncomeByDateRange(tutorId, start, end);
+            res.status(STATUS_CODES.OK).json({success:true,message:"Income by date range retrieved successfully",data:response});
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success:false,message:ERROR_MESSAGES.INTERNAL_SERVER_ERROR,data:null});
+        }
+    }
+
 }
 
 export default  TutorDashboardController

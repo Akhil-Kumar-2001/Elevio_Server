@@ -35,6 +35,11 @@ class TutorDashboardService implements ITutorDashboardService {
         const response = await this._tutorDashboardRepository.getDashboradDetails(tutorId);
         return response;
     }
+
+    async getIncomeByDateRange(tutorId: string, startDate: Date, endDate: Date): Promise<MonthlyIncome[] | null> {
+        const response = await this._tutorDashboardRepository.getIncomeByDateRange(tutorId,startDate,endDate);
+        return response;
+    }
 }
 
 export default TutorDashboardService;
