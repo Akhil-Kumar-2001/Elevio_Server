@@ -1,7 +1,15 @@
 FROM node:alpine
+
 WORKDIR /app
-EXPOSE 8080
-COPY ./package*.json /app/
+
+COPY package*.json ./
+
 RUN npm install
+
 COPY . .
-CMD [ "npx","nodemon"]
+
+RUN npm run build
+
+EXPOSE 8080
+
+CMD ["npm", "start"]
