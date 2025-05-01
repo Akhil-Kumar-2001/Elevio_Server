@@ -490,7 +490,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const reviews = await Review.find({ courseId: id, isVisible: true })
                 .populate('userId', 'username') // Populate username from User model
                 .sort({ createdAt: -1 }); // Sort by newest first
-            return reviews.length > 0 ? reviews : null;
+            return reviews.length > 0 ? reviews : [];
         } catch (error) {
             console.error('Error fetching reviews:', error);
             return null;
