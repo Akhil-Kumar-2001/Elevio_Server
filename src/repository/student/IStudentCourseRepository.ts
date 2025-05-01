@@ -41,6 +41,10 @@ interface IStudentCourseRepository {
     addLectureToProgress(userId:string,courseId:string,lectureId:string):Promise<IProgress | null>
     editReview(id:string,formData:review):Promise<IReview | null>
     deleteReview(id:string):Promise<boolean | null>
+    getWishlist(userId:string):Promise<ICourse[] | null>
+    addToWishlist(userId:string,courseId:string):Promise<boolean | null>
+    removeFromWishlist(userId:string,courseId:string):Promise<boolean | null>
+    isInWishlist(userId:string,courseId:string):Promise<boolean | null>
 
 }
 

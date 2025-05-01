@@ -96,7 +96,10 @@ router.put(`/session-status/:id`,validateToken("Student"),studentProfileControll
 router.put(`/edit-review/:id`,validateToken("Student"),studentCourseController.editReview.bind(studentCourseController))
 router.delete(`/delete-review/:id`,validateToken("Student"),studentCourseController.deleteReview.bind(studentCourseController))
 
-
+// Wishlist
+router.get('/wishlist',validateToken("Student"),studentCourseController.getWishlist.bind(studentCourseController));
+router.post('/add-to-wishlist/:id',validateToken("Student"),studentCourseController.addToWishlist.bind(studentCourseController));
+router.delete('/remove-from-wishlist/:id',validateToken("Student"),studentCourseController.removeFromWishlist.bind(studentCourseController));
 
 
 

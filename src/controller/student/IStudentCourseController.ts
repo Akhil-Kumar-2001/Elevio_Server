@@ -25,6 +25,9 @@ interface IStudentCourseController{
     addLectureToProgress(req:Request,res:Response):Promise<void>
     editReview(req:Request,res:Response):Promise<void>
     deleteReview(req:Request,res:Response):Promise<void>
+    getWishlist(req:Request,res:Response):Promise<void>
+    addToWishlist(req:Request,res:Response):Promise<void>
+    removeFromWishlist(req:Request,res:Response):Promise<void>
     
 }
 export default IStudentCourseController

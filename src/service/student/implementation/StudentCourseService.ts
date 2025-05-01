@@ -286,6 +286,25 @@ class StudentCourseService implements IStudentCourseService {
         const response = await this._studentCourseRepository.deleteReview(id);
         return response
     }
+
+    async getWishlist(userId: string): Promise<ICourse[] | null> {
+        const response = await this._studentCourseRepository.getWishlist(userId);
+        return response
+    }
+
+    async addToWishlist(userId: string, courseId: string): Promise<boolean | null> {
+        const response = await this._studentCourseRepository.addToWishlist(userId, courseId);
+        return response
+    }
+    
+    async removeFromWishlist(userId: string, courseId: string): Promise<boolean | null> {
+        const response = await this._studentCourseRepository.removeFromWishlist(userId, courseId);
+        return response
+    }
+
+    async isInWishlist(userId: string, courseId: string): Promise<boolean | null> {
+        return this._studentCourseRepository.isInWishlist(userId,courseId);
+    }
 }
 
 export default StudentCourseService

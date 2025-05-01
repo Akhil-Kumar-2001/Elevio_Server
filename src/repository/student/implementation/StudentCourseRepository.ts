@@ -16,6 +16,8 @@ import { ITutor, Tutor } from "../../../model/tutor/tutorModel";
 import { IReview, Review } from "../../../model/review/review.model";
 import { AdminWallet, IAdminTransaction } from "../../../model/adminwallet/adminwallet";
 import { IProgress, Progress } from "../../../model/progress/progress.model";
+import { Wishlist } from "../../../model/wishlist/wishlist.model";
+import { Console } from "console";
 
 class StudentCourseRepository implements IStudentCourseRepository {
 
@@ -591,7 +593,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const oldReview = await Review.findById(id);
             if (!oldReview) {
                 return null;
-            }   
+            }
             const courseId = oldReview.courseId; // Assuming review has courseId field
             // Update the review
             const updatedReview = await Review.findByIdAndUpdate(
@@ -654,6 +656,88 @@ class StudentCourseRepository implements IStudentCourseRepository {
             return true;
         } catch (error) {
             console.error("Error while deleting review", error);
+            return null;
+        }
+    }
+
+    async getWishlist(userId: string): Promise<ICourse[] | null> {
+        try {
+            console.log("userId in getWishlist", userId)
+            const wishlist = await Wishlist.findOne({ userId })
+                .populate("items.courseId")
+                .exec();
+            console.log("Wishlist in repository", wishlist)
+            if (!wishlist) return []
+
+            // Extract populated course objects
+            const courses = wishlist.items.map(item => item.courseId);
+            const wishlistedCourses = Course.find({ _id: { $in: courses } });
+            return wishlistedCourses;
+        } catch (error) {
+            console.error("Error fetching wishlist:", error);
+            return null;
+        }
+    }
+
+    async addToWishlist(userId: string, courseId: string): Promise<boolean | null> {
+        try {
+            console.log("userId in addToWishlist", userId)
+            const wishlist = await Wishlist.findOne({ userId });
+
+            if (!wishlist) {
+                // Create a new wishlist if it doesn't exist
+                const newWishlist = new Wishlist({
+                    userId,
+                    items: [{ courseId }]
+                });
+                await newWishlist.save();
+            } else {
+                // Check if the course is already in the wishlist
+                const courseExists = wishlist.items.some(item => item.courseId.toString() === courseId);
+
+                if (!courseExists) {
+                    // Add the course to the existing wishlist
+                    wishlist.items.push({ courseId: new Types.ObjectId(courseId) });
+                    await wishlist.save();
+                }
+            }
+            return true;
+        } catch (error) {
+            console.error("Error adding to wishlist:", error);
+            return null;
+        }
+    }
+
+    async isInWishlist(userId: string, courseId: string): Promise<boolean | null> {
+        try {
+            const wishlist = await Wishlist.findOne({ userId });
+            console.log("wishlist in isInWishlist", wishlist)
+            if (!wishlist) return false;
+            return wishlist.items.some(item => item.courseId.toString() === courseId);
+        } catch (error) {
+            console.error("Error checking wishlist:", error);
+            return null;
+        }
+    }
+
+
+    async removeFromWishlist(userId: string, courseId: string): Promise<boolean | null> {
+        try {
+            const wishlist = await Wishlist.findOne({ userId });
+            if (!wishlist) {
+                console.error("Wishlist not found for user:", userId);
+                return null;
+            }
+            // Filter out the courseId to be removed
+            const updatedItems = wishlist.items.filter(item => item.courseId.toString() !== courseId);
+            // Update the wishlist
+            await Wishlist.updateOne(
+                { userId },
+                { items: updatedItems }
+            );
+            return true;
+        } catch (error) {
+            console.error("Error removing from wishlist:", error);
             return null;
         }
     }

@@ -304,6 +304,52 @@ class StudentCourseController implements IStudentCourseController {
         }
     }
 
+    async getWishlist(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.userId as string;
+            const response = await this._studentCourseService.getWishlist(userId);
+            console.log("Wishlist response",response)
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Wishlist retrieved successfully", data: response })
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        }
+    }
+    async addToWishlist(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const userId = req.userId;
+            const isInWishlist = await this._studentCourseService.isInWishlist( userId as string,id);
+            console.log("isInWishlist",isInWishlist)
+            if (isInWishlist) { 
+                res.status(STATUS_CODES.CONFLICT).json({ success: true, message: "Course Already exist On Wishlist", data: isInWishlist })
+                return
+            }
+            const response = await this._studentCourseService.addToWishlist( userId as string,id);
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Add To Wishlist Successfully", data: response })
+            }
+
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+
+        }
+    }
+    async removeFromWishlist(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const studentId = req.userId as string;
+            console.log(studentId)
+            const response = await this._studentCourseService.removeFromWishlist( studentId,id)
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Course Removed from Wishlist successfully", data: response })
+
+            }
+        } catch (error) {
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+
+        }
+    }
+
 }
 
 export default StudentCourseController
