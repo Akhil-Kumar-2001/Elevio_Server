@@ -260,7 +260,7 @@ class TutorController implements ITutorController {
                         maxAge: 2 * 24 * 60 * 60 * 1000, 
                     });
                     res.cookie("accessToken", accessToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         maxAge:15 * 60 * 1000,
@@ -313,7 +313,7 @@ class TutorController implements ITutorController {
                 const newAccessToken = tokenInstance.generatingTokens(decoded.userId, decoded.role).accessToken;
                 
                 res.cookie("accessToken", newAccessToken, {
-                    httpOnly: false,
+                    httpOnly: true,
                     secure: true,
                     sameSite: "none",
                     maxAge: 15 * 60 * 1000,
@@ -518,7 +518,7 @@ class TutorController implements ITutorController {
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         maxAge: 15 * 60 * 1000,

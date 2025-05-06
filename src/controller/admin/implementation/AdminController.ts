@@ -46,7 +46,7 @@ class AdminController implements IAdminController {
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("admin-accessToken", accessToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         maxAge: 15 * 60 * 1000,
@@ -82,7 +82,7 @@ class AdminController implements IAdminController {
                 const newAccessToken = tokenInstance.generatingTokens(decoded.id, decoded.role).accessToken;
                 console.log("new access token", newAccessToken)
                 res.cookie("admin-accessToken", newAccessToken, {
-                    httpOnly: false,
+                    httpOnly: true,
                     secure: true,
                     sameSite: "none",
                     maxAge: 15 * 60 * 1000,
