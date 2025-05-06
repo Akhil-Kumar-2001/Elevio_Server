@@ -20,7 +20,7 @@ const io = configureSocket(server)
 // CORS Configuration
 app.use(
   cors({
-    origin: ["http://localhost:3000","https://api.razorpay.com"],
+    origin: process.env.CORS_ORIGIN?.split(",") || [],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
@@ -38,6 +38,10 @@ connectDb();
 
 
 // Routes
+app.get("/", (req: Request, res: Response) => {
+  res.send("Backend is running ✅");
+});
+
 app.use("/api/student", studentRouter);
 app.use("/api/tutor", tutorRouter);
 app.use("/api/admin", adminRouter);
