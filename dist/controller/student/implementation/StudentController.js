@@ -310,11 +310,15 @@ class StudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/"
                 });
                 res.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/"
                 });
                 res.status(statusCode_1.STATUS_CODES.OK).json({
                     success: true,

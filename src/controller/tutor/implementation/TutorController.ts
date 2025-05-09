@@ -338,11 +338,15 @@ class TutorController implements ITutorController {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
+                domain: ".elevic.site",
+                path: "/"
             });
             res.clearCookie("refreshToken", {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
+                domain: ".elevic.site",
+                path: "/"
             });
             res.status(STATUS_CODES.OK).json({
                 success: true,

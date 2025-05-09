@@ -109,11 +109,15 @@ class AdminController implements IAdminController {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
+                domain: ".elevic.site",
+                path: "/"
             });
             res.clearCookie("admin-refreshToken", {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
+                domain: ".elevic.site",
+                path: "/"
             });
             res.status(STATUS_CODES.OK).json({ success: true, message: "Logout successful", });
             return
