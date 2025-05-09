@@ -225,15 +225,19 @@ class StudentController {
                     };
                     if (accessToken && refreshToken) {
                         res.cookie("refreshToken", refreshToken, {
-                            httpOnly: true,
+                            httpOnly: false,
                             secure: true,
                             sameSite: "none",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 2 * 24 * 60 * 60 * 1000,
                         });
                         res.cookie("accessToken", accessToken, {
                             httpOnly: false,
                             secure: true,
                             sameSite: "none",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 15 * 60 * 1000,
                         });
                         res
@@ -282,7 +286,7 @@ class StudentController {
                     const tokenInstance = new tokenUtility_1.Token();
                     const newAccessToken = tokenInstance.generatingTokens(decoded.userId, decoded.role).accessToken;
                     res.cookie("accessToken", newAccessToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         maxAge: 15 * 60 * 1000,
@@ -499,7 +503,7 @@ class StudentController {
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         maxAge: 15 * 60 * 1000,
