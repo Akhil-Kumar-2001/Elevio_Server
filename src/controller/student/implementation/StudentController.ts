@@ -246,7 +246,7 @@ class StudentController implements IStudentController {
                 };
                 if (accessToken && refreshToken) {
                     res.cookie("refreshToken", refreshToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         domain: ".elevic.site",
@@ -254,7 +254,7 @@ class StudentController implements IStudentController {
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
-                        httpOnly: false,
+                        httpOnly: true,
                         secure: true,
                         sameSite: "none",
                         domain: ".elevic.site",
