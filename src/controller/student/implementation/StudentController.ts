@@ -309,6 +309,8 @@ class StudentController implements IStudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
 
@@ -349,8 +351,8 @@ class StudentController implements IStudentController {
         try {
             let { _id } = req.body
             const response = this._studentService.isBlocked(_id);
-            if(response){
-                res.status(STATUS_CODES.OK).json({success:true,message:"The User is Blocked by the admin",data:response});
+            if (response) {
+                res.status(STATUS_CODES.OK).json({ success: true, message: "The User is Blocked by the admin", data: response });
             }
         } catch (error) {
             console.error('Getting status value failed', error);
@@ -531,12 +533,16 @@ class StudentController implements IStudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 24 * 60 * 60 * 1000,
                 });
                 res.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
                 res

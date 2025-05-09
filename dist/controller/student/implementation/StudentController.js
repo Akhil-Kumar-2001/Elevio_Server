@@ -289,6 +289,8 @@ class StudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -500,12 +502,16 @@ class StudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res

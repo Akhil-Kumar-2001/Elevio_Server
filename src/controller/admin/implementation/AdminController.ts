@@ -43,12 +43,16 @@ class AdminController implements IAdminController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("admin-accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(STATUS_CODES.OK).json({ successs: true, message: "Sign-in successful", data: { accessToken, user: { id: email, role: "admin" } } });
@@ -63,7 +67,7 @@ class AdminController implements IAdminController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
         }
     }
-    
+
     async refreshToken(req: Request, res: Response): Promise<void> {
         try {
             const refreshToken = req.cookies['admin-refreshToken'];
@@ -85,6 +89,8 @@ class AdminController implements IAdminController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
 

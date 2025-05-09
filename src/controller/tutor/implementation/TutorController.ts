@@ -1,5 +1,5 @@
 import ITutorService from "../../../service/tutor/ITutorService";
-import { Request,Response } from "express";
+import { Request, Response } from "express";
 import PasswordUtils from "../../../utils/passwordUtility";
 import MailUtility from "../../../utils/mailUtility";
 import OtpUtility from "../../../utils/otpUtility";
@@ -11,9 +11,9 @@ import { ERROR_MESSAGES } from "../../../constants/errorMessage";
 import ITutorController from "../ITutorController";
 
 class TutorController implements ITutorController {
-    private _tutorService:ITutorService
+    private _tutorService: ITutorService
 
-    constructor(tutorService:ITutorService){
+    constructor(tutorService: ITutorService) {
         this._tutorService = tutorService
     }
 
@@ -32,7 +32,7 @@ class TutorController implements ITutorController {
             if (existingUser) {
                 if (existingUser.status === 0) {
                     password = await PasswordUtils.passwordHash(password);
-                    const updatedUser = await this._tutorService.updateUser(email,{
+                    const updatedUser = await this._tutorService.updateUser(email, {
                         username,
                         password,
                     } as ITutor);
@@ -226,8 +226,8 @@ class TutorController implements ITutorController {
                     })
                 return
             }
-            if(user.status === -1){
-                res.status(STATUS_CODES.FORBIDDEN).json({success:false,message:"User is Blocked by the admin",data:null})
+            if (user.status === -1) {
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is Blocked by the admin", data: null })
             }
             const comparePassword = await PasswordUtils.comparePassword(password, user?.password)
 
@@ -257,20 +257,24 @@ class TutorController implements ITutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        maxAge: 2 * 24 * 60 * 60 * 1000, 
+                        domain: ".elevic.site",
+                        path: "/",
+                        maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        maxAge:15 * 60 * 1000,
+                        domain: ".elevic.site",
+                        path: "/",
+                        maxAge: 15 * 60 * 1000,
                     });
                     res
                         .status(STATUS_CODES.OK)
                         .json({
                             successs: true,
                             message: "Sign-in successful",
-                            data: { accessToken,user: filteredData }
+                            data: { accessToken, user: filteredData }
                         });
                     return
                 } else {
@@ -311,11 +315,13 @@ class TutorController implements ITutorController {
                 // Generate a new access token
                 const tokenInstance = new Token();
                 const newAccessToken = tokenInstance.generatingTokens(decoded.userId, decoded.role).accessToken;
-                
+
                 res.cookie("accessToken", newAccessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
                 res.status(STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -325,29 +331,29 @@ class TutorController implements ITutorController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
         }
     };
-    async logout(req:Request,res:Response):Promise<void> {
+    async logout(req: Request, res: Response): Promise<void> {
 
         try {
             res.clearCookie("accessToken", {
-              httpOnly: true,
-              secure: true,
-              sameSite: "none",
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
             });
             res.clearCookie("refreshToken", {
-              httpOnly: true,
-              secure: true,
-              sameSite: "none",
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
             });
             res.status(STATUS_CODES.OK).json({
-              success: true,
-              message: "Logout successful",
+                success: true,
+                message: "Logout successful",
             });
-            return 
-          } catch (error) {
+            return
+        } catch (error) {
             console.error("Logout error:", error);
-            res.status(STATUS_CODES.BAD_REQUEST).json({  error: "logout failed"});
-            return 
-          }
+            res.status(STATUS_CODES.BAD_REQUEST).json({ error: "logout failed" });
+            return
+        }
     }
 
     async forgotPassword(req: Request, res: Response): Promise<void> {
@@ -389,7 +395,8 @@ class TutorController implements ITutorController {
             }
         } catch (error) {
             console.error("Error in forgotPassword:", error);
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success: false,message: "Internal Server Error",error: error instanceof Error ? error.message : "Unknown error",
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                success: false, message: "Internal Server Error", error: error instanceof Error ? error.message : "Unknown error",
             });
         }
     }
@@ -458,38 +465,39 @@ class TutorController implements ITutorController {
             const updatedUser = await this._tutorService.updateUser(email, userData);
 
             if (updatedUser) {
-                res.status(STATUS_CODES.OK).json({success: true,message: "Reset Password Successful",});
+                res.status(STATUS_CODES.OK).json({ success: true, message: "Reset Password Successful", });
             } else {
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success: false,message: "Error while resetting the password",});
+                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while resetting the password", });
             }
         } catch (error) {
             console.error("Error in resetPassword:", error);
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({success: false,message: "Internal Server Error",
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                success: false, message: "Internal Server Error",
                 error: error instanceof Error ? error.message : "Unknown error",
             });
         }
     }
 
 
-    async googleAuth(req: Request, res:Response) : Promise<void> {
+    async googleAuth(req: Request, res: Response): Promise<void> {
         try {
-            const {username,email,image} = req.body;
-            if(!username || !email || ! image) {
-                res.status(STATUS_CODES.BAD_REQUEST).json({success:false,message:"credential need to login",data:null});
+            const { username, email, image } = req.body;
+            if (!username || !email || !image) {
+                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "credential need to login", data: null });
                 return;
             }
             let user = await this._tutorService.findByEmail(email);
-            
-            if(user?.status == -1){
-                res.status(STATUS_CODES.FORBIDDEN).json({success:false,message:"user is blocked by the admin",data:null})
+
+            if (user?.status == -1) {
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "user is blocked by the admin", data: null })
                 return
             }
 
             if (!user) {
                 const password = await PasswordUtils.passwordHash(username);
-                user = await this._tutorService.createGoogleUser(username, email, password,image);  // Assign to 'user'
+                user = await this._tutorService.createGoogleUser(username, email, password, image);  // Assign to 'user'
             }
-    
+
             if (!user) {
                 res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to create user", data: null });
                 return;
@@ -501,41 +509,45 @@ class TutorController implements ITutorController {
                 email,
                 userData
             );
-            
+
             const tokenInstance = new Token();
-                const { accessToken, refreshToken } = tokenInstance.generatingTokens(user.id, user.role);
-                console.log("Accesstoken : ", accessToken)
-                console.log("Refreshtoken : ", refreshToken)
-                const filteredData = {
-                    id: user._id,
-                    role: user.role,
-                };
-                if (accessToken && refreshToken) {
-                    res.cookie("refreshToken", refreshToken, {
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: "none",
-                        maxAge: 24 * 60 * 60 * 1000,
-                    });
-                    res.cookie("accessToken", accessToken, {
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: "none",
-                        maxAge: 15 * 60 * 1000,
-                    });
-                    res
+            const { accessToken, refreshToken } = tokenInstance.generatingTokens(user.id, user.role);
+            console.log("Accesstoken : ", accessToken)
+            console.log("Refreshtoken : ", refreshToken)
+            const filteredData = {
+                id: user._id,
+                role: user.role,
+            };
+            if (accessToken && refreshToken) {
+                res.cookie("refreshToken", refreshToken, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
+                    maxAge: 24 * 60 * 60 * 1000,
+                });
+                res.cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    domain: ".elevic.site",
+                    path: "/",
+                    maxAge: 15 * 60 * 1000,
+                });
+                res
                     .status(STATUS_CODES.OK)
                     .json({
                         success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
                     });
-                    console.log("User signin successfull tutor  ")
-                    return
+                console.log("User signin successfull tutor  ")
+                return
 
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error", data: null });
         }
-     } catch (error) {
-        console.error(error);
-        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error", data: null });
-    }
     }
 
 

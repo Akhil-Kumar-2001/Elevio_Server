@@ -238,12 +238,16 @@ class TutorController {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 2 * 24 * 60 * 60 * 1000,
                         });
                         res.cookie("accessToken", accessToken, {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 15 * 60 * 1000,
                         });
                         res
@@ -298,6 +302,8 @@ class TutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -376,7 +382,8 @@ class TutorController {
             }
             catch (error) {
                 console.error("Error in forgotPassword:", error);
-                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error", error: error instanceof Error ? error.message : "Unknown error",
+                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                    success: false, message: "Internal Server Error", error: error instanceof Error ? error.message : "Unknown error",
                 });
             }
         });
@@ -446,7 +453,8 @@ class TutorController {
             }
             catch (error) {
                 console.error("Error in resetPassword:", error);
-                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error",
+                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                    success: false, message: "Internal Server Error",
                     error: error instanceof Error ? error.message : "Unknown error",
                 });
             }
@@ -488,12 +496,16 @@ class TutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res
