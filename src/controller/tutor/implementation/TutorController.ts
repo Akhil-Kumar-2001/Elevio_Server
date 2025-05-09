@@ -257,12 +257,14 @@ class TutorController implements ITutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
                         maxAge: 2 * 24 * 60 * 60 * 1000, 
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
                         maxAge:15 * 60 * 1000,
                     });
                     res
@@ -316,6 +318,7 @@ class TutorController implements ITutorController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
                     maxAge: 15 * 60 * 1000,
                 });
                 res.status(STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -515,12 +518,14 @@ class TutorController implements ITutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
                         maxAge: 15 * 60 * 1000,
                     });
                     res

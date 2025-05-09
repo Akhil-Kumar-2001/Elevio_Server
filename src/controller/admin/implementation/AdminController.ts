@@ -43,12 +43,14 @@ class AdminController implements IAdminController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("admin-accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
+                        domain: ".elevic.site",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(STATUS_CODES.OK).json({ successs: true, message: "Sign-in successful", data: { accessToken, user: { id: email, role: "admin" } } });
@@ -85,6 +87,7 @@ class AdminController implements IAdminController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
+                    domain: ".elevic.site",
                     maxAge: 15 * 60 * 1000,
                 });
 
