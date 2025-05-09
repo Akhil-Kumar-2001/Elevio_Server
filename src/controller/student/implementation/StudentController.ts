@@ -246,17 +246,15 @@ class StudentController implements IStudentController {
                 };
                 if (accessToken && refreshToken) {
                     res.cookie("refreshToken", refreshToken, {
-                        httpOnly: true,
+                        httpOnly: false,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
-                        httpOnly: true,
+                        httpOnly: false,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
                         maxAge: 15 * 60 * 1000,
                     });
                     res
@@ -307,7 +305,6 @@ class StudentController implements IStudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
                     maxAge: 15 * 60 * 1000,
                 });
 
@@ -530,14 +527,12 @@ class StudentController implements IStudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
                     maxAge: 24 * 60 * 60 * 1000,
                 });
                 res.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
                     maxAge: 15 * 60 * 1000,
                 });
                 res
