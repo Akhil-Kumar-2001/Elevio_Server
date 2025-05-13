@@ -190,11 +190,7 @@ class StudentController {
                 }
                 console.log(user.status);
                 if ((user === null || user === void 0 ? void 0 : user.status) == 0) {
-                    res
-                        .status(statusCode_1.STATUS_CODES.FORBIDDEN)
-                        .json({
-                        success: false, message: "OTP not verified", data: null
-                    });
+                    res.status(statusCode_1.STATUS_CODES.FORBIDDEN).json({ success: false, message: "OTP not verified in Signup", data: null });
                     return;
                 }
                 if ((user === null || user === void 0 ? void 0 : user.status) == -1) {

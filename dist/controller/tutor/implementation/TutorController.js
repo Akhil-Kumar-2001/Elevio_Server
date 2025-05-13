@@ -211,7 +211,7 @@ class TutorController {
                     return;
                 }
                 if (user.status === 0) {
-                    res.status(statusCode_1.STATUS_CODES.FORBIDDEN).json({ success: false, message: "OTP not verfied", data: null });
+                    res.status(statusCode_1.STATUS_CODES.FORBIDDEN).json({ success: false, message: "OTP not verfied in Signup", data: null });
                     return;
                 }
                 if (user.status === -1) {
