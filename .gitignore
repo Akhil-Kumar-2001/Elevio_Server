@@ -1,4 +1,7 @@
-# dist
-node_modules
+# Build and dependency directories
+dist/
+node_modules/
+logs/
+
+# Environment variables
 .env
-logs
