@@ -1,8 +1,8 @@
-import { CourseData, ILectureData, ISectionData } from "../../../Types/basicTypes";
+import { CourseData, IBasicStudentInfo, ILectureData, ISectionData } from "../../../Types/basicTypes";
 import ITutorCourseRepository from "../ITutorCourseRepository";
 import { Course, ICourse } from "../../../model/course/courseModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
-import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
+import { CourseResponseDataType, StudentsResponseDataType } from "../../../Types/CategoryReturnType";
 import { ISection, Section } from "../../../model/section/sectionModel";
 import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
 import s3 from '../../../Config/awsConfig'
@@ -12,6 +12,8 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { INotification, Notification } from "../../../model/notification/notification.Model";
 import { IReview, Review } from "../../../model/review/review.model";
+import { IStudent, Student } from "../../../model/student/studentModel";
+import { Types } from "mongoose";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -385,6 +387,50 @@ class TutorCourseRepository implements ITutorCourseRepository {
             return null
         }
     }
+
+async  getStudents(tutorId: string, page: number, limit: number): Promise<StudentsResponseDataType | null> {
+    try {
+        // Step 1: Get all courses by the tutor
+        const courses = await Course.find({ tutorId }, "purchasedStudents");
+
+        if (!courses.length) return { students: [], totalRecord: 0 };
+
+        // Step 2: Extract all student IDs from the courses
+        const allStudentIds = courses.flatMap(course => course.purchasedStudents || []);
+
+        // Step 3: Deduplicate the IDs
+        const uniqueStudentIds = Array.from(new Set(allStudentIds.map(id => id.toString())))
+            .map(id => new Types.ObjectId(id));
+
+        const totalRecord = uniqueStudentIds.length;
+
+        // Step 4: Apply pagination
+        const skip = (page - 1) * limit;
+
+        const students = await Student.find(
+            { _id: { $in: uniqueStudentIds }, status: 1  },
+            "profilePicture username email role" // field projection
+        )
+            .skip(skip)
+            .limit(limit);
+
+        const formattedStudents: IBasicStudentInfo[] = students.map(student => ({
+            profilePicture: student.profilePicture,
+            username: student.username,
+            email: student.email,
+            role: student.role
+        }));
+
+        return {
+            students: formattedStudents,
+            totalRecord,
+        };
+    } catch (error) {
+        console.error("Error while getting students:", error);
+        return null;
+    }
+}
+
 
 
     async getCoursePreview(courseId: string): Promise<ICourse | null> {

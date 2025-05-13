@@ -36,11 +36,11 @@ const tutorDashboardController = new TutorDashboardController_1.default(tutorDas
 // sign-up routes
 router.post('/signup', (req, res) => tutorController.signupPost(req, res));
 router.post('/verify-otp', (req, res) => tutorController.verifyOtp(req, res));
-router.post('/refresh-token', tutorController.refreshToken.bind(tutorController));
+router.post('/resend-otp', (req, res) => tutorController.resendOtp(req, res));
 // sign-in routes
 router.post('/signin', (req, res) => tutorController.signinPost(req, res));
 router.post('/logout', (req, res) => tutorController.logout(req, res));
-router.post('/refresh-token', (req, res) => tutorController.refreshToken(req, res));
+router.post('/refresh-token', tutorController.refreshToken.bind(tutorController));
 // Forgot password
 router.post('/forgot-password', tutorController.forgotPassword.bind(tutorController));
 router.post('/verify-forgot-otp', tutorController.verifyForgotOtp.bind(tutorController));
@@ -70,6 +70,8 @@ router.post('/lectures/upload-video', isBlocked_1.default, (0, validateToken_1.v
 router.patch('/apply-review', isBlocked_1.default, (0, validateToken_1.validateToken)('Tutor'), tutorCourseController.applyReview.bind(tutorCourseController));
 router.get('/notifications', isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.getNotifications.bind(tutorCourseController));
 router.patch('/notifications/:id', isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.readNotifications.bind(tutorCourseController));
+//Student Management
+router.get('/students', isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.getStudents.bind(tutorCourseController));
 // Tutor Dashboard
 router.get(`/monthly-income`, isBlocked_1.default, (0, validateToken_1.validateToken)('Tutor'), tutorDashboardController.getMonthlyIncome.bind(tutorDashboardController));
 router.get(`/students-count`, isBlocked_1.default, (0, validateToken_1.validateToken)('Tutor'), tutorDashboardController.getStudentsCount.bind(tutorDashboardController));

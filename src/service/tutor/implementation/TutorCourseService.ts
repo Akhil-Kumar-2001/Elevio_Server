@@ -4,76 +4,75 @@ import { ILecture } from "../../../model/lecture/lectureModel";
 import { ISection } from "../../../model/section/sectionModel";
 import ITutorCourseRepository from "../../../repository/tutor/ITutorCourseRepository";
 import { CourseData, ILectureData, ISectionData } from "../../../Types/basicTypes";
-import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
+import { CourseResponseDataType, StudentsResponseDataType } from "../../../Types/CategoryReturnType";
 import ITutorCourseService from "../ITutorCourseService";
-import s3 from '../../../Config/awsConfig';
 import { INotification } from "../../../model/notification/notification.Model";
 import { IReview } from "../../../model/review/review.model";
 
 class TutorCourseService implements ITutorCourseService {
 
-    private _tutorProfileRepository: ITutorCourseRepository;
-    constructor(tutorProfileRepository: ITutorCourseRepository) {
-        this._tutorProfileRepository = tutorProfileRepository
+    private _tutorCourseRepository: ITutorCourseRepository;
+    constructor(tutorCourseRepository: ITutorCourseRepository) {
+        this._tutorCourseRepository = tutorCourseRepository
     }
 
     async getCategories(): Promise<ICategory[] | null> {
-        const categories = await this._tutorProfileRepository.getCategories();
+        const categories = await this._tutorCourseRepository.getCategories();
         return categories
     }
 
     async createCourse(courseData: CourseData): Promise<boolean | null> {
-        const response = await this._tutorProfileRepository.createCourse(courseData);
+        const response = await this._tutorCourseRepository.createCourse(courseData);
         return response
     }
 
     async getCourses(tutorId: string, page: number, limit: number): Promise<CourseResponseDataType | null> {
-        const response = await this._tutorProfileRepository.getCourses(tutorId, page, limit);
+        const response = await this._tutorCourseRepository.getCourses(tutorId, page, limit);
         return response;
     }
 
     async getCourseDetails(id: string): Promise<ICourse | null> {
-        const response = await this._tutorProfileRepository.getCourseDetails(id);
+        const response = await this._tutorCourseRepository.getCourseDetails(id);
         return response;
     }
 
     async editCourse(id: string, editedCourse: ICourse): Promise<ICourse | null> {
-        const response = await this._tutorProfileRepository.editCourse(id, editedCourse);
+        const response = await this._tutorCourseRepository.editCourse(id, editedCourse);
         return response
     }
 
     async createSection(id: string, sectionData: ISectionData): Promise<ISection | null> {
-        const response = await this._tutorProfileRepository.createSection(id, sectionData);
+        const response = await this._tutorCourseRepository.createSection(id, sectionData);
         return response
     }
 
     async createLecture(data: ILectureData): Promise<ILecture | null> {
-        const response = await this._tutorProfileRepository.createLecture(data);
+        const response = await this._tutorCourseRepository.createLecture(data);
         return response
     }
 
     async getSections(id: string): Promise<ISection[] | null> {
-        const response = await this._tutorProfileRepository.getSections(id);
+        const response = await this._tutorCourseRepository.getSections(id);
         return response
     }
 
     async getLectures(id: string): Promise<ILecture[] | null> {
-        const response = await this._tutorProfileRepository.getLectures(id);
+        const response = await this._tutorCourseRepository.getLectures(id);
         return response
     }
 
     async editLecture(id: string, title: string): Promise<ILecture | null> {
-        const response = await this._tutorProfileRepository.editLecture(id, title);
+        const response = await this._tutorCourseRepository.editLecture(id, title);
 
         return response;
     }
     async deleteLecture(id: string): Promise<boolean | null> {
-        const response = await this._tutorProfileRepository.deleteLecture(id);
+        const response = await this._tutorCourseRepository.deleteLecture(id);
         return response;
     }
 
     async editSection(id: string, data: ISectionData): Promise<ISection | null> {
-        const response = await this._tutorProfileRepository.editSection(id, data);
+        const response = await this._tutorCourseRepository.editSection(id, data);
         return response;
     }
 
@@ -89,7 +88,7 @@ class TutorCourseService implements ITutorCourseService {
 
         try {
             // Delegate the entire upload and update process to the repository
-            const videoUrl = await this._tutorProfileRepository.uploadLectureVideo(lectureId, videoFile);
+            const videoUrl = await this._tutorCourseRepository.uploadLectureVideo(lectureId, videoFile);
             if (!videoUrl) {
                 throw new Error('Failed to upload video or update lecture');
             }
@@ -101,46 +100,52 @@ class TutorCourseService implements ITutorCourseService {
     }
 
     async applyReview(courseId: string): Promise<boolean | null> {
-        const response = await this._tutorProfileRepository.applyReview(courseId);
+        const response = await this._tutorCourseRepository.applyReview(courseId);
         return response
     }
 
     async getNotifications(receiverId: string): Promise<INotification[] | null> {
-        const response = await this._tutorProfileRepository.getNotifications(receiverId);
+        const response = await this._tutorCourseRepository.getNotifications(receiverId);
         return response;
     }
 
     async readNotifications(id: string): Promise<boolean | null> {
-        const response = await this._tutorProfileRepository.readNotifications(id);
+        const response = await this._tutorCourseRepository.readNotifications(id);
         return response;
     }
 
+    async getStudents(tutorId: string,page:number,limit:number): Promise<StudentsResponseDataType | null> {
+        const response = await this._tutorCourseRepository.getStudents(tutorId,page,limit);
+        return response;
+        
+    }
+
     async getCoursePreview(courseId: string): Promise<ICourse | null> {
-        const response = await this._tutorProfileRepository.getCoursePreview(courseId);
+        const response = await this._tutorCourseRepository.getCoursePreview(courseId);
         return response;
     }
 
     async getSectionsPreview(courseId: string): Promise<ISection[] | null> {
-        const response = await this._tutorProfileRepository.getSectionsPreview(courseId);
+        const response = await this._tutorCourseRepository.getSectionsPreview(courseId);
         return response;
     }
 
     async getLecturesPreview(sectionId: string): Promise<ILecture[] | null> {
-        const response = await this._tutorProfileRepository.getLecturesPreview(sectionId);
+        const response = await this._tutorCourseRepository.getLecturesPreview(sectionId);
         return response;
     }
     
     async getReviews(courseId: string): Promise<any | null> {
-        const response = await this._tutorProfileRepository.getReviews(courseId);
+        const response = await this._tutorCourseRepository.getReviews(courseId);
         return response;
     }
 
     async replyReview(reviewId: string, reply: string): Promise<IReview | null> {
-        return this._tutorProfileRepository.replyReview(reviewId, reply);
+        return this._tutorCourseRepository.replyReview(reviewId, reply);
     }
 
     async deleteReply(reviewId: string): Promise<boolean | null> {
-        return this._tutorProfileRepository.deleteReply(reviewId);
+        return this._tutorCourseRepository.deleteReply(reviewId);
     }
 }
 

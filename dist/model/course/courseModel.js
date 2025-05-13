@@ -42,7 +42,7 @@ const courseSchema = new mongoose_1.Schema({
         default: 0,
     },
     purchasedStudents: {
-        type: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }],
+        type: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Student" }],
         default: [],
     },
     isBlocked: {

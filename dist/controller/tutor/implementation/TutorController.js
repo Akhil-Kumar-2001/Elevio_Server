@@ -238,16 +238,16 @@ class TutorController {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            domain: ".elevic.site",
-                            path: "/",
+                            // domain: ".elevic.site",
+                            // path: "/",
                             maxAge: 2 * 24 * 60 * 60 * 1000,
                         });
                         res.cookie("accessToken", accessToken, {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            domain: ".elevic.site",
-                            path: "/",
+                            // domain: ".elevic.site",
+                            // path: "/",
                             maxAge: 15 * 60 * 1000,
                         });
                         res
@@ -302,8 +302,8 @@ class TutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -323,15 +323,15 @@ class TutorController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/"
+                    // domain: ".elevic.site",
+                    // path: "/"
                 });
                 res.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/"
+                    // domain: ".elevic.site",
+                    // path: "/"
                 });
                 res.status(statusCode_1.STATUS_CODES.OK).json({
                     success: true,
@@ -369,7 +369,7 @@ class TutorController {
                         yield this._tutorService.storeUserOtp(email, otp);
                     }
                     try {
-                        yield mailUtility_1.default.sendMail(email, otp, "Verification OTP");
+                        yield mailUtility_1.default.sendMail(email, otp, "Verification otp");
                         res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "OTP sent to the given email", email });
                     }
                     catch (error) {
@@ -500,16 +500,16 @@ class TutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res

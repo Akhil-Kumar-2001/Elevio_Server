@@ -219,3 +219,10 @@ export interface EditReview {
   rating: number;
   review: string;
 }
+
+export interface IBasicStudentInfo {
+    profilePicture?: string;
+    username?: string;
+    email?: string;
+    role: string;
+}

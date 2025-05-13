@@ -29,8 +29,8 @@ class TutorCourseController implements ITutorCourseController {
             const courseData = req.body;
 
             const response = await this._tutorCourseService.createCourse(courseData);
-            if(!response){
-                res.status(STATUS_CODES.CONFLICT).json({success:false,message:"course alredy existed",data:null})
+            if (!response) {
+                res.status(STATUS_CODES.CONFLICT).json({ success: false, message: "course alredy existed", data: null })
             }
             if (response) {
                 res.status(STATUS_CODES.CREATED).json({ success: true, message: "Course created Successfully", data: response })
@@ -265,73 +265,86 @@ class TutorCourseController implements ITutorCourseController {
         }
     }
 
-        async getCoursePreview(req: Request, res: Response): Promise<void> {
-            try {
-                const { courseId } = req.params;
-                const response = await this._tutorCourseService.getCoursePreview(courseId as string);
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Course details retrieved successfully", data: response })
-            } catch (error) {
-                console.log("Error while fetching Course Preview")
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Course Preview" });
-            }
+    async getStudents(req: Request, res: Response): Promise<void> {
+        try {
+            const tutorId = req.userId;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+            const response = await this._tutorCourseService.getStudents(tutorId as string,page,limit);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Students retrieved Successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching students", error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
         }
+    }
 
-        async getSectionsPreview(req: Request, res: Response): Promise<void> {
-            try {
-                const { courseId } = req.params;
-                const response = await this._tutorCourseService.getSectionsPreview(courseId as string);
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Sections details retrieved successfully", data: response })
-            } catch (error) {
-                console.log("Error while fetching Sections")
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Sections" });
-                
-            }
+    async getCoursePreview(req: Request, res: Response): Promise<void> {
+        try {
+            const { courseId } = req.params;
+            const response = await this._tutorCourseService.getCoursePreview(courseId as string);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Course details retrieved successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching Course Preview")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Course Preview" });
         }
+    }
 
-        async getLecturesPreview(req: Request, res: Response): Promise<void> {
-            try {
-                const { sectionId } = req.params;
-                const response = await this._tutorCourseService.getLecturesPreview(sectionId as string);
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Lecture details retrieved successfully", data: response })
-            } catch (error) {
-                console.log("Error while fetching Lecture Preview")
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Lecture Preview" });
-            }
-        }
+    async getSectionsPreview(req: Request, res: Response): Promise<void> {
+        try {
+            const { courseId } = req.params;
+            const response = await this._tutorCourseService.getSectionsPreview(courseId as string);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Sections details retrieved successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching Sections")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Sections" });
 
-        async getReviews(req: Request, res: Response): Promise<void> {
-            try {
-                const { courseId } = req.params;
-                const response = await this._tutorCourseService.getReviews(courseId as string);
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Reviews details retrieved successfully", data: response })
-            } catch (error) {
-                console.log("Error while fetching Reviews")
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Reviews" });
-            }
         }
+    }
 
-        async replyReview(req: Request, res: Response): Promise<void> {
-            try {
-                const { reviewId } = req.params;
-                const { reply } = req.body;
-                const response = await this._tutorCourseService.replyReview(reviewId as string, reply);
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Reply to review sent successfully", data: response })
-            } catch (error) {
-                console.log("Error while replying to review")
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while replying to review" });
-            }
+    async getLecturesPreview(req: Request, res: Response): Promise<void> {
+        try {
+            const { sectionId } = req.params;
+            const response = await this._tutorCourseService.getLecturesPreview(sectionId as string);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Lecture details retrieved successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching Lecture Preview")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Lecture Preview" });
         }
+    }
 
-        async deleteReply(req: Request, res: Response): Promise<void> {
-            try {
-                const { reviewId } = req.params;
-                const response = await this._tutorCourseService.deleteReply(reviewId as string);
-                res.status(STATUS_CODES.OK).json({ success: true, message: "Reply deleted successfully", data: response })
-            } catch (error) {
-                console.log("Error while deleting reply")
-                res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while deleting reply" });
-            }
+    async getReviews(req: Request, res: Response): Promise<void> {
+        try {
+            const { courseId } = req.params;
+            const response = await this._tutorCourseService.getReviews(courseId as string);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Reviews details retrieved successfully", data: response })
+        } catch (error) {
+            console.log("Error while fetching Reviews")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while fetching Reviews" });
         }
+    }
+
+    async replyReview(req: Request, res: Response): Promise<void> {
+        try {
+            const { reviewId } = req.params;
+            const { reply } = req.body;
+            const response = await this._tutorCourseService.replyReview(reviewId as string, reply);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Reply to review sent successfully", data: response })
+        } catch (error) {
+            console.log("Error while replying to review")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while replying to review" });
+        }
+    }
+
+    async deleteReply(req: Request, res: Response): Promise<void> {
+        try {
+            const { reviewId } = req.params;
+            const response = await this._tutorCourseService.deleteReply(reviewId as string);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Reply deleted successfully", data: response })
+        } catch (error) {
+            console.log("Error while deleting reply")
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error while deleting reply" });
+        }
+    }
 
 
 }

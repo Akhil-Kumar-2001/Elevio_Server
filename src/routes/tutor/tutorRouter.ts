@@ -46,13 +46,14 @@ const tutorDashboardController:ITutorDashboardController = new TutorDashboardCon
 
 router.post('/signup',(req,res)=>tutorController.signupPost(req,res));
 router.post('/verify-otp',(req,res)=>tutorController.verifyOtp(req,res));
-router.post('/refresh-token',tutorController.refreshToken.bind(tutorController));
+router.post('/resend-otp', (req, res) => tutorController.resendOtp(req, res));
+
 
 // sign-in routes
 
 router.post('/signin',(req,res)=>tutorController.signinPost(req,res));
 router.post('/logout',(req,res)=>tutorController.logout(req,res))
-router.post('/refresh-token',(req,res)=>tutorController.refreshToken(req,res));
+router.post('/refresh-token',tutorController.refreshToken.bind(tutorController));
 
 // Forgot password
 
@@ -95,6 +96,8 @@ router.patch('/apply-review',isBlocked,validateToken('Tutor'),tutorCourseControl
 router.get('/notifications',isBlocked,validateToken("Tutor"),tutorCourseController.getNotifications.bind(tutorCourseController))
 router.patch('/notifications/:id',isBlocked,validateToken("Tutor"),tutorCourseController.readNotifications.bind(tutorCourseController))
 
+//Student Management
+router.get('/students',isBlocked,validateToken("Tutor"),tutorCourseController.getStudents.bind(tutorCourseController))
 
 // Tutor Dashboard
 router.get(`/monthly-income`,isBlocked,validateToken('Tutor'),tutorDashboardController.getMonthlyIncome.bind(tutorDashboardController))

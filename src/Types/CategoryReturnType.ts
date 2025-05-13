@@ -4,6 +4,7 @@ import { IStudent } from "../model/student/studentModel";
 import { ITutor } from "../model/tutor/tutorModel";
 import { ISubscription } from "../model/subscription/subscriptionModel";
 import { ITransaction, ITutorWallet } from "../model/wallet/walletModel";
+import { IBasicStudentInfo } from "./basicTypes";
 
 
 export interface CategoryResponseDataType {
@@ -36,6 +37,11 @@ export interface TutorWalletsResponseDataType {
 export interface TutorTransaction {
     transactions: ITransaction[],
     total: number
+}
+
+export interface StudentsResponseDataType {
+    students: IBasicStudentInfo[],
+    totalRecord: number
 }
 
 

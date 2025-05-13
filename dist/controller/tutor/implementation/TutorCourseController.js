@@ -285,6 +285,21 @@ class TutorCourseController {
             }
         });
     }
+    getStudents(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tutorId = req.userId;
+                const page = parseInt(req.query.page) || 1;
+                const limit = parseInt(req.query.limit) || 5;
+                const response = yield this._tutorCourseService.getStudents(tutorId, page, limit);
+                res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Students retrieved Successfully", data: response });
+            }
+            catch (error) {
+                console.log("Error while fetching students", error);
+                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+            }
+        });
+    }
     getCoursePreview(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

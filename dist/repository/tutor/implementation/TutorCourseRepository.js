@@ -22,6 +22,8 @@ const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
 const ffmpeg_1 = __importDefault(require("@ffmpeg-installer/ffmpeg"));
 const notification_Model_1 = require("../../../model/notification/notification.Model");
 const review_model_1 = require("../../../model/review/review.model");
+const studentModel_1 = require("../../../model/student/studentModel");
+const mongoose_1 = require("mongoose");
 fluent_ffmpeg_1.default.setFfmpegPath(ffmpeg_1.default.path);
 class TutorCourseRepository {
     getCategories() {
@@ -361,6 +363,42 @@ class TutorCourseRepository {
                 return notification ? true : false;
             }
             catch (error) {
+                return null;
+            }
+        });
+    }
+    getStudents(tutorId, page, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Step 1: Get all courses by the tutor
+                const courses = yield courseModel_1.Course.find({ tutorId }, "purchasedStudents");
+                if (!courses.length)
+                    return { students: [], totalRecord: 0 };
+                // Step 2: Extract all student IDs from the courses
+                const allStudentIds = courses.flatMap(course => course.purchasedStudents || []);
+                // Step 3: Deduplicate the IDs
+                const uniqueStudentIds = Array.from(new Set(allStudentIds.map(id => id.toString())))
+                    .map(id => new mongoose_1.Types.ObjectId(id));
+                const totalRecord = uniqueStudentIds.length;
+                // Step 4: Apply pagination
+                const skip = (page - 1) * limit;
+                const students = yield studentModel_1.Student.find({ _id: { $in: uniqueStudentIds }, status: 1 }, "profilePicture username email role" // field projection
+                )
+                    .skip(skip)
+                    .limit(limit);
+                const formattedStudents = students.map(student => ({
+                    profilePicture: student.profilePicture,
+                    username: student.username,
+                    email: student.email,
+                    role: student.role
+                }));
+                return {
+                    students: formattedStudents,
+                    totalRecord,
+                };
+            }
+            catch (error) {
+                console.error("Error while getting students:", error);
                 return null;
             }
         });

@@ -63,7 +63,7 @@ const courseSchema = new Schema<ICourse>({
         default: 0,
     },
     purchasedStudents: {
-        type: [{ type: Schema.Types.ObjectId, ref: "User" }],
+        type: [{ type: Schema.Types.ObjectId, ref: "Student" }],
         default: [],
     },
     isBlocked: {

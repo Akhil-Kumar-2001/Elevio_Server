@@ -17,6 +17,7 @@ interface ITutorCourseController{
     applyReview(req:Request,res:Response):Promise<void>
     getNotifications(req:Request,res:Response):Promise<void>
     readNotifications(req:Request,res:Response):Promise<void>
+    getStudents(req:Request,res:Response):Promise<void>
     getCoursePreview(req:Request,res:Response):Promise<void>
     getSectionsPreview(req:Request,res:Response):Promise<void>
     getLecturesPreview(req:Request,res:Response):Promise<void>

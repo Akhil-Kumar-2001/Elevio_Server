@@ -4,8 +4,8 @@ import { ILecture } from "../../model/lecture/lectureModel"
 import { INotification } from "../../model/notification/notification.Model"
 import { IReview } from "../../model/review/review.model"
 import { ISection } from "../../model/section/sectionModel"
-import { CourseData, ILectureData, ISectionData } from "../../Types/basicTypes"
-import { CourseResponseDataType } from "../../Types/CategoryReturnType"
+import { CourseData,  ILectureData, ISectionData } from "../../Types/basicTypes"
+import { CourseResponseDataType, StudentsResponseDataType } from "../../Types/CategoryReturnType"
 
 interface ITutorCourseRepository {
     createCourse(courseData: CourseData): Promise<boolean | null>
@@ -26,6 +26,7 @@ interface ITutorCourseRepository {
     applyReview(courseId:string):Promise<boolean | null>;
     getNotifications(receiverId:string):Promise<INotification[] | null>;
     readNotifications(id:string):Promise<boolean | null>;
+    getStudents(tutorId:string,page:number,limit:number):Promise<StudentsResponseDataType | null>;
     getCoursePreview(courseId:string):Promise<ICourse | null>;
     getSectionsPreview(courseId:string):Promise<ISection[] | null>;
     getLecturesPreview(sectionId:string):Promise<ILecture[] | null>;
