@@ -212,7 +212,7 @@ class StudentController implements IStudentController {
                         success: false, message: "OTP not verified", data: null
                     });
                 return;
-            } 
+            }
             if (user?.status == -1) {
                 res
                     .status(STATUS_CODES.FORBIDDEN)
