@@ -189,6 +189,14 @@ class StudentController {
                     return;
                 }
                 console.log(user.status);
+                if ((user === null || user === void 0 ? void 0 : user.status) == 0) {
+                    res
+                        .status(statusCode_1.STATUS_CODES.FORBIDDEN)
+                        .json({
+                        success: false, message: "OTP not verified", data: null
+                    });
+                    return;
+                }
                 if ((user === null || user === void 0 ? void 0 : user.status) == -1) {
                     res
                         .status(statusCode_1.STATUS_CODES.FORBIDDEN)
@@ -228,16 +236,16 @@ class StudentController {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            // domain: ".elevic.site",
-                            // path: "/",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 2 * 24 * 60 * 60 * 1000,
                         });
                         res.cookie("accessToken", accessToken, {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            // domain: ".elevic.site",
-                            // path: "/",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 15 * 60 * 1000,
                         });
                         res
@@ -289,8 +297,8 @@ class StudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -310,15 +318,15 @@ class StudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    // domain: ".elevic.site",
-                    // path: "/"
+                    domain: ".elevic.site",
+                    path: "/"
                 });
                 res.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    // domain: ".elevic.site",
-                    // path: "/"
+                    domain: ".elevic.site",
+                    path: "/"
                 });
                 res.status(statusCode_1.STATUS_CODES.OK).json({
                     success: true,
@@ -371,7 +379,7 @@ class StudentController {
                         yield this._studentService.storeUserOtp(email, otp);
                     }
                     try {
-                        const sendedmail = yield mailUtility_1.default.sendMail(email, otp, "Verification otp");
+                        yield mailUtility_1.default.sendMail(email, otp, "Verification otp");
                         res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "OTP sent to the given email", email });
                     }
                     catch (error) {
@@ -506,16 +514,16 @@ class StudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res

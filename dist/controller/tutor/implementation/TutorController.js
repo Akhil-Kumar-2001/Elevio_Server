@@ -210,8 +210,13 @@ class TutorController {
                     });
                     return;
                 }
+                if (user.status === 0) {
+                    res.status(statusCode_1.STATUS_CODES.FORBIDDEN).json({ success: false, message: "OTP not verfied", data: null });
+                    return;
+                }
                 if (user.status === -1) {
                     res.status(statusCode_1.STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is Blocked by the admin", data: null });
+                    return;
                 }
                 const comparePassword = yield passwordUtility_1.default.comparePassword(password, user === null || user === void 0 ? void 0 : user.password);
                 if (!comparePassword) {
@@ -238,16 +243,16 @@ class TutorController {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            // domain: ".elevic.site",
-                            // path: "/",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 2 * 24 * 60 * 60 * 1000,
                         });
                         res.cookie("accessToken", accessToken, {
                             httpOnly: true,
                             secure: true,
                             sameSite: "none",
-                            // domain: ".elevic.site",
-                            // path: "/",
+                            domain: ".elevic.site",
+                            path: "/",
                             maxAge: 15 * 60 * 1000,
                         });
                         res
@@ -302,8 +307,8 @@ class TutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, accessToken: newAccessToken });
@@ -323,15 +328,15 @@ class TutorController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    // domain: ".elevic.site",
-                    // path: "/"
+                    domain: ".elevic.site",
+                    path: "/"
                 });
                 res.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    // domain: ".elevic.site",
-                    // path: "/"
+                    domain: ".elevic.site",
+                    path: "/"
                 });
                 res.status(statusCode_1.STATUS_CODES.OK).json({
                     success: true,
@@ -500,16 +505,16 @@ class TutorController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res

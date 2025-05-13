@@ -205,6 +205,14 @@ class StudentController implements IStudentController {
             }
             console.log(user.status);
 
+            if (user?.status == 0) {
+                res
+                    .status(STATUS_CODES.FORBIDDEN)
+                    .json({
+                        success: false, message: "OTP not verified", data: null
+                    });
+                return;
+            }
             if (user?.status == -1) {
                 res
                     .status(STATUS_CODES.FORBIDDEN)
