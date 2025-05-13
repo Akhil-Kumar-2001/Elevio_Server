@@ -226,10 +226,7 @@ class TutorController implements ITutorController {
                     })
                 return
             }
-            if (user.status === 0) {
-                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "OTP not verfied", data: null })
-                return
-            }
+
             if (user.status === -1) {
                 res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "User is Blocked by the admin", data: null })
                 return
