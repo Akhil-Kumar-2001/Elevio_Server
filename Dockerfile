@@ -1,5 +1,8 @@
 FROM node:alpine
 
+# Install ffmpeg (includes ffprobe)
+RUN apk update && apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 COPY package*.json ./
