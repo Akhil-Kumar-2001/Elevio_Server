@@ -390,7 +390,7 @@ class StudentController implements IStudentController {
                 }
 
                 try {
-                    await MailUtility.sendMail(email, otp, "Verification OTP");
+                    await MailUtility.sendMail(email, otp, "Verification otp");
                     res.status(STATUS_CODES.OK).json({ success: true, message: "OTP sent to the given email", email });
                 } catch (error) {
                     console.error("Failed to send OTP:", error);
