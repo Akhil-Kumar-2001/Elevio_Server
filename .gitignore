@@ -1,5 +1,5 @@
 # Build and dependency directories
-dist/
+# dist/
 node_modules/
 logs/
 
