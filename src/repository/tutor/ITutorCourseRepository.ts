@@ -9,7 +9,7 @@ import { CourseResponseDataType, StudentsResponseDataType } from "../../Types/Ca
 
 interface ITutorCourseRepository {
     isTutorVerified(tutorId: string): Promise<boolean | null>
-    createCourse(courseData: CourseData): Promise<boolean | null>
+    createCourse(courseData : CourseData): Promise<boolean | null>
     getCategories(): Promise<ICategory[] | null>
     getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null>
     getCourseDetails(id: string): Promise<ICourse | null>

@@ -29,18 +29,19 @@ class TutorCourseController implements ITutorCourseController {
             const courseData = req.body;
             const tutorId = req.userId;
 
-            if (!courseData) {
+            if ( !courseData ) {
                 res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Course data is required" });
                 return;
             }
-            if (courseData.price < 1) {
+
+            if ( courseData.price < 1 ) {
                 res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Price should be greater than 0" });
                 return;
             }
 
             const isTutorVerified = await this._tutorCourseService.isTutorVerified(tutorId as string);
 
-            if (!isTutorVerified) {
+            if ( !isTutorVerified ) {
                 res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Tutor is not verified" });
                 return; 
             }

@@ -25,22 +25,23 @@ class TutorCourseRepository implements ITutorCourseRepository {
         return categories
     }
 
-    async isTutorVerified(tutorId: string): Promise<boolean | null> {
+    async isTutorVerified(tutorId : string): Promise<boolean | null> {
         const tutor = await Tutor.findOne({ _id: tutorId });
-        if (tutor?.isVerified == "verified") {
+        if (tutor?.isVerified  ==  "verified") {
             return true
         } else {
             return false
         }
     }
 
-    async createCourse(courseData: CourseData): Promise<boolean | null> {
+    async createCourse(courseData : CourseData): Promise<boolean | null> {
         try {
             const existingCourse = await Course.findOne({ title: courseData?.title });
-            if (existingCourse) {
+            if ( existingCourse ) {
                 return false
             } else {
                 const newCourse = new Course(courseData);
+                
                 await newCourse.save();
                 return true;
             }

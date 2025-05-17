@@ -17,11 +17,11 @@ export interface TutorVerificationFormData {
 
 
 export interface CourseData {
-  title: string;
-  price: string;
-  category: string;
-  imageThumbnail: string;
-  description: string;
+  title : string;
+  price : string;
+  category : string;
+  imageThumbnail : string;
+  description : string;
 }
 
 export interface ISectionData {

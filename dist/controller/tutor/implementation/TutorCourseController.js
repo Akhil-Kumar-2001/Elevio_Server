@@ -33,6 +33,20 @@ class TutorCourseController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const courseData = req.body;
+                const tutorId = req.userId;
+                if (!courseData) {
+                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Course data is required" });
+                    return;
+                }
+                if (courseData.price < 1) {
+                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Price should be greater than 0" });
+                    return;
+                }
+                const isTutorVerified = yield this._tutorCourseService.isTutorVerified(tutorId);
+                if (!isTutorVerified) {
+                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Tutor is not verified" });
+                    return;
+                }
                 const response = yield this._tutorCourseService.createCourse(courseData);
                 if (!response) {
                     res.status(statusCode_1.STATUS_CODES.CONFLICT).json({ success: false, message: "course alredy existed", data: null });

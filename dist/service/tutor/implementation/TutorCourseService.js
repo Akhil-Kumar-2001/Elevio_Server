@@ -19,6 +19,12 @@ class TutorCourseService {
             return categories;
         });
     }
+    isTutorVerified(tutorId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this._tutorCourseRepository.isTutorVerified(tutorId);
+            return response;
+        });
+    }
     createCourse(courseData) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._tutorCourseRepository.createCourse(courseData);

@@ -24,6 +24,7 @@ const notification_Model_1 = require("../../../model/notification/notification.M
 const review_model_1 = require("../../../model/review/review.model");
 const studentModel_1 = require("../../../model/student/studentModel");
 const mongoose_1 = require("mongoose");
+const tutorModel_1 = require("../../../model/tutor/tutorModel");
 fluent_ffmpeg_1.default.setFfmpegPath(ffmpeg_1.default.path);
 class TutorCourseRepository {
     getCategories() {
@@ -32,10 +33,21 @@ class TutorCourseRepository {
             return categories;
         });
     }
+    isTutorVerified(tutorId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tutor = yield tutorModel_1.Tutor.findOne({ _id: tutorId });
+            if ((tutor === null || tutor === void 0 ? void 0 : tutor.isVerified) == "verified") {
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+    }
     createCourse(courseData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const existingCourse = yield courseModel_1.Course.find({ title: courseData.courseName });
+                const existingCourse = yield courseModel_1.Course.findOne({ title: courseData === null || courseData === void 0 ? void 0 : courseData.title });
                 if (existingCourse) {
                     return false;
                 }
