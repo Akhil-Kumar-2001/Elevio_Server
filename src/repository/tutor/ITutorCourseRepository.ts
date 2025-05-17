@@ -8,6 +8,7 @@ import { CourseData,  ILectureData, ISectionData } from "../../Types/basicTypes"
 import { CourseResponseDataType, StudentsResponseDataType } from "../../Types/CategoryReturnType"
 
 interface ITutorCourseRepository {
+    isTutorVerified(tutorId: string): Promise<boolean | null>
     createCourse(courseData: CourseData): Promise<boolean | null>
     getCategories(): Promise<ICategory[] | null>
     getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null>

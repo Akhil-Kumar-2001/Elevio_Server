@@ -9,6 +9,7 @@ import { IReview } from "../../model/review/review.model"
 
 interface ITutorCourseService {
     getCategories(): Promise<ICategory[] | null>
+    isTutorVerified(tutorId: string): Promise<boolean | null>
     createCourse(courseData: CourseData): Promise<boolean | null>
     getCourses(tutorId:string,page:number,limit:number): Promise<CourseResponseDataType | null>
     getCourseDetails(id:string):Promise<ICourse | null>

@@ -21,6 +21,11 @@ class TutorCourseService implements ITutorCourseService {
         return categories
     }
 
+    async isTutorVerified(tutorId: string): Promise<boolean | null> {
+        const response = await this._tutorCourseRepository.isTutorVerified(tutorId);
+        return response
+    }
+
     async createCourse(courseData: CourseData): Promise<boolean | null> {
         const response = await this._tutorCourseRepository.createCourse(courseData);
         return response

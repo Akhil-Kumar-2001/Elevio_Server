@@ -14,6 +14,7 @@ import { INotification, Notification } from "../../../model/notification/notific
 import { IReview, Review } from "../../../model/review/review.model";
 import { IStudent, Student } from "../../../model/student/studentModel";
 import { Types } from "mongoose";
+import { Tutor } from "../../../model/tutor/tutorModel";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -24,9 +25,18 @@ class TutorCourseRepository implements ITutorCourseRepository {
         return categories
     }
 
+    async isTutorVerified(tutorId: string): Promise<boolean | null> {
+        const tutor = await Tutor.findOne({ _id: tutorId });
+        if (tutor?.isVerified == "verified") {
+            return true
+        } else {
+            return false
+        }
+    }
+
     async createCourse(courseData: CourseData): Promise<boolean | null> {
         try {
-            const existingCourse = await Course.find({ title: courseData.courseName });
+            const existingCourse = await Course.findOne({ title: courseData?.title });
             if (existingCourse) {
                 return false
             } else {
@@ -388,48 +398,48 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-async  getStudents(tutorId: string, page: number, limit: number): Promise<StudentsResponseDataType | null> {
-    try {
-        // Step 1: Get all courses by the tutor
-        const courses = await Course.find({ tutorId }, "purchasedStudents");
+    async getStudents(tutorId: string, page: number, limit: number): Promise<StudentsResponseDataType | null> {
+        try {
+            // Step 1: Get all courses by the tutor
+            const courses = await Course.find({ tutorId }, "purchasedStudents");
 
-        if (!courses.length) return { students: [], totalRecord: 0 };
+            if (!courses.length) return { students: [], totalRecord: 0 };
 
-        // Step 2: Extract all student IDs from the courses
-        const allStudentIds = courses.flatMap(course => course.purchasedStudents || []);
+            // Step 2: Extract all student IDs from the courses
+            const allStudentIds = courses.flatMap(course => course.purchasedStudents || []);
 
-        // Step 3: Deduplicate the IDs
-        const uniqueStudentIds = Array.from(new Set(allStudentIds.map(id => id.toString())))
-            .map(id => new Types.ObjectId(id));
+            // Step 3: Deduplicate the IDs
+            const uniqueStudentIds = Array.from(new Set(allStudentIds.map(id => id.toString())))
+                .map(id => new Types.ObjectId(id));
 
-        const totalRecord = uniqueStudentIds.length;
+            const totalRecord = uniqueStudentIds.length;
 
-        // Step 4: Apply pagination
-        const skip = (page - 1) * limit;
+            // Step 4: Apply pagination
+            const skip = (page - 1) * limit;
 
-        const students = await Student.find(
-            { _id: { $in: uniqueStudentIds }, status: 1  },
-            "profilePicture username email role" // field projection
-        )
-            .skip(skip)
-            .limit(limit);
+            const students = await Student.find(
+                { _id: { $in: uniqueStudentIds }, status: 1 },
+                "profilePicture username email role" // field projection
+            )
+                .skip(skip)
+                .limit(limit);
 
-        const formattedStudents: IBasicStudentInfo[] = students.map(student => ({
-            profilePicture: student.profilePicture,
-            username: student.username,
-            email: student.email,
-            role: student.role
-        }));
+            const formattedStudents: IBasicStudentInfo[] = students.map(student => ({
+                profilePicture: student.profilePicture,
+                username: student.username,
+                email: student.email,
+                role: student.role
+            }));
 
-        return {
-            students: formattedStudents,
-            totalRecord,
-        };
-    } catch (error) {
-        console.error("Error while getting students:", error);
-        return null;
+            return {
+                students: formattedStudents,
+                totalRecord,
+            };
+        } catch (error) {
+            console.error("Error while getting students:", error);
+            return null;
+        }
     }
-}
 
 
 
