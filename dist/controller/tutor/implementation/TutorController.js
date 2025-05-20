@@ -260,7 +260,7 @@ class TutorController {
                             .json({
                             successs: true,
                             message: "Sign-in successful",
-                            data: { accessToken, user: filteredData }
+                            data: { accessToken, user: filteredData, verificationStatus: user.isVerified }
                         });
                         return;
                     }
@@ -520,7 +520,7 @@ class TutorController {
                     res
                         .status(statusCode_1.STATUS_CODES.OK)
                         .json({
-                        success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
+                        success: true, message: "Sign-in successful", data: { accessToken, user: filteredData, verificationStatus: user.isVerified }
                     });
                     console.log("User signin successfull tutor  ");
                     return;

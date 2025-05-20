@@ -279,7 +279,7 @@ class TutorController implements ITutorController {
                         .json({
                             successs: true,
                             message: "Sign-in successful",
-                            data: { accessToken, user: filteredData }
+                            data: { accessToken, user: filteredData, verificationStatus: user.isVerified }
                         });
                     return
                 } else {
@@ -547,7 +547,7 @@ class TutorController implements ITutorController {
                 res
                     .status(STATUS_CODES.OK)
                     .json({
-                        success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
+                        success: true, message: "Sign-in successful", data: { accessToken, user: filteredData, verificationStatus: user.isVerified }
                     });
                 console.log("User signin successfull tutor  ")
                 return
