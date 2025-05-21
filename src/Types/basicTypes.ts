@@ -17,11 +17,11 @@ export interface TutorVerificationFormData {
 
 
 export interface CourseData {
-  title : string;
-  price : string;
-  category : string;
-  imageThumbnail : string;
-  description : string;
+  title: string;
+  price: string;
+  category: string;
+  imageThumbnail: string;
+  description: string;
 }
 
 export interface ISectionData {
@@ -31,12 +31,12 @@ export interface ISectionData {
 export interface ILectureData {
   title: string,
   courseId: string,
-  sectionId:string
+  sectionId: string
 }
 
 export interface EditStudentType {
-  username:string;
-  profilePicture:string | null;
+  username: string;
+  profilePicture: string | null;
 }
 
 // Interface for cart item with course details
@@ -69,7 +69,7 @@ export interface IOrderCreateData {
   razorpayOrderId: string;
   amount: number;
   status: "pending" | "success" | "failed";
-  paymentMethod?: string; 
+  paymentMethod?: string;
 }
 
 export interface IOrderCreateSubscriptionData {
@@ -77,14 +77,14 @@ export interface IOrderCreateSubscriptionData {
   planId: Types.ObjectId;
   orderId: string;
   startDate: null;
-  endDate:null;
-  status: "pending" | "active" | "expired" | "canceled"; 
+  endDate: null;
+  status: "pending" | "active" | "expired" | "canceled";
   paymentStatus: "pending" | "paid" | "failed";
   paymentDetails?: {
     paymentId?: string;
-    paymentMethod: String ,
-    paymentAmount: Number ,
-},
+    paymentMethod: String,
+    paymentAmount: Number,
+  },
 }
 
 export interface ISubscriptionPlan {
@@ -115,7 +115,7 @@ export interface ISubscription {
 }
 
 export interface IStudentResponse {
-  _id: string; 
+  _id: string;
   username?: string;
   email?: string;
   status?: number;
@@ -123,9 +123,9 @@ export interface IStudentResponse {
   subscription: ISubscription | null;
   enrolledCourseCount?: number;
   profilePicture?: string;
-  createdAt?: Date; 
-  updatedAt?: Date; 
-  googleID?: string; 
+  createdAt?: Date;
+  updatedAt?: Date;
+  googleID?: string;
 }
 
 export type UserMinimal = {
@@ -133,9 +133,9 @@ export type UserMinimal = {
   username: string;
   profilePicture?: string;
   role: "Student" | "Tutor";
-  lastMessage?:string;
-  unreadCount?:number;
-  updatedAt?:string;
+  lastMessage?: string;
+  unreadCount?: number;
+  updatedAt?: string;
 };
 
 export interface review {
@@ -172,30 +172,30 @@ export interface DashboardData {
 
 export interface CategoryIncome {
   _id?: string
-  name: string;  
-  value: number; 
+  name: string;
+  value: number;
 }
 
 
 export interface MonthlyIncome {
-  month: string; 
+  month: string;
   income: number;
 }
 
 export interface YearlyIncome {
-  year: string; 
+  year: string;
   income: number;
 }
 
 
 
 export interface MonthlyIncome {
-  month: string; 
+  month: string;
   income: number;
 }
 
 export interface StudentsCount {
-  name: string; 
+  name: string;
   students: number;
 }
 
@@ -209,7 +209,7 @@ export interface IDashboardDetails {
 
 export interface SessionInfo {
   studentName?: string;
-  tutorName?:string;
+  tutorName?: string;
   startTime: Date;
   duration: number;
   status: string;
@@ -221,8 +221,9 @@ export interface EditReview {
 }
 
 export interface IBasicStudentInfo {
-    profilePicture?: string;
-    username?: string;
-    email?: string;
-    role: string;
+  profilePicture?: string;
+  username?: string;
+  email?: string;
+  role: string;
 }
+

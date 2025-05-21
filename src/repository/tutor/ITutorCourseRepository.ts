@@ -31,7 +31,7 @@ interface ITutorCourseRepository {
     getCoursePreview(courseId:string):Promise<ICourse | null>;
     getSectionsPreview(courseId:string):Promise<ISection[] | null>;
     getLecturesPreview(sectionId:string):Promise<ILecture[] | null>;
-    getReviews(courseId:string):Promise<any | null>;
+    getReviews(courseId:string):Promise<IReview[] | null>;
     replyReview(reviewId:string,reply:string):Promise<IReview | null>;
     deleteReply(reviewId:string):Promise<boolean | null>;
 }

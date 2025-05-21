@@ -5,7 +5,7 @@ import MailUtility from "../../../utils/mailUtility";
 import { Token } from "../../../utils/tokenUtility";
 import PasswordUtils from "../../../utils/passwordUtility";
 import { IStudent } from "../../../model/student/studentModel";
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 
 import { ERROR_MESSAGES } from "../../../constants/errorMessage";
 import { STATUS_CODES } from "../../../constants/statusCode";
@@ -253,16 +253,16 @@ class StudentController implements IStudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res
@@ -301,20 +301,22 @@ class StudentController implements IStudentController {
             }
 
             // **Verify the refresh token**
-            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, decoded: any) => {
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: unknown, decoded: JwtPayload | string  | undefined  ) => {
                 if (err) {
                     return res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: 'Invalid refresh token' });
                 }
 
+                console.log("Decode in refresh token",decoded)
+
                 // Generate a new access token
                 const tokenInstance = new Token();
-                const newAccessToken = tokenInstance.generatingTokens(decoded.userId, decoded.role).accessToken;
+                const {role,userId} = decoded as {role:string,userId:string}
+                const newAccessToken = tokenInstance.generatingTokens(userId,role).accessToken;
                 res.cookie("accessToken", newAccessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/",
+          
                     maxAge: 15 * 60 * 1000,
                 });
 
@@ -332,15 +334,15 @@ class StudentController implements IStudentController {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
-                domain: ".elevic.site",
-                path: "/"
+                // domain: ".elevic.site",
+                // path: "/"
             });
             res.clearCookie("refreshToken", {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
-                domain: ".elevic.site",
-                path: "/"
+                // domain: ".elevic.site",
+                // path: "/"
             });
             res.status(STATUS_CODES.OK).json({
                 success: true,
@@ -541,16 +543,16 @@ class StudentController implements IStudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/",
+                    // domain: ".elevic.site",
+                    // path: "/",
                     maxAge: 24 * 60 * 60 * 1000,
                 });
                 res.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/",
+                    // domain: ".elevic.site",
+                    // path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
                 res

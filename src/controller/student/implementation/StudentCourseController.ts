@@ -92,6 +92,7 @@ class StudentCourseController implements IStudentCourseController {
 
     async createOrder(req: Request, res: Response): Promise<void> {
         try {
+            console.log("Request data for create order ===============================>>>>>>>>>>>>>>", req.body)
             const { studentId, amount, courseIds } = req.body;
             if (!studentId || !amount || !courseIds) {
                 res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })

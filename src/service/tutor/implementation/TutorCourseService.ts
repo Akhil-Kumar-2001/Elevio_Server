@@ -140,7 +140,7 @@ class TutorCourseService implements ITutorCourseService {
         return response;
     }
     
-    async getReviews(courseId: string): Promise<any | null> {
+    async getReviews(courseId: string): Promise<IReview[] | null> {
         const response = await this._tutorCourseRepository.getReviews(courseId);
         return response;
     }

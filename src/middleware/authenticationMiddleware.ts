@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
- const authenticationMiddleware = () => {
+const authenticationMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const JWT_KEY = process.env.JWT_SECRET as string;
@@ -12,7 +12,7 @@ import jwt from 'jsonwebtoken';
         return;
       }
 
-      jwt.verify(accessToken, JWT_KEY, async (err: unknown, data: any) => {
+      jwt.verify(accessToken, JWT_KEY, async (err: unknown, data: JwtPayload | string | undefined) => {
         if (err) {
           console.log("Token error:", accessToken, err);
           return res.status(403).json({ message: "Invalid or expired token, please log in again." });
@@ -22,8 +22,7 @@ import jwt from 'jsonwebtoken';
           return res.status(403).json({ message: "Invalid token structure." });
         }
 
-        const userId = data.userId;
-        const role = data.role;
+        const { role, userId } = data as { role: string, userId: string }
 
         // Optional logging (still keeping role if needed elsewhere)
         console.log("Token validated. User ID:", userId, "Role:", role);

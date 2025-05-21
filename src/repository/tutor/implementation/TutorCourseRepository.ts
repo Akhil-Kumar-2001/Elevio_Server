@@ -477,7 +477,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async getReviews(courseId: string): Promise<any | null> {
+    async getReviews(courseId: string): Promise<IReview[] | null> {
         try {
             const reviews = await Review.find({ courseId, isVisible: true })
                 .populate('userId', 'username')

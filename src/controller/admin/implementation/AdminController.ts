@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { Token } from "../../../utils/adminTokenUtility"
 import { ERROR_MESSAGES } from "../../../constants/errorMessage";
 import { STATUS_CODES } from "../../../constants/statusCode";
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import IAdminController from "../IAdminController";
 
@@ -43,16 +43,16 @@ class AdminController implements IAdminController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("admin-accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
+                        // domain: ".elevic.site",
+                        // path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res.status(STATUS_CODES.OK).json({ successs: true, message: "Sign-in successful", data: { accessToken, user: { id: email, role: "admin" } } });
@@ -77,20 +77,22 @@ class AdminController implements IAdminController {
             }
 
             // **Verify the refresh token**
-            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: any, decoded: any) => {
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: unknown, decoded: JwtPayload | string | undefined) => {
                 if (err) {
                     return res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: 'Invalid refresh token' });
                 }
                 // Generate a new access token
+                const { role, id } = decoded as { role: string, id: string }
+
                 const tokenInstance = new Token();
-                const newAccessToken = tokenInstance.generatingTokens(decoded.id, decoded.role).accessToken;
+                const newAccessToken = tokenInstance.generatingTokens(id, role).accessToken;
                 console.log("new access token", newAccessToken)
                 res.cookie("admin-accessToken", newAccessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/",
+                    // domain: ".elevic.site",
+                    // path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
 
