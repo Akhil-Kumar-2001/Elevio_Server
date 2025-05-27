@@ -12,7 +12,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { INotification, Notification } from "../../../model/notification/notification.Model";
 import { IReview, Review } from "../../../model/review/review.model";
-import { IStudent, Student } from "../../../model/student/studentModel";
+import {  Student } from "../../../model/student/studentModel";
 import { Types } from "mongoose";
 import { Tutor } from "../../../model/tutor/tutorModel";
 
@@ -54,8 +54,8 @@ class TutorCourseRepository implements ITutorCourseRepository {
     async getCourses(tutorId: string, page: number, limit: number): Promise<CourseResponseDataType | null> {
         try {
             const skip = (page - 1) * limit;
-            const courses = await Course.find({ tutorId }).sort({ createAt: -1 }).skip(skip).limit(limit).exec()
-            const totalRecord = await Course.countDocuments()
+            const courses = await Course.find({ tutorId }).sort({ createdAt: -1 }).skip(skip).limit(limit).exec()
+            const totalRecord = await Course.find({tutorId}).countDocuments()
             return { courses, totalRecord }
         } catch (error) {
             console.log("Error while retrieving courses")

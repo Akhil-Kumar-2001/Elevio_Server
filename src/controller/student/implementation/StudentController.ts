@@ -253,16 +253,16 @@ class StudentController implements IStudentController {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 2 * 24 * 60 * 60 * 1000,
                     });
                     res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: true,
                         sameSite: "none",
-                        // domain: ".elevic.site",
-                        // path: "/",
+                        domain: ".elevic.site",
+                        path: "/",
                         maxAge: 15 * 60 * 1000,
                     });
                     res
@@ -334,15 +334,15 @@ class StudentController implements IStudentController {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
-                // domain: ".elevic.site",
-                // path: "/"
+                domain: ".elevic.site",
+                path: "/"
             });
             res.clearCookie("refreshToken", {
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
-                // domain: ".elevic.site",
-                // path: "/"
+                domain: ".elevic.site",
+                path: "/"
             });
             res.status(STATUS_CODES.OK).json({
                 success: true,
@@ -543,16 +543,16 @@ class StudentController implements IStudentController {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    // domain: ".elevic.site",
-                    // path: "/",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 24 * 60 * 60 * 1000,
                 });
                 res.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-                    // domain: ".elevic.site",
-                    // path: "/",
+                    domain: ".elevic.site",
+                    path: "/",
                     maxAge: 15 * 60 * 1000,
                 });
                 res

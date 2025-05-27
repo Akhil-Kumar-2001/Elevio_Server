@@ -1,0 +1,27 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const ChatRepository_1 = __importDefault(require("../../repository/chat/implementation/ChatRepository"));
+const ChatService_1 = __importDefault(require("../../service/chat/implementation/ChatService"));
+const ChatController_1 = __importDefault(require("../../controller/chat/implementation/ChatController"));
+const MessageRepository_1 = __importDefault(require("../../repository/chat/implementation/MessageRepository"));
+const MessageService_1 = __importDefault(require("../../service/chat/implementation/MessageService"));
+const MessageController_1 = __importDefault(require("../../controller/chat/implementation/MessageController"));
+const authenticationMiddleware_1 = __importDefault(require("../../middleware/authenticationMiddleware"));
+const router = (0, express_1.default)();
+const chatRepository = new ChatRepository_1.default();
+const chatService = new ChatService_1.default(chatRepository);
+const chatController = new ChatController_1.default(chatService);
+const messageRepository = new MessageRepository_1.default();
+const messageService = new MessageService_1.default(messageRepository);
+const messageController = new MessageController_1.default(messageService);
+router.post('/send/:id', (0, authenticationMiddleware_1.default)(), messageController.sendMessage.bind(messageController));
+router.get('/getChats', (0, authenticationMiddleware_1.default)(), chatController.getChats.bind(chatController));
+router.get('/get-messages/:id', (0, authenticationMiddleware_1.default)(), messageController.getMessages.bind(messageController));
+router.post('/create-chat/:id', (0, authenticationMiddleware_1.default)(), chatController.createChat.bind(chatController));
+router.delete('/delete-message/:id', (0, authenticationMiddleware_1.default)(), messageController.deleteMessages.bind(messageController));
+router.post('/mark-read/:id', (0, authenticationMiddleware_1.default)(), messageController.markMessagesAsRead.bind(messageController));
+exports.default = router;

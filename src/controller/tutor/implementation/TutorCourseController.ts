@@ -60,8 +60,9 @@ class TutorCourseController implements ITutorCourseController {
 
     async getCourses(req: Request, res: Response): Promise<void> {
         try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 5;
+            const page = parseInt(req.query.page as string) || 1; 
+            const limit = parseInt(req.query.limit as string) || 5; 
+            console.log("page and limit",page,limit)
             const { tutorId } = req.query;
 
             if (!tutorId) {
