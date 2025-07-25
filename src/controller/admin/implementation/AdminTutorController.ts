@@ -31,7 +31,6 @@ class AdminTutorController implements IAdminTutorController {
     async getTutor(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            console.log("entered get tutor")
             if (!id) {
                 res.status(STATUS_CODES.BAD_REQUEST).json({ error: ERROR_MESSAGES.BAD_REQUEST });
             }

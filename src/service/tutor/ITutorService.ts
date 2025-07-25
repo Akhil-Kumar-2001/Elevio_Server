@@ -9,7 +9,6 @@ interface ITutorService{
     storeUserOtp(email:string, otp:string):Promise<OTPType | null> 
     getOtpByEmail(email:string):Promise<OTPType | null>
     storeUserResendOtp(email:string, otp:string):Promise<OTPType | null> 
-    // loginUser(email:string,password:string):Promise<ITutor | null>
     getTutorById(id:string):Promise<ITutor | null>
 }
 

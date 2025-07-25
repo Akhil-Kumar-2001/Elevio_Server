@@ -1,3 +1,6 @@
+import { ICategoryDto } from '../../../dtos/category/categoryDto';
+import { ICourseDto } from '../../../dtos/course/courseDto';
+import { ITutorDto } from '../../../dtos/tutor/tutorDto';
 import { Category, ICategory } from '../../../model/category/categoryModel';
 import { Course, ICourse } from '../../../model/course/courseModel';
 import { ILecture, Lecture } from '../../../model/lecture/lectureModel';
@@ -7,11 +10,11 @@ import Subscription, { ISubscription } from '../../../model/subscription/subscri
 import { ITutor, Tutor } from '../../../model/tutor/tutorModel';
 import { ITutorWallet, TutorWallet } from '../../../model/wallet/walletModel';
 import { ISubscriptionPlan } from '../../../Types/basicTypes';
-import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType, TutorWalletsResponseDataType } from '../../../Types/CategoryReturnType';
+import { CategoryResponseDataType, CourseResponseDataType, PaginatedResponse, SubscriptionResponseDataType, TutorResponseDataType, TutorWalletsResponseDataType } from '../../../Types/CategoryReturnType';
 import IAdminTutorRepository from '../IAdminTutorRepository'
 
 class AdminTutorRepository implements IAdminTutorRepository {
-    async getPendingTutors(page: number, limit: number): Promise<TutorResponseDataType | null> {
+    async getPendingTutors(page: number, limit: number): Promise<PaginatedResponse<ITutorDto>  | null> {
         const skip = (page - 1) * limit;
         const tutors = await Tutor.find({ isVerified: "pending" })
             .sort({ createdAt: -1 })
@@ -19,10 +22,11 @@ class AdminTutorRepository implements IAdminTutorRepository {
             .limit(limit)
             .exec();
         const totalRecord = await Tutor.countDocuments()
-        return { tutors, totalRecord };
+        console.log(tutors)
+        return { data:tutors, totalRecord };
     }
     
-    async getTutorById(id: string): Promise<ITutor | null> {
+    async getTutorById(id: string): Promise<ITutorDto | null> {
         const tutor = await Tutor.findById(id);
         return tutor;
     }
@@ -86,7 +90,7 @@ class AdminTutorRepository implements IAdminTutorRepository {
         }
     }
 
-    async getCategories(page: number, limit: number): Promise<CategoryResponseDataType | null> {
+    async getCategories(page: number, limit: number): Promise<PaginatedResponse<ICategoryDto> | null> {
         try {
             const skip = (page - 1) * limit;
             const categories = await Category.find()
@@ -95,22 +99,37 @@ class AdminTutorRepository implements IAdminTutorRepository {
                 .limit(limit)
                 .exec();
             const totalRecord = await Category.countDocuments()
-            return { categories, totalRecord }
+            const categoryDtos: ICategoryDto[] = categories.map((category) => ({
+                _id: category._id.toString(),
+                name: category.name,
+                status: category.status,
+                createdAt: category.get('createdAt'),
+                updatedAt: category.get('updatedAt')
+            }));
+            return { data: categoryDtos, totalRecord }
         } catch (error) {
             console.log("Error while retrieving categories")
             return null
         }
     }
 
-    async blockCategory(id: string): Promise<ICategory | null> {
+    async blockCategory(id: string): Promise<ICategoryDto | null> {
         const category = await Category.findById(id, { status: 1 })
         const newStatus = category?.status === 1 ? -1 : 1
         const updatedCategory = await Category.findByIdAndUpdate(
             id,
             { status: newStatus },
             { new: true } // Returns the updated document
-        );
-        return updatedCategory
+        )
+        if(!updatedCategory)return null;
+        const categoryDtos: ICategoryDto = {
+                _id: updatedCategory._id.toString(),
+                name: updatedCategory.name,
+                status: updatedCategory.status,
+                createdAt: updatedCategory.get('createdAt'),
+                updatedAt: updatedCategory.get('updatedAt')
+            }
+        return categoryDtos
     }
 
     async deleteCategory(id: string): Promise<boolean> {
@@ -123,7 +142,7 @@ class AdminTutorRepository implements IAdminTutorRepository {
         }
     }
 
-    async pendingCourse(page: number, limit: number): Promise<CourseResponseDataType | null> {
+    async pendingCourse(page: number, limit: number): Promise<{ courses: ICourse[], totalRecord: number } | null> {
 
         const skip = (page - 1) * limit;
         const courses = await Course.find({ status: "pending" })

@@ -1,3 +1,6 @@
+import { ICategoryDto } from "../../dtos/category/categoryDto"
+import { ICourseDto } from "../../dtos/course/courseDto"
+import { ITutorDto } from "../../dtos/tutor/tutorDto"
 import { ICategory } from "../../model/category/categoryModel"
 import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
@@ -7,19 +10,19 @@ import { ISubscription } from "../../model/subscription/subscriptionModel"
 import { ITutor } from "../../model/tutor/tutorModel"
 import { ITutorWallet } from "../../model/wallet/walletModel"
 import { ISubscriptionPlan } from "../../Types/basicTypes"
-import { CategoryResponseDataType, CourseResponseDataType, SubscriptionResponseDataType, TutorResponseDataType, TutorWalletsResponseDataType } from "../../Types/CategoryReturnType"
+import { CategoryResponseDataType, CourseResponseDataType, PaginatedResponse, SubscriptionResponseDataType, TutorResponseDataType, TutorWalletsResponseDataType } from "../../Types/CategoryReturnType"
 
 interface IAdminTutorRepository {
-    getPendingTutors(page:number,limit:number): Promise<TutorResponseDataType | null>
-    getTutorById(id: string): Promise<ITutor | null>
+    getPendingTutors(page:number,limit:number): Promise<PaginatedResponse<ITutorDto>  | null>
+    getTutorById(id: string): Promise<ITutorDto | null>
     rejectTutor(id: string): Promise<boolean | null>
     approveTutor(id: string): Promise<boolean | null>
     findCategory(name: string): Promise<boolean | null>
     createCategory(name: string): Promise<boolean | null>
-    getCategories(page: number, limit: number): Promise<CategoryResponseDataType | null>
-    blockCategory(id: string): Promise<ICategory | null>
+    getCategories(page: number, limit: number): Promise<PaginatedResponse<ICategoryDto> | null>
+    blockCategory(id: string): Promise<ICategoryDto | null>
     deleteCategory(id: string): Promise<boolean | null>
-    pendingCourse(page:number,limit:number): Promise<CourseResponseDataType | null>
+    pendingCourse(page:number,limit:number): Promise<{ courses: ICourse[], totalRecord: number } | null>
     getCategory(): Promise<ICategory[] | null>
     courseDetails(id:string):Promise<ICourse | null>
     getCategoryName(id:string):Promise<string | null>

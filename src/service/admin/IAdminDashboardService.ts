@@ -1,15 +1,15 @@
-import { IAdminWallet } from "../../model/adminwallet/adminwallet";
-import { IStudent } from "../../model/student/studentModel";
-import { CategoryIncome, DashboardData, MonthlyIncome, YearlyIncome } from "../../Types/basicTypes"
+import { ICategoryIncomeDto, IDashboardDataDto, IMonthlyIncomeDto, IYearlyIncomeDto } from "../../dtos/dashboard/dashboardDataDto";
+import { IStudentDto } from "../../dtos/student/studentDto";
+import { IAdminWalletdto } from "../../dtos/wallet/adminwallet/adminWalletDto";
 
 interface IAdminDashboardService {
-    getDashboardData(): Promise<DashboardData | null>;
-    getWallet(page: number, limit: number): Promise<IAdminWallet | null>;
-    getStudents(): Promise<IStudent[] | null>;
-    getCategoryIncomeDistribution(): Promise<CategoryIncome[] | null>
-    getAdminMonthlyIncome(year:number): Promise<MonthlyIncome[] | null>
-    getAdminYearlyIncome(year:number): Promise<YearlyIncome[] | null>
-    getAdminIncomeByDateRange(startDate: string, endDate: string): Promise<MonthlyIncome[] | null>
+    getDashboardData(): Promise<IDashboardDataDto | null>;
+    getWallet(page: number, limit: number): Promise<IAdminWalletdto | null>;
+    getStudents(): Promise<IStudentDto[] | null>;
+    getCategoryIncomeDistribution(): Promise<ICategoryIncomeDto[] | null>
+    getAdminMonthlyIncome(year:number): Promise<IMonthlyIncomeDto[] | null>
+    getAdminYearlyIncome(year:number): Promise<IYearlyIncomeDto[] | null>
+    getAdminIncomeByDateRange(startDate: string, endDate: string): Promise<IMonthlyIncomeDto[] | null>
 
 }
 

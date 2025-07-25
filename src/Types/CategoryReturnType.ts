@@ -5,7 +5,13 @@ import { ITutor } from "../model/tutor/tutorModel";
 import { ISubscription } from "../model/subscription/subscriptionModel";
 import { ITransaction, ITutorWallet } from "../model/wallet/walletModel";
 import { IBasicStudentInfo } from "./basicTypes";
+import { IStudentDto } from "../dtos/student/studentDto";
 
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  totalRecord: number;
+}
 
 export interface CategoryResponseDataType {
     categories: ICategory[],
@@ -16,7 +22,7 @@ export interface TutorResponseDataType {
     totalRecord: number
 }
 export interface StudentResponseDataType {
-    students: IStudent[],
+    students: IStudentDto[],
     totalRecord: number
 }
 
