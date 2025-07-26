@@ -2,6 +2,10 @@ import { ITutor } from '../../../model/tutor/tutorModel';
 import { OTPType } from '../../../model/otp/ otpModel';
 import ITutorRepository from '../../../repository/tutor/implementation/TutorRepository'
 import ITutorService from '../ITutorService';
+import { ITutorDto } from '../../../dtos/tutor/tutorDto';
+import { mapTutorToDto } from '../../../mapper/tutor/tutorMapper';
+import { IOtpDto } from '../../../dtos/otp/IOtpDto';
+import { mapOtpToDto } from '../../../mapper/otp/otpMapper';
 
 class TutorService implements ITutorService{
 
@@ -24,32 +28,39 @@ class TutorService implements ITutorService{
         return newUser;
     }
 
-    async updateUser(email: string, data:ITutor): Promise<ITutor | null> {
+    async updateUser(email: string, data:ITutor): Promise<ITutorDto | null> {
         const updatedUser = await this._tutorRepository.updateUserByEmail(email,data);
-        return updatedUser
+        if(!updatedUser)return null;
+        const dto = mapTutorToDto(updatedUser);
+        return dto;
     }
 
-    async storeUserOtp(email: string, otp: string): Promise<OTPType | null> {
+    async storeUserOtp(email: string, otp: string): Promise<IOtpDto | null> {
         const storedOtp = await this._tutorRepository.storeOtpInDb(email,otp);
-        return storedOtp
+        if(!storedOtp)return null;
+        const dto = mapOtpToDto(storedOtp);
+        return dto;
     }
     
-    async getOtpByEmail(email: string): Promise<OTPType | null> {
+    async getOtpByEmail(email: string): Promise<IOtpDto | null> {
         const otp = await this._tutorRepository.findOtpByemail(email)
-        return otp
+        if(!otp)return null;
+        const dto = mapOtpToDto(otp);
+        return dto;
     }
-    async storeUserResendOtp(email: string, otp: string): Promise<OTPType | null> {
+    async storeUserResendOtp(email: string, otp: string): Promise<IOtpDto | null> {
         const storedOtp = await this._tutorRepository.storeResendOtpInDb(email,otp);
-        return storedOtp
+        if(!storedOtp)return null;
+        const dto = mapOtpToDto(storedOtp);
+        return dto;
     }
 
-    // async loginUser(email: string, password: string): Promise<ITutor | null> {
-    //     const user = await this._tutorRepository.loginUser(email,password);
-    //     return user
-    // }
-    async getTutorById(id: string): Promise<ITutor | null> {
+
+    async getTutorById(id: string): Promise<ITutorDto | null> {
         const tutor = await this._tutorRepository.getTutorById(id);
-        return tutor
+        if(!tutor)return null;
+        const dto = mapTutorToDto(tutor);
+        return dto;
     }
 }
 

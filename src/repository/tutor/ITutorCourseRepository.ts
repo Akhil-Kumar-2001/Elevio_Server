@@ -1,8 +1,8 @@
 import { ICategory } from "../../model/category/categoryModel"
-import { ICourse } from "../../model/course/courseModel"
+import { ICourse, ICourseCategoryExtended } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
 import { INotification } from "../../model/notification/notification.Model"
-import { IReview } from "../../model/review/review.model"
+import { IReview, IReviewExtended } from "../../model/review/review.model"
 import { ISection } from "../../model/section/sectionModel"
 import { CourseData,  ILectureData, ISectionData } from "../../Types/basicTypes"
 import { CourseResponseDataType, StudentsResponseDataType } from "../../Types/CategoryReturnType"
@@ -12,7 +12,7 @@ interface ITutorCourseRepository {
     createCourse(courseData : CourseData): Promise<boolean | null>
     getCategories(): Promise<ICategory[] | null>
     getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null>
-    getCourseDetails(id: string): Promise<ICourse | null>
+    getCourseDetails(id: string): Promise<ICourseCategoryExtended | null>
     editCourse(id: string, editCourse: ICourse): Promise<ICourse | null>
     createSection(id: string, sectionData: ISectionData): Promise<ISection | null>
     createLecture(data: ILectureData): Promise<ILecture | null>
@@ -31,7 +31,7 @@ interface ITutorCourseRepository {
     getCoursePreview(courseId:string):Promise<ICourse | null>;
     getSectionsPreview(courseId:string):Promise<ISection[] | null>;
     getLecturesPreview(sectionId:string):Promise<ILecture[] | null>;
-    getReviews(courseId:string):Promise<IReview[] | null>;
+    getReviews(courseId:string):Promise<IReviewExtended[] | null>;
     replyReview(reviewId:string,reply:string):Promise<IReview | null>;
     deleteReply(reviewId:string):Promise<boolean | null>;
 }

@@ -1,4 +1,3 @@
-import { ITransaction } from "../../model/wallet/walletModel";
 import { IDashboardDetails, MonthlyIncome, StudentsCount, YearlyIncome } from "../../Types/basicTypes";
 import { TutorTransaction } from "../../Types/CategoryReturnType";
 

@@ -1,6 +1,6 @@
 import { CourseData, IBasicStudentInfo, ILectureData, ISectionData } from "../../../Types/basicTypes";
 import ITutorCourseRepository from "../ITutorCourseRepository";
-import { Course, ICourse } from "../../../model/course/courseModel";
+import { Course, ICourse, ICourseCategoryExtended } from "../../../model/course/courseModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
 import { CourseResponseDataType, StudentsResponseDataType } from "../../../Types/CategoryReturnType";
 import { ISection, Section } from "../../../model/section/sectionModel";
@@ -11,7 +11,7 @@ import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { INotification, Notification } from "../../../model/notification/notification.Model";
-import { IReview, Review } from "../../../model/review/review.model";
+import { IReview, IReviewExtended, Review } from "../../../model/review/review.model";
 import {  Student } from "../../../model/student/studentModel";
 import { Types } from "mongoose";
 import { Tutor } from "../../../model/tutor/tutorModel";
@@ -63,9 +63,11 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async getCourseDetails(id: string): Promise<ICourse | null> {
+    async getCourseDetails(id: string): Promise<ICourseCategoryExtended | null> {
         try {
-            const courseDetails = await Course.findById(id).populate('category', 'name');
+            const courseDetails = await Course.findById(id)
+            .populate('category', 'name')
+            .lean<ICourseCategoryExtended>();
             return courseDetails
         } catch (error) {
             console.log("Error while retrieving course details")
@@ -477,11 +479,12 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async getReviews(courseId: string): Promise<IReview[] | null> {
+    async getReviews(courseId: string): Promise<IReviewExtended[] | null> {
         try {
             const reviews = await Review.find({ courseId, isVisible: true })
                 .populate('userId', 'username')
-                .sort({ createdAt: -1 });
+                .sort({ createdAt: -1 })
+                .lean<IReviewExtended[]>();
             return reviews.length > 0 ? reviews : null;
         } catch (error) {
             console.error('Error fetching reviews:', error);

@@ -1,38 +1,42 @@
-import { ICategory } from "../../model/category/categoryModel"
 import { ICourse } from "../../model/course/courseModel"
 import { ILecture } from "../../model/lecture/lectureModel"
-import { INotification } from "../../model/notification/notification.Model"
 import { ISection } from "../../model/section/sectionModel"
 import { CourseData, ILectureData, ISectionData } from "../../Types/basicTypes"
-import { CourseResponseDataType, StudentsResponseDataType } from "../../Types/CategoryReturnType"
+import { PaginatedResponse, StudentsResponseDataType } from "../../Types/CategoryReturnType"
 import { IReview } from "../../model/review/review.model"
+import { ICategoryDto } from "../../dtos/category/categoryDto"
+import { ICourseCategoryDto, ICourseDto } from "../../dtos/course/courseDto"
+import { ISectionDto } from "../../dtos/section/ISectionDto"
+import { ILectureDto } from "../../dtos/lecture/ILectureDto"
+import { INotificationDto } from "../../dtos/notification/notificationDto"
+import { IReviewDto, IReviewResponseDto } from "../../dtos/review/IReviewResponseDto"
 
 interface ITutorCourseService {
-    getCategories(): Promise<ICategory[] | null>
+    getCategories(): Promise<ICategoryDto[] | null>
     isTutorVerified(tutorId : string): Promise<boolean | null>
     createCourse(courseData: CourseData): Promise<boolean | null>
-    getCourses(tutorId:string,page:number,limit:number): Promise<CourseResponseDataType | null>
-    getCourseDetails(id:string):Promise<ICourse | null>
-    editCourse(id:string,editedCourse:ICourse):Promise<ICourse | null>
-    createSection(id:string,sectionData:ISectionData):Promise<ISection | null>
-    createLecture(data:ILectureData):Promise<ILecture | null>
-    getSections(id:string):Promise<ISection[] | null>
-    getLectures(id:string):Promise<ILecture[] | null>
-    editLecture(id:string,title:string):Promise<ILecture | null>
+    getCourses(tutorId:string,page:number,limit:number): Promise<PaginatedResponse<ICourseDto> | null>
+    getCourseDetails(id:string):Promise<ICourseCategoryDto | null>
+    editCourse(id:string,editedCourse:ICourse):Promise<ICourseDto | null>
+    createSection(id:string,sectionData:ISectionData):Promise<ISectionDto | null>
+    createLecture(data:ILectureData):Promise<ILectureDto | null>
+    getSections(id:string):Promise<ISectionDto[] | null>
+    getLectures(id:string):Promise<ILectureDto[] | null>
+    editLecture(id:string,title:string):Promise<ILectureDto | null>
     deleteLecture(id:string):Promise<boolean | null>
-    editSection(id:string,data:ISectionData):Promise<ISection | null >
+    editSection(id:string,data:ISectionData):Promise<ISectionDto | null >
 
     uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null>;
     
     applyReview(courseId:string):Promise<boolean | null>
-    getNotifications(receiverId:string):Promise<INotification[] | null>
+    getNotifications(receiverId:string):Promise<INotificationDto[] | null>
     readNotifications(id:string):Promise<boolean | null>
     getStudents(tutorId:string,page:number,limit:number):Promise<StudentsResponseDataType | null>
-    getCoursePreview(courseId:string):Promise<ICourse | null>
-    getSectionsPreview(courseId:string):Promise<ISection[] | null>
-    getLecturesPreview(sectionId:string):Promise<ILecture[] | null>
-    getReviews(courseId:string):Promise<IReview[] | null>
-    replyReview(reviewId:string,reply:string):Promise<IReview | null>
+    getCoursePreview(courseId:string):Promise<ICourseDto | null>
+    getSectionsPreview(courseId:string):Promise<ISectionDto[] | null>
+    getLecturesPreview(sectionId:string):Promise<ILectureDto[] | null>
+    getReviews(courseId:string):Promise<IReviewDto[] | null>
+    replyReview(reviewId:string,reply:string):Promise<IReviewResponseDto | null>
     deleteReply(reviewId:string):Promise<boolean | null>
 
 }

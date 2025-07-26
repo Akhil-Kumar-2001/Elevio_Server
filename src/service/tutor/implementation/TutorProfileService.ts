@@ -2,8 +2,11 @@ import { ITutor } from '../../../model/tutor/tutorModel';
 import ITutorProfileRepository from '../../../repository/tutor/ITutorProfileRepository'
 import ITutorProfileService from '../ITutorProfileService';
 import { SessionInfo, TutorVerificationFormData } from '../../../Types/basicTypes';
-import { ICategory } from '../../../model/category/categoryModel';
 import { ISession } from '../../../model/sessiion/sessionModel';
+import { ITutorDto } from '../../../dtos/tutor/tutorDto';
+import { mapTutorToDto } from '../../../mapper/tutor/tutorMapper';
+import { ISessionDto } from '../../../dtos/session/sessionDto';
+import { mapSessionToDto } from '../../../mapper/session/sessionMapper';
 
 class TutorProfileService implements ITutorProfileService{
 
@@ -13,15 +16,18 @@ class TutorProfileService implements ITutorProfileService{
     }
 
     
-    async getTutorById(id: string): Promise<ITutor | null> {
+    async getTutorById(id: string): Promise<ITutorDto | null> {
         const tutor = await this._tutorProfileRepository.getTutorById(id);
-        return tutor
+        if(!tutor)return null;
+        const dto = mapTutorToDto(tutor);
+        return dto;
     }
 
-    async verifyTutor(formData: TutorVerificationFormData): Promise<ITutor | null> {
+    async verifyTutor(formData: TutorVerificationFormData): Promise<ITutorDto | null> {
         const tutor = await this._tutorProfileRepository.verifyTutor(formData);
-            return tutor
-        
+        if(!tutor)return null;
+        const dto = mapTutorToDto(tutor);
+        return dto;
     }
 
     async updateProfile(id: string, formData: ITutor): Promise<boolean | null> {
@@ -44,9 +50,11 @@ class TutorProfileService implements ITutorProfileService{
         return response;
     }
 
-    async getSessionDetails(id: string): Promise<ISession | null> {
+    async getSessionDetails(id: string): Promise<ISessionDto | null> {
         const response = await this._tutorProfileRepository.getSessionDetails(id);
-        return response;
+        if(!response)return null;
+        const dto = mapSessionToDto(response);
+        return dto;
     }
 
     async updateSessionStatus(_id: string,status:string): Promise<boolean | null> {
