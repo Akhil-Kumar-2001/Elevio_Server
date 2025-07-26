@@ -1,10 +1,9 @@
-import { ICart } from "../../model/cart/cartModel";
 import { ICategory } from "../../model/category/categoryModel";
-import { ICourse } from "../../model/course/courseModel";
+import { ICourse, ICourseExtended } from "../../model/course/courseModel";
 import { ILecture } from "../../model/lecture/lectureModel";
 import { IOrder } from "../../model/order/orderModel";
 import { IProgress } from "../../model/progress/progress.model";
-import { IReview } from "../../model/review/review.model";
+import { IReview, IReviewExtended } from "../../model/review/review.model";
 import { ISection } from "../../model/section/sectionModel";
 import { ISubscription } from "../../model/subscription/subscriptionModel";
 import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased";
@@ -25,7 +24,7 @@ interface IStudentCourseRepository {
     getCategories(): Promise<ICategory[] | null>
     getCourses( page: number, limit: number): Promise<CourseResponseDataType | null>
     getPurchasedCourses( userId:string ): Promise<ICourse[] | null>
-    getCourse(id:string):Promise<ICourse | null>
+    getCourse(id:string):Promise<ICourseExtended | null>
     getTutor(id:string):Promise<ITutor | null>
     getSections(id:string):Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
@@ -35,8 +34,8 @@ interface IStudentCourseRepository {
     findByOrderId(orderId:string):Promise<ISubscriptionPurchased | null>
     findPlanById(_id:string):Promise<ISubscription | null>
     updateSubscriptionByOrderId(orderId:string,data:PaymentData):Promise<string | null>
-    getReviews(id:string):Promise<IReview[] | null>
-    createReview(formData:review):Promise<IReview | null>
+    getReviews(id:string):Promise<IReviewExtended[] | null>
+    createReview(formData:review):Promise<IReviewExtended | null>
     getProgress(courseId:string,userId:string):Promise<IProgress | null>
     addLectureToProgress(userId:string,courseId:string,lectureId:string):Promise<IProgress | null>
     editReview(id:string,formData:review):Promise<IReview | null>

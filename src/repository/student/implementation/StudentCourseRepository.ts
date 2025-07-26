@@ -1,7 +1,7 @@
 import mongoose, { Types } from "mongoose";
-import { Course, ICourse } from "../../../model/course/courseModel";
+import { Course, ICourse, ICourseExtended } from "../../../model/course/courseModel";
 import IStudentCourseRepository from "../IStudentCourseRepository";
-import { Cart, ICart } from "../../../model/cart/cartModel";
+import { Cart } from "../../../model/cart/cartModel";
 import { ICartItemWithDetails, ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData, PaymentData, review } from "../../../Types/basicTypes";
 import { IOrder, Order } from "../../../model/order/orderModel";
 import { ITransaction, TutorWallet } from "../../../model/wallet/walletModel";
@@ -13,11 +13,10 @@ import Subscription, { ISubscription } from "../../../model/subscription/subscri
 import { ISubscriptionPurchased, SubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
 import { Student } from "../../../model/student/studentModel";
 import { ITutor, Tutor } from "../../../model/tutor/tutorModel";
-import { IReview, Review } from "../../../model/review/review.model";
+import { IReview, IReviewExtended, Review } from "../../../model/review/review.model";
 import { AdminWallet, IAdminTransaction } from "../../../model/adminwallet/adminwallet";
 import { IProgress, Progress } from "../../../model/progress/progress.model";
 import { Wishlist } from "../../../model/wishlist/wishlist.model";
-import { Console } from "console";
 
 class StudentCourseRepository implements IStudentCourseRepository {
 
@@ -137,7 +136,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             createdAt: cart.createdAt,
             updatedAt: cart.updatedAt,
             _id: cart._id.toString(), // Convert ObjectId to string
-            __v: cart.__v
+
         };
 
 
@@ -337,9 +336,11 @@ class StudentCourseRepository implements IStudentCourseRepository {
         }
     }
 
-    async getCourse(id: string): Promise<ICourse | null> {
+    async getCourse(id: string): Promise<ICourseExtended | null> {
         try {
-            const course = await Course.findOne({ _id: id }).populate('tutorId', 'username');
+            const course = await Course.findOne({ _id: id })
+            .populate('tutorId', 'username')
+            .lean<ICourseExtended>();
             return course
         } catch (error) {
             console.log("Error while getting Course details");
@@ -485,11 +486,12 @@ class StudentCourseRepository implements IStudentCourseRepository {
         return updatedOrder ? updatedOrder.paymentStatus : null;
     }
 
-    async getReviews(id: string): Promise<IReview[] | null> {
+    async getReviews(id: string): Promise<IReviewExtended[] | null> {
         try {
             const reviews = await Review.find({ courseId: id, isVisible: true })
                 .populate('userId', 'username') // Populate username from User model
-                .sort({ createdAt: -1 }); // Sort by newest first
+                .sort({ createdAt: -1 })
+                .lean<IReviewExtended[]>() // Sort by newest first
             return reviews.length > 0 ? reviews : [];
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -499,7 +501,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
 
 
-    async createReview(formData: review): Promise<IReview | null> {
+    async createReview(formData: review): Promise<IReviewExtended | null> {
         try {
             // Step 1: Create the new review
             const newReview = await Review.create({
@@ -514,7 +516,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
             const totalReviews = courseReviews.length;
             const totalRating = courseReviews.reduce((sum, review) => sum + review.rating, 0);
-            const avgRating = parseFloat((totalRating / totalReviews).toFixed(1)); // rounded to 1 decimal
+            const avgRating = parseFloat((totalRating / totalReviews).toFixed(1));
 
             // Step 3: Update the course with new average rating and total reviews
             await Course.findByIdAndUpdate(formData.courseId, {
@@ -522,12 +524,14 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 totalReviews,
             });
 
-            // Populate the user data (e.g., username) from the "Student" model
-            const populatedReview = await newReview.populate('userId', 'username');
+            // Step 4: Refetch the newly created review with populated userId and lean result
+            const populatedReview = await Review.findById(newReview._id)
+                .populate('userId', 'username')
+                .lean<IReviewExtended>();
 
-            return populatedReview;
+            return populatedReview ?? null;
         } catch (error) {
-            console.error('Error creating reviews:', error);
+            console.error('Error creating review:', error);
             return null;
         }
     }
@@ -666,7 +670,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const wishlist = await Wishlist.findOne({ userId })
                 .populate("items.courseId")
                 .exec();
-            console.log("Wishlist in repository", wishlist)
+            console.log("Wishlist in repository = ================>", wishlist?.items)
             if (!wishlist) return []
 
             // Extract populated course objects

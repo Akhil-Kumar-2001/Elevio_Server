@@ -20,10 +20,19 @@ constructor(){
     //     return newUser;
     // }
 
-    async updateUserByEmail(email: string, data:IStudent): Promise<IStudent | null> {
+    async updateUserByEmail(email: string,data:IStudent): Promise<IStudent | null> {
         const updatedUser = await Student.findOneAndUpdate({ email }, data,{ new:true })
         return updatedUser
     }
+
+    async updateUserStatus(email: string): Promise<IStudent | null> {
+    const updatedUser = await Student.findOneAndUpdate(
+        { email },
+        { $set: { status: 1 } }, 
+        { new: true }            
+    );
+    return updatedUser;
+}
 
     async storeOtpInDb(email: string, otp: string): Promise<OTPType | null> {
         const storedOtp = await OTP.create({email,otp})

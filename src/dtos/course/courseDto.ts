@@ -19,3 +19,29 @@ export interface ICourseDto {
   createdAt: string;
   updatedAt: string;
 }
+
+
+export interface ICourseResponseDto {
+  _id?: string;
+  tutorId?: {
+    _id:string,
+    username:string;
+  }
+  title?: string;
+  price?: number;
+  subtitle?: string;
+  description?: string;
+  category?: string;
+  totalDuration?: number;
+  totalLectures?: number;
+  totalSections?: number;
+  purchasedStudents?: string[];
+  isBlocked?: boolean;
+  status?: "pending" | "accepted" | "rejected" | "draft" | "listed";
+  rejectedReason?: string;
+  imageThumbnail: string;
+  avgRating?: number;
+  totalReviews?: number;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -1,21 +1,29 @@
 import Razorpay from 'razorpay'
 import { Types } from "mongoose";
 import crypto from "crypto";
-import { ICart } from "../../../model/cart/cartModel";
-import { ICourse } from "../../../model/course/courseModel";
-import { IOrder } from "../../../model/order/orderModel";
 import IStudentCourseRepository from "../../../repository/student/IStudentCourseRepository";
 import { ICartWithDetails, IOrderCreateSubscriptionData, review } from "../../../Types/basicTypes";
 import IStudentCourseService from "../IStudentCourseService";
-import { ICategory } from '../../../model/category/categoryModel';
-import { CourseResponseDataType } from '../../../Types/CategoryReturnType';
-import { ISection } from '../../../model/section/sectionModel';
-import { ILecture } from '../../../model/lecture/lectureModel';
-import { ISubscription } from '../../../model/subscription/subscriptionModel';
+import { PaginatedResponse } from '../../../Types/CategoryReturnType';
 import { ISubscriptionPurchased } from '../../../model/subscription/SubscriptionPurchased';
-import { ITutor } from '../../../model/tutor/tutorModel';
-import { IReview } from '../../../model/review/review.model';
-import { IProgress } from '../../../model/progress/progress.model';
+import { mapCourseResponseToDto, mapCoursesToDto, mapCourseToDto } from '../../../mapper/course/courseMapper';
+import { ICourseDto, ICourseResponseDto } from '../../../dtos/course/courseDto';
+import { mapOrderToDto } from '../../../mapper/order/orderMapper';
+import { IOrderDto } from '../../../dtos/order/orderDto';
+import { ICategoryDto } from '../../../dtos/category/categoryDto';
+import { mapCategoriesToDto } from '../../../mapper/category/categoryMapper';
+import { ITutorDto } from '../../../dtos/tutor/tutorDto';
+import { mapTutorToDto } from '../../../mapper/tutor/tutorMapper';
+import { ISectionDto } from '../../../dtos/section/ISectionDto';
+import { ILectureDto } from '../../../dtos/lecture/ILectureDto';
+import { MapToSectionsDto } from '../../../mapper/section/sectionMapper';
+import { mapLecturesToDto } from '../../../mapper/lecture/lectureMapper';
+import { ISubscriptionDto } from '../../../dtos/subsription/subscriptionDto';
+import { mapSubscriptionsToDto } from '../../../mapper/subscription/subscriptionMapper';
+import { IReviewDto, IReviewResponseDto } from '../../../dtos/review/IReviewResponseDto';
+import { mapReviewReponseToDto, mapReviewsReponseToDtoList, mapReviewsToDtoList, mapReviewToDto } from '../../../mapper/review/reviewMapper';
+import { IProgressResponseDto } from '../../../dtos/progress/progressDto';
+import { mapProgressToDto } from '../../../mapper/progress/progressMapper';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -29,14 +37,18 @@ class StudentCourseService implements IStudentCourseService {
         });
     }
 
-    async getListedCourse(): Promise<ICourse[] | null> {
+    async getListedCourse(): Promise<ICourseDto[] | null> {
         const courses = await this._studentCourseRepository.getListedCourse();
-        return courses
+        if (!courses) return null;
+        const dto = mapCoursesToDto(courses);
+        return dto
     }
 
-    async getTopRatedCourse(): Promise<ICourse[] | null> {
+    async getTopRatedCourse(): Promise<ICourseDto[] | null> {
         const courses = await this._studentCourseRepository.getTopRatedCourse();
-        return courses
+        if (!courses) return null;
+        const dto = mapCoursesToDto(courses);
+        return dto
     }
 
     async addToCart(id: string, userId: string): Promise<boolean | null> {
@@ -64,7 +76,7 @@ class StudentCourseService implements IStudentCourseService {
         return response
     }
 
-    async createOrder(studentId: string, amount: number, courseIds: string[]): Promise<IOrder | null> {
+    async createOrder(studentId: string, amount: number, courseIds: string[]): Promise<IOrderDto | null> {
 
         const options = {
             amount: amount * 100,
@@ -85,8 +97,9 @@ class StudentCourseService implements IStudentCourseService {
         };
 
         const createdOrder = await this._studentCourseRepository.createOrder(orderData);
-        console.log("c", createdOrder);
-        return createdOrder
+        if (!createdOrder) return null;
+        const dto = mapOrderToDto(createdOrder);
+        return dto
     }
 
     async verifyPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null> {
@@ -112,43 +125,60 @@ class StudentCourseService implements IStudentCourseService {
         }
     }
 
-    async getCategories(): Promise<ICategory[] | null> {
+    async getCategories(): Promise<ICategoryDto[] | null> {
         const response = await this._studentCourseRepository.getCategories();
-        return response;
+        if (!response) return null;
+        const dto = mapCategoriesToDto(response);
+        return dto;
     }
-    async getCourses(page: number, limit: number): Promise<CourseResponseDataType | null> {
+
+    async getCourses(page: number, limit: number): Promise<PaginatedResponse<ICourseDto> | null> {
         const response = await this._studentCourseRepository.getCourses(page, limit);
-        return response;
+        if (!response) return null;
+        const dto = mapCoursesToDto(response.courses);
+        return { data: dto, totalRecord: response.totalRecord };
     }
 
-    async getPurchasedCourses(userId: string): Promise<ICourse[] | null> {
+    async getPurchasedCourses(userId: string): Promise<ICourseDto[] | null> {
         const response = await this._studentCourseRepository.getPurchasedCourses(userId);
-        return response;
+        if(!response)return null;
+        const dto = mapCoursesToDto(response);
+        return dto;
     }
 
-    async getSections(id: string): Promise<ISection[] | null> {
+    async getSections(id: string): Promise<ISectionDto[] | null> {
         const sections = await this._studentCourseRepository.getSections(id);
-        return sections;
+        if(!sections)return null;
+        const dto = MapToSectionsDto(sections)
+        return dto;
     }
 
-    async getLectures(id: string): Promise<ILecture[] | null> {
+    async getLectures(id: string): Promise<ILectureDto[] | null> {
         const response = await this._studentCourseRepository.getLectures(id);
-        return response
+        if(!response)return null;
+        const dto = mapLecturesToDto(response)
+        return dto;
     }
 
-    async getCourse(id: string): Promise<ICourse | null> {
+    async getCourse(id: string): Promise<ICourseResponseDto | null> {
         const response = await this._studentCourseRepository.getCourse(id);
-        return response;
+        if(!response)return null;
+        const dto = mapCourseResponseToDto(response)
+        return dto;
     }
 
-    async getTutor(id: string): Promise<ITutor | null> {
+    async getTutor(id: string): Promise<ITutorDto | null> {
         const response = await this._studentCourseRepository.getTutor(id);
-        return response;
+        if(!response)return null;
+        const dto = mapTutorToDto(response);
+        return dto;
     }
 
-    async getSubscription(): Promise<ISubscription[] | null> {
+    async getSubscription(): Promise<ISubscriptionDto[] | null> {
         const response = await this._studentCourseRepository.getSubscription();
-        return response
+        if(!response)return null;
+        const dto = mapSubscriptionsToDto(response);
+        return dto;
     }
 
     async isValidPlan(studentId: string): Promise<boolean | null> {
@@ -184,6 +214,7 @@ class StudentCourseService implements IStudentCourseService {
 
 
         const order = await this._studentCourseRepository.createSubscritionOrder(orderData)
+        console.log(order)
         return order;
 
     }
@@ -228,10 +259,10 @@ class StudentCourseService implements IStudentCourseService {
             }
 
             const updatedPaymentDetails = {
-                ...subscription.paymentDetails,  
-                paymentId: razorpay_payment_id  
+                ...subscription.paymentDetails,
+                paymentId: razorpay_payment_id
             };
-            console.log("updated paymentdetails",updatedPaymentDetails)
+            console.log("updated paymentdetails", updatedPaymentDetails)
 
             const data = {
                 paymentStatus: "paid" as const,
@@ -241,9 +272,9 @@ class StudentCourseService implements IStudentCourseService {
                 paymentDetails: updatedPaymentDetails
             }
 
-            const updatedSubscription = await this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id,data);
-            return updatedSubscription 
-        }else{
+            const updatedSubscription = await this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id, data);
+            return updatedSubscription
+        } else {
             const updatedSubscription = await this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id, {
                 paymentStatus: "failed",
                 status: "canceled",
@@ -256,30 +287,40 @@ class StudentCourseService implements IStudentCourseService {
 
     }
 
-    async getReviews(id: string): Promise<IReview[] | null> {
+    async getReviews(id: string): Promise<IReviewDto[] | null> {
         const response = await this._studentCourseRepository.getReviews(id);
-        return response
+        if(!response)return null;
+        const dto = mapReviewsReponseToDtoList(response)
+        return dto
     }
 
-    async createReview(formData: review): Promise<IReview | null> {
+    async createReview(formData: review): Promise<IReviewDto | null> {
         const response = await this._studentCourseRepository.createReview(formData);
-        return response
+        if(!response)return null;
+        const dto = mapReviewReponseToDto(response);
+        return dto;
     }
 
-    async getProgress(courseId: string,userId:string): Promise<IProgress | null> {
-        const response = await this._studentCourseRepository.getProgress(courseId,userId);
-        return response
+    async getProgress(courseId: string, userId: string): Promise<IProgressResponseDto | null> {
+        const response = await this._studentCourseRepository.getProgress(courseId, userId);
+        if(!response)return null;
+        const dto = mapProgressToDto(response);
+        return dto;
     }
 
-    async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgress | null> {
-        const response = await this._studentCourseRepository.addLectureToProgress(userId,courseId,lectureId);
-        return response;
+    async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgressResponseDto | null> {
+        const response = await this._studentCourseRepository.addLectureToProgress(userId, courseId, lectureId);
+        if(!response)return null;
+        const dto = mapProgressToDto(response)
+        return dto;
     }
 
 
-    async editReview(id: string, formData: review): Promise<IReview | null> {
+    async editReview(id: string, formData: review): Promise<IReviewResponseDto | null> {
         const response = await this._studentCourseRepository.editReview(id, formData);
-        return response
+        if(!response)return null;
+        const dto = mapReviewToDto(response);
+        return dto;
     }
 
     async deleteReview(id: string): Promise<boolean | null> {
@@ -287,24 +328,27 @@ class StudentCourseService implements IStudentCourseService {
         return response
     }
 
-    async getWishlist(userId: string): Promise<ICourse[] | null> {
+    async getWishlist(userId: string): Promise<ICourseDto[] | null> {
         const response = await this._studentCourseRepository.getWishlist(userId);
-        return response
+        if(!response)return null;
+        const dto = mapCoursesToDto(response);
+        return dto;
     }
 
     async addToWishlist(userId: string, courseId: string): Promise<boolean | null> {
         const response = await this._studentCourseRepository.addToWishlist(userId, courseId);
         return response
     }
-    
+
     async removeFromWishlist(userId: string, courseId: string): Promise<boolean | null> {
         const response = await this._studentCourseRepository.removeFromWishlist(userId, courseId);
         return response
     }
 
     async isInWishlist(userId: string, courseId: string): Promise<boolean | null> {
-        return this._studentCourseRepository.isInWishlist(userId,courseId);
+        return this._studentCourseRepository.isInWishlist(userId, courseId);
     }
+    
 }
 
 export default StudentCourseService

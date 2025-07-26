@@ -29,6 +29,7 @@ class StudentProfileController implements IStudentProfileController {
             // const { id } = req.params;
             const id = req.userId as string
             const subscription = await this._studentProfileService.getSubscriptionDetails(id);
+            console.log(subscription)
             res.status(STATUS_CODES.OK).json({ success: true, message: "Student data retrieved successfully", data: subscription });
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR })

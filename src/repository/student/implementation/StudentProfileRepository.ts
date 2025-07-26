@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import { ISession, Session } from "../../../model/sessiion/sessionModel";
 import { IStudent, Student } from "../../../model/student/studentModel";
-import { ISubscriptionPurchased, SubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
+import { ISubscriptionPurchasedExtended, SubscriptionPurchased } from "../../../model/subscription/SubscriptionPurchased";
 import { Tutor } from "../../../model/tutor/tutorModel";
 import { EditStudentType, SessionInfo } from "../../../Types/basicTypes";
 import IStudentProfileRepository from "../IStudentProfileRepository";
@@ -12,7 +12,7 @@ class StudentProfileRepository implements IStudentProfileRepository {
     return student;
   }
 
-  async getSubscriptionDetails(id: string): Promise<ISubscriptionPurchased | null> {
+  async getSubscriptionDetails(id: string): Promise<ISubscriptionPurchasedExtended | null> {
     try {
       const subscription = await SubscriptionPurchased.findOne({
         userId: id,
@@ -20,7 +20,8 @@ class StudentProfileRepository implements IStudentProfileRepository {
         paymentStatus: 'paid'
       })
         .populate('planId')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean<ISubscriptionPurchasedExtended>();
 
       return subscription
     } catch (error) {

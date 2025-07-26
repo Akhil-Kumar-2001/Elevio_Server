@@ -13,8 +13,8 @@ export const mapSubscriptionToDto = (subscription: ISubscription): ISubscription
     price: subscription.price,
     features: subscription.features,
     status: subscription.status,
-    createdAt: subscription.createdAt?.toISOString() || '',
-    updatedAt: subscription.updatedAt?.toISOString() || '',
+    createdAt: subscription.createdAt,
+    updatedAt: subscription.updatedAt,
   };
 };
 

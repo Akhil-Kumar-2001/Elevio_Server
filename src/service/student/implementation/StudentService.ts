@@ -1,8 +1,9 @@
-import { ICourse } from "../../../model/course/courseModel";
-import { OTPType } from "../../../model/otp/ otpModel";
+import { IOtpDto } from "../../../dtos/otp/IOtpDto";
+import { IStudentDto } from "../../../dtos/student/studentDto";
+import { mapOtpToDto } from "../../../mapper/otp/otpMapper";
+import { mapStudentToDto } from "../../../mapper/student/studentMapper";
 import { IStudent } from "../../../model/student/studentModel";
 import IStudentRepository from "../../../repository/student/IStudentRepository";
-import { EditStudentType } from "../../../Types/basicTypes";
 import IStudentService from "../IStudentService";
 
 class StudentService implements IStudentService {
@@ -19,32 +20,40 @@ class StudentService implements IStudentService {
     }
 
     async createUser(username: string, email: string, password: string): Promise<IStudent | null> {
-        const newUser = await this._studentRepository.create({username,email,password})
-        return newUser;
+        const newUser = await this._studentRepository.create({ username, email, password })
+        return newUser
     }
-    async updateUser(email: string, data:IStudent): Promise<IStudent | null> {
-        const updatedUser = await this._studentRepository.updateUserByEmail(email,data);
+    async updateUser(email: string, data: IStudent): Promise<IStudentDto | null> {
+        const updatedUser = await this._studentRepository.updateUserByEmail(email, data);
         return updatedUser
     }
 
-    async storeUserOtp(email: string, otp: string): Promise<OTPType | null> {
-        const storedOtp = await this._studentRepository.storeOtpInDb(email,otp);
-        return storedOtp
-    }
-    
-    async getOtpByEmail(email: string): Promise<OTPType | null> {
-        const otp = await this._studentRepository.findOtpByemail(email)
-        return otp
-    }
-    async storeUserResendOtp(email: string, otp: string): Promise<OTPType | null> {
-        const storedOtp = await this._studentRepository.storeResendOtpInDb(email,otp);
-        return storedOtp
+    async updateUserStatus(email: string): Promise<IStudentDto | null> {
+        const updatedUser = await this._studentRepository.updateUserStatus(email);
+        if(!updatedUser)return null;
+        const dto = mapStudentToDto(updatedUser)
+        return dto
     }
 
-    // async loginUser(email: string): Promise<IStudent | null> {
-    //     const user = await this._studentRepository.findByEmail(email);   
-    //     return user
-    // }
+    async storeUserOtp(email: string, otp: string): Promise<IOtpDto | null> {
+        const storedOtp = await this._studentRepository.storeOtpInDb(email, otp);
+        if(!storedOtp)return null
+        const dto = mapOtpToDto(storedOtp)
+        return dto
+    }
+
+    async getOtpByEmail(email: string): Promise<IOtpDto | null> {
+        const otp = await this._studentRepository.findOtpByemail(email)
+        if(!otp)return null
+        const dto = mapOtpToDto(otp)
+        return dto
+    }
+    async storeUserResendOtp(email: string, otp: string): Promise<IOtpDto | null> {
+        const storedOtp = await this._studentRepository.storeResendOtpInDb(email, otp);
+        if(!storedOtp)return null;
+        const dto = mapOtpToDto(storedOtp)
+        return dto
+    }
 
     async isBlocked(_id: string): Promise<number | undefined> {
         const user = await this._studentRepository.isBlocked(_id);

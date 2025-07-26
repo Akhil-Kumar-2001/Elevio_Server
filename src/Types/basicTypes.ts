@@ -59,7 +59,6 @@ export interface ICartWithDetails {
   createdAt: Date;
   updatedAt: Date;
   _id: string; // Changed from Types.ObjectId to string
-  __v: number;
 }
 
 
