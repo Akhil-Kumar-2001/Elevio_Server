@@ -188,11 +188,6 @@ export interface YearlyIncome {
 
 
 
-export interface MonthlyIncome {
-  month: string;
-  income: number;
-}
-
 export interface StudentsCount {
   name: string;
   students: number;
@@ -224,5 +219,67 @@ export interface IBasicStudentInfo {
   username?: string;
   email?: string;
   role: string;
+}
+
+
+export interface IServiceResponse<T> {
+  success: boolean;         
+  message: string;          
+  data?: T;               
+  statusCode?: number;      
+}
+
+
+export interface ICourseData {
+  tutorId: string;
+  title: string;
+  subtitle: string;
+  price: string; // change to `number` if appropriate
+  category: string;
+  description: string;
+}
+
+
+// types/CourseCreateData.ts
+export interface ICourseCreateData {
+  title: string;
+  subtitle: string;
+  price: string;        // as string from form/body
+  category: string;     // category ObjectId as string
+  description: string;
+}
+
+
+export interface ICourseFullData {
+  title: string;
+  subtitle: string;
+  price: number;      // converted to number for DB
+  category: string;
+  description: string;
+  tutorId: string;
+  imageThumbnail: string;
+  imageThumbnailId: string;
+}
+
+
+export interface ICourseEditableFields {
+  title?: string;
+  subtitle?: string;
+  price?: string; 
+  category?: string;
+  description?: string;
+  status?: string;
+}
+
+export interface ICourseFullEditableFields {
+  title?: string;
+  subtitle?: string;
+  price?: number | string; 
+  category?: string;
+  description?: string;
+  status?: string;
+  imageThumbnail?:string;
+  imageThumbnailId?:string;
+  
 }
 

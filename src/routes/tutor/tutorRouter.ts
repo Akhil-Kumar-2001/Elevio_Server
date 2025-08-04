@@ -18,6 +18,8 @@ import TutorDashboardRepository from '../../repository/tutor/implementation/Tuto
 import TutorDashboardService from '../../service/tutor/implementation/TutorDashboardService';
 import TutorDashboardController from '../../controller/tutor/implementation/TutorDashboardController';
 import ITutorDashboardController from '../../controller/tutor/ITutorDashboardController';
+import imageUpload from '../../Config/multerConfig'; // path as per your structure
+
 
 
 
@@ -72,10 +74,10 @@ router.patch("/update-profile",isBlocked,validateToken("Tutor"),tutorProfileCont
 
 // Course creation
 router.get("/get-categories",isBlocked,validateToken("Tutor"),tutorCourseController.getCategories.bind(tutorCourseController))
-router.post("/create-course",isBlocked,validateToken("Tutor"),tutorCourseController.createCourse.bind(tutorCourseController))
+router.post("/create-course",isBlocked,validateToken("Tutor"),imageUpload.single('imageThumbnail'),tutorCourseController.createCourse.bind(tutorCourseController))
 router.get('/courses',validateToken("Tutor"),isBlocked,tutorCourseController.getCourses.bind(tutorCourseController))
 router.get('/get-category',validateToken("Tutor"),isBlocked,tutorCourseController.getCourseDetails.bind(tutorCourseController))
-router.post('/edit-course',validateToken('Tutor'),isBlocked,tutorCourseController.editCourse.bind(tutorCourseController))
+router.post('/edit-course',validateToken('Tutor'),isBlocked,imageUpload.single('imageThumbnail'),tutorCourseController.editCourse.bind(tutorCourseController))
 
 
 // Add Course Content

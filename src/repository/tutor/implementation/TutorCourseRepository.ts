@@ -1,4 +1,4 @@
-import { CourseData, IBasicStudentInfo, ILectureData, ISectionData } from "../../../Types/basicTypes";
+import { CourseData, IBasicStudentInfo, ICourseFullData, ICourseFullEditableFields, ILectureData, ISectionData } from "../../../Types/basicTypes";
 import ITutorCourseRepository from "../ITutorCourseRepository";
 import { Course, ICourse, ICourseCategoryExtended } from "../../../model/course/courseModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
@@ -34,7 +34,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async createCourse(courseData : CourseData): Promise<boolean | null> {
+    async createCourse(courseData : ICourseFullData): Promise<boolean | null> {
         try {
             const existingCourse = await Course.findOne({ title: courseData?.title });
             if ( existingCourse ) {
@@ -75,8 +75,9 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    async editCourse(id: string, editCourse: ICourse): Promise<ICourse | null> {
+    async editCourse(id: string, editCourse: ICourseFullEditableFields): Promise<ICourse | null> {
         try {
+            console.log("in repository =========>",id,editCourse)
             const updatedCourse = await Course.findByIdAndUpdate(
                 id,
                 { $set: editCourse },
@@ -256,38 +257,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-    // async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null> {
-    //     const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
-    //     const params = {
-    //         Bucket: process.env.AWS_S3_BUCKET_NAME || 'your-bucket-name',
-    //         Key: `lectures/${fileName}`,
-    //         Body: videoFile.buffer,
-    //         ContentType: videoFile.mimetype,
-    //         // Remove ACL: 'public-read'
-    //     };
-
-    //     try {
-    //         // Upload to S3
-    //         const uploadResult = await s3.upload(params).promise();
-    //         const videoUrl = uploadResult.Location;
-
-    //         // Update lecture in the database
-    //         const updatedLecture = await Lecture.findByIdAndUpdate(
-    //             lectureId,
-    //             { videoUrl, status: 'completed' },
-    //             { new: true }
-    //         );
-
-    //         if (!updatedLecture) {
-    //             throw new Error('Lecture not found');
-    //         }
-
-    //         return videoUrl;
-    //     } catch (error) {
-    //         console.error('Error uploading video to S3:', error);
-    //         return null;
-    //     }
-    // }
+  
 
     async getVideoDuration(filePath: string): Promise<number> {
         return new Promise((resolve, reject) => {

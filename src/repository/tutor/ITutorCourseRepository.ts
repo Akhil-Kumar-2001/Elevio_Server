@@ -4,16 +4,16 @@ import { ILecture } from "../../model/lecture/lectureModel"
 import { INotification } from "../../model/notification/notification.Model"
 import { IReview, IReviewExtended } from "../../model/review/review.model"
 import { ISection } from "../../model/section/sectionModel"
-import { CourseData,  ILectureData, ISectionData } from "../../Types/basicTypes"
+import { CourseData,  ICourseFullData,  ICourseFullEditableFields,  ILectureData, ISectionData } from "../../Types/basicTypes"
 import { CourseResponseDataType, StudentsResponseDataType } from "../../Types/CategoryReturnType"
 
 interface ITutorCourseRepository {
     isTutorVerified(tutorId: string): Promise<boolean | null>
-    createCourse(courseData : CourseData): Promise<boolean | null>
+    createCourse(courseData : ICourseFullData): Promise<boolean | null>
     getCategories(): Promise<ICategory[] | null>
     getCourses(tutorId:string,page: number, limit: number): Promise<CourseResponseDataType | null>
     getCourseDetails(id: string): Promise<ICourseCategoryExtended | null>
-    editCourse(id: string, editCourse: ICourse): Promise<ICourse | null>
+    editCourse(id: string, editCourse: ICourseFullEditableFields): Promise<ICourse | null>
     createSection(id: string, sectionData: ISectionData): Promise<ISection | null>
     createLecture(data: ILectureData): Promise<ILecture | null>
     getSections(id: string): Promise<ISection[] | null>

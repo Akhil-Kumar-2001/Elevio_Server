@@ -1,6 +1,6 @@
 import { ICourse } from "../../../model/course/courseModel";
 import ITutorCourseRepository from "../../../repository/tutor/ITutorCourseRepository";
-import { CourseData, ILectureData, ISectionData } from "../../../Types/basicTypes";
+import { CourseData, ICourseCreateData, ICourseEditableFields, ICourseFullData, ICourseFullEditableFields, ILectureData, ISectionData, IServiceResponse } from "../../../Types/basicTypes";
 import { PaginatedResponse, StudentsResponseDataType } from "../../../Types/CategoryReturnType";
 import ITutorCourseService from "../ITutorCourseService";
 import { ICategoryDto } from "../../../dtos/category/categoryDto";
@@ -15,6 +15,10 @@ import { INotificationDto } from "../../../dtos/notification/notificationDto";
 import { mapNotificationsToDto } from "../../../mapper/notification/notificationMapper";
 import { IReviewDto, IReviewResponseDto } from "../../../dtos/review/IReviewResponseDto";
 import { mapReviewsReponseToDtoList, mapReviewToDto } from "../../../mapper/review/reviewMapper";
+import { STATUS_CODES } from "../../../constants/statusCode";
+import cloudinary from "../../../Config/cloudinaryConfig";
+import { v4 as uuidv4 } from 'uuid';
+
 
 class TutorCourseService implements ITutorCourseService {
 
@@ -35,9 +39,53 @@ class TutorCourseService implements ITutorCourseService {
         return response
     }
 
-    async createCourse(courseData: CourseData): Promise<boolean | null> {
-        const response = await this._tutorCourseRepository.createCourse(courseData);
-        return response
+    async createCourseWithImage(courseData: ICourseFullData, file: Express.Multer.File, tutorId: string): Promise<IServiceResponse<boolean>> {
+
+        const imageThumbnailId = uuidv4();
+
+        const uploadImage = (): Promise<{ url: string; public_id: string }> => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'Course-Thumbnail',
+                        public_id: imageThumbnailId, // ensure our ID is used
+                        resource_type: 'image',
+                        format: 'png'
+                    },
+                    (error, result) => {
+                        if (error || !result) {
+                            reject(new Error('Image upload failed'));
+                        } else {
+                            resolve({ url: result.secure_url, public_id: result.public_id });
+                        }
+                    }
+                );
+                stream.end(file.buffer);
+            });
+        };
+
+        let imageUploadResult;
+        try {
+            imageUploadResult = await uploadImage();
+        } catch {
+            return { success: false, message: "Failed to upload course thumbnail image", statusCode: STATUS_CODES.INTERNAL_SERVER_ERROR };
+        }
+
+        // Add both image URL and the unique ID to courseData
+        courseData.imageThumbnail = imageUploadResult.url;
+        courseData.imageThumbnailId = imageThumbnailId;
+        courseData.tutorId = tutorId;
+        courseData.price = Number(courseData.price);
+
+        // Save the course
+        const createdCourse = await this._tutorCourseRepository.createCourse(courseData);
+        console.log("response from the repository in the service", createdCourse)
+
+        if (!createdCourse) {
+            return { success: false, message: "Course already exists", statusCode: STATUS_CODES.CONFLICT };
+        }
+
+        return { success: true, message: "Course created successfully", data: createdCourse };
     }
 
     async getCourses(tutorId: string, page: number, limit: number): Promise<PaginatedResponse<ICourseDto> | null> {
@@ -54,12 +102,61 @@ class TutorCourseService implements ITutorCourseService {
         return dto;
     }
 
-    async editCourse(id: string, editedCourse: ICourse): Promise<ICourseDto | null> {
-        const response = await this._tutorCourseRepository.editCourse(id, editedCourse);
-        if (!response) return null;
-        const dto = mapCourseToDto(response);
-        return dto;
+
+    async editCourseWithImage(
+        id: string,
+        fields: ICourseEditableFields,
+        file: Express.Multer.File | undefined,
+    ): Promise<IServiceResponse<ICourseDto>> {
+        if (!id) {
+            return { success: false, message: "Course ID required", statusCode: STATUS_CODES.BAD_REQUEST };
+        }
+        // Optionally: fetch and authorize that tutorId matches course's real tutor...
+
+        // Clean the fields: form-data always sends all fields as string, so adjust as needed:
+        let updatedFields: ICourseFullEditableFields = { ...fields };
+        if (updatedFields.price) updatedFields.price = Number(updatedFields.price);
+        if (updatedFields.category) updatedFields.category = updatedFields.category;
+
+        // Only update thumbnail if new file is sent
+        if (file) {
+            const imageThumbnailId = uuidv4();
+            const imageUploadResult = await new Promise<{ url: string; public_id: string }>((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'Course-Thumbnail',
+                        public_id: imageThumbnailId,
+                        resource_type: 'image',
+                        format: 'png',
+                    },
+                    (error, result) => {
+                        if (error || !result) reject(new Error('Image upload failed'));
+                        else resolve({ url: result.secure_url, public_id: result.public_id });
+                    }
+                );
+                stream.end(file.buffer);
+            }).catch(() => null);
+
+            if (!imageUploadResult) {
+                return { success: false, message: "Failed to upload course thumbnail", statusCode: STATUS_CODES.INTERNAL_SERVER_ERROR };
+            }
+            updatedFields.imageThumbnail = imageUploadResult.url;
+            updatedFields.imageThumbnailId = imageThumbnailId;
+        }
+
+        // Remove file-specific fields from updatedFields form-data (e.g., don't pass undefined/non-scalar)
+        // Actually update
+        const updatedCourse = await this._tutorCourseRepository.editCourse(id, updatedFields);
+
+        if (!updatedCourse) {
+            return { success: false, message: "Course not found or not updated", statusCode: STATUS_CODES.NOT_FOUND };
+        }
+
+        // Optionally do mapping to DTO if needed
+        const dto = mapCourseToDto(updatedCourse);
+        return { success: true, message: "Course details updated successfully", data: dto };
     }
+
 
     async createSection(id: string, sectionData: ISectionData): Promise<ISectionDto | null> {
         const response = await this._tutorCourseRepository.createSection(id, sectionData);
