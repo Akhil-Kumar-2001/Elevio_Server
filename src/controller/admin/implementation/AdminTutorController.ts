@@ -211,7 +211,6 @@ class AdminTutorController implements IAdminTutorController {
             const { id } = req.params;
             const reason = req.body.reason
             const tutorId = req.body.tutorId
-            console.log("==================>", tutorId)
             const email = await this._adminTutorService.getTutorMail(tutorId);
             // console.log(object)
             const response = await this._adminTutorService.rejectCourse(id, reason)
@@ -235,7 +234,6 @@ class AdminTutorController implements IAdminTutorController {
     async approveCourse(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            console.log("==================>", id)
             const response = await this._adminTutorService.approveCourse(id)
             if (!response) {
                 res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })

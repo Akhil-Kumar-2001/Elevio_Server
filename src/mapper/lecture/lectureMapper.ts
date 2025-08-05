@@ -9,6 +9,7 @@ export function mapLectureToDto(lecture: ILecture): ILectureDto {
     courseId: lecture.courseId.toString(),
     title: lecture.title,
     videoUrl: lecture.videoUrl ?? "",
+    videoKey: lecture.videoKey ?? "",
     duration: lecture.duration,
     order: lecture.order,
     status: lecture.status,

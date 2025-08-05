@@ -1,6 +1,5 @@
-import { ICourse } from "../../../model/course/courseModel";
 import ITutorCourseRepository from "../../../repository/tutor/ITutorCourseRepository";
-import { CourseData, ICourseCreateData, ICourseEditableFields, ICourseFullData, ICourseFullEditableFields, ILectureData, ISectionData, IServiceResponse } from "../../../Types/basicTypes";
+import { ICourseEditableFields, ICourseFullData, ICourseFullEditableFields, ILectureData, ISectionData, IServiceResponse } from "../../../Types/basicTypes";
 import { PaginatedResponse, StudentsResponseDataType } from "../../../Types/CategoryReturnType";
 import ITutorCourseService from "../ITutorCourseService";
 import { ICategoryDto } from "../../../dtos/category/categoryDto";
@@ -18,6 +17,16 @@ import { mapReviewsReponseToDtoList, mapReviewToDto } from "../../../mapper/revi
 import { STATUS_CODES } from "../../../constants/statusCode";
 import cloudinary from "../../../Config/cloudinaryConfig";
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios'
+import { getSignedImageUrl } from "../../../utils/cloudinaryUtility";
+import s3 from "../../../Config/awsConfig";
+import fs from "fs";
+import path from "path";
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 
 class TutorCourseService implements ITutorCourseService {
@@ -50,7 +59,8 @@ class TutorCourseService implements ITutorCourseService {
                         folder: 'Course-Thumbnail',
                         public_id: imageThumbnailId, // ensure our ID is used
                         resource_type: 'image',
-                        format: 'png'
+                        format: 'png',
+                        type: 'authenticated'
                     },
                     (error, result) => {
                         if (error || !result) {
@@ -72,7 +82,7 @@ class TutorCourseService implements ITutorCourseService {
         }
 
         // Add both image URL and the unique ID to courseData
-        courseData.imageThumbnail = imageUploadResult.url;
+        courseData.imageThumbnail = imageUploadResult.public_id;
         courseData.imageThumbnailId = imageThumbnailId;
         courseData.tutorId = tutorId;
         courseData.price = Number(courseData.price);
@@ -95,12 +105,19 @@ class TutorCourseService implements ITutorCourseService {
         return { data: dto, totalRecord: response.totalRecord };
     }
 
+
     async getCourseDetails(id: string): Promise<ICourseCategoryDto | null> {
         const response = await this._tutorCourseRepository.getCourseDetails(id);
         if (!response) return null;
+
+        if (response.imageThumbnail) {
+            response.imageThumbnail = getSignedImageUrl(response.imageThumbnail);
+        }
+
         const dto = mapCourseCategoryToDto(response);
         return dto;
     }
+
 
 
     async editCourseWithImage(
@@ -111,7 +128,6 @@ class TutorCourseService implements ITutorCourseService {
         if (!id) {
             return { success: false, message: "Course ID required", statusCode: STATUS_CODES.BAD_REQUEST };
         }
-        // Optionally: fetch and authorize that tutorId matches course's real tutor...
 
         // Clean the fields: form-data always sends all fields as string, so adjust as needed:
         let updatedFields: ICourseFullEditableFields = { ...fields };
@@ -128,6 +144,7 @@ class TutorCourseService implements ITutorCourseService {
                         public_id: imageThumbnailId,
                         resource_type: 'image',
                         format: 'png',
+                        type: 'authenticated'
                     },
                     (error, result) => {
                         if (error || !result) reject(new Error('Image upload failed'));
@@ -140,7 +157,7 @@ class TutorCourseService implements ITutorCourseService {
             if (!imageUploadResult) {
                 return { success: false, message: "Failed to upload course thumbnail", statusCode: STATUS_CODES.INTERNAL_SERVER_ERROR };
             }
-            updatedFields.imageThumbnail = imageUploadResult.url;
+            updatedFields.imageThumbnail = imageUploadResult.public_id;
             updatedFields.imageThumbnailId = imageThumbnailId;
         }
 
@@ -179,12 +196,35 @@ class TutorCourseService implements ITutorCourseService {
         return dto;
     }
 
+
     async getLectures(id: string): Promise<ILectureDto[] | null> {
-        const response = await this._tutorCourseRepository.getLectures(id);
-        if (!response) return null;
-        const dto = mapLecturesToDto(response);
+        const lectures = await this._tutorCourseRepository.getLectures(id);
+        if (!lectures) return null;
+
+        const lecturesWithSignedUrls = await Promise.all(
+            lectures.map(async (lecture) => {
+                let videoUrl: string | null = null;
+
+                if (lecture.videoKey) {
+                    try {
+                        videoUrl = await this.getSignedVideoUrl(lecture._id);
+                    } catch (error) {
+                        console.error(`Error generating signed URL for lecture ${lecture._id}`, error);
+                    }
+                }
+
+                return {
+                    ...lecture.toObject(),
+                    videoUrl,
+                };
+            })
+        );
+
+        const dto = mapLecturesToDto(lecturesWithSignedUrls);
+
         return dto;
     }
+
 
     async editLecture(id: string, title: string): Promise<ILectureDto | null> {
         const response = await this._tutorCourseRepository.editLecture(id, title);
@@ -204,28 +244,93 @@ class TutorCourseService implements ITutorCourseService {
         return dto;
     }
 
+
+
+    /**
+     * Helper to get video duration (in seconds) using ffmpeg
+     */
+    private getVideoDuration(filePath: string): Promise<number> {
+        return new Promise((resolve, reject) => {
+            ffmpeg.ffprobe(filePath, (err, metadata) => {
+                if (err) reject(err);
+                else resolve(Math.round(metadata.format.duration || 0));
+            });
+        });
+    }
+
+    /**
+     * Upload a lecture video.
+     * It will:
+     * - Save the video temporarily to disk
+     * - Calculate duration with ffprobe
+     * - Upload video to S3
+     * - Update lecture DB with videoKey and duration
+     * - Remove temporary file
+     */
     async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string> {
         const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
-        const params = {
-            Bucket: process.env.AWS_S3_BUCKET_NAME || 'your-bucket-name',
-            Key: `lectures/${fileName}`,
-            Body: videoFile.buffer,
-            ContentType: videoFile.mimetype,
-            ACL: 'public-read',
-        };
+        const tempFilePath = path.join("/tmp", fileName);
+        const videoKey = `lectures/${fileName}`;
 
         try {
-            // Delegate the entire upload and update process to the repository
-            const videoUrl = await this._tutorCourseRepository.uploadLectureVideo(lectureId, videoFile);
-            if (!videoUrl) {
-                throw new Error('Failed to upload video or update lecture');
+            // Save file temporarily on disk
+            await fs.promises.writeFile(tempFilePath, videoFile.buffer);
+
+            // Calculate video duration
+            const duration = await this.getVideoDuration(tempFilePath);
+
+            // Upload the file to S3 (private by default)
+            await s3.upload({
+                Bucket: process.env.AWS_S3_BUCKET_NAME!,
+                Key: videoKey,
+                Body: videoFile.buffer,
+                ContentType: videoFile.mimetype,
+            }).promise();
+
+            // Clean up temp file
+            await fs.promises.unlink(tempFilePath);
+
+            // Update DB with videoKey and duration
+            const updatedLecture = await this._tutorCourseRepository.updateVideoKeyAndDuration(lectureId, videoKey, duration);
+            if (!updatedLecture) {
+                throw new Error("Lecture not found or failed to update");
             }
-            return videoUrl;
+
+            return videoKey;
         } catch (error) {
-            console.error('Error uploading video to S3:', error);
-            throw new Error('Failed to upload video to S3');
+            // Attempt to remove the temp file if exists on failure
+            try { await fs.promises.unlink(tempFilePath); } catch { }
+            console.error("Error in uploadLectureVideo:", error);
+            throw error;
         }
     }
+
+    /**
+     * Generate signed URL from private S3 key for temporary secure access
+     */
+    async getSignedVideoUrl(lectureId: string, expiresInSeconds = 600): Promise<string> {
+        const lecture = await this._tutorCourseRepository.findById(lectureId);
+
+        if (!lecture) {
+            throw new Error(`Lecture with id ${lectureId} not found.`);
+        }
+
+        if (!lecture.videoKey) {
+            throw new Error("Video key not found for this lecture.");
+        }
+
+        const signedUrl = await s3.getSignedUrlPromise("getObject", {
+            Bucket: process.env.AWS_S3_BUCKET_NAME!,
+            Key: lecture.videoKey,
+            Expires: expiresInSeconds,
+        });
+
+        return signedUrl;
+    }
+
+
+
+
 
     async applyReview(courseId: string): Promise<boolean | null> {
         const response = await this._tutorCourseRepository.applyReview(courseId);
@@ -264,12 +369,36 @@ class TutorCourseService implements ITutorCourseService {
         return dto;
     }
 
+
     async getLecturesPreview(sectionId: string): Promise<ILectureDto[] | null> {
-        const response = await this._tutorCourseRepository.getLecturesPreview(sectionId);
-        if (!response) return null;
-        const dto = mapLecturesToDto(response);
+        const lectures = await this._tutorCourseRepository.getLecturesPreview(sectionId);
+        if (!lectures) return null;
+
+        const lecturesWithSignedUrls = await Promise.all(
+            lectures.map(async (lecture) => {
+                let videoUrl: string | null = null;
+
+                if (lecture.videoKey) {
+                    try {
+                        videoUrl = await this.getSignedVideoUrl(lecture._id);
+                    } catch (error) {
+                        console.error(`Error generating signed URL for lecture ${lecture._id}`, error);
+                    }
+                }
+
+                return {
+                    ...lecture.toObject(),
+                    videoUrl,
+                };
+            })
+        );
+
+        const dto = mapLecturesToDto(lecturesWithSignedUrls);
         return dto;
     }
+
+
+
 
     async getReviews(courseId: string): Promise<IReviewDto[] | null> {
         const response = await this._tutorCourseRepository.getReviews(courseId);

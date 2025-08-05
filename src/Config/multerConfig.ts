@@ -1,8 +1,10 @@
 import multer from 'multer';
+import { Request } from 'express';
+
 
 const storage = multer.memoryStorage(); // store file buffer in-memory
 
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);

@@ -24,6 +24,8 @@ import { IReviewDto, IReviewResponseDto } from '../../../dtos/review/IReviewResp
 import { mapReviewReponseToDto, mapReviewsReponseToDtoList, mapReviewsToDtoList, mapReviewToDto } from '../../../mapper/review/reviewMapper';
 import { IProgressResponseDto } from '../../../dtos/progress/progressDto';
 import { mapProgressToDto } from '../../../mapper/progress/progressMapper';
+import s3 from '../../../Config/awsConfig';
+import { getSignedImageUrl } from '../../../utils/cloudinaryUtility';
 
 class StudentCourseService implements IStudentCourseService {
     private _studentCourseRepository: IStudentCourseRepository;
@@ -40,6 +42,13 @@ class StudentCourseService implements IStudentCourseService {
     async getListedCourse(): Promise<ICourseDto[] | null> {
         const courses = await this._studentCourseRepository.getListedCourse();
         if (!courses) return null;
+
+        for (const course of courses) {
+            if (course.imageThumbnail) {
+                course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+            }
+        }
+
         const dto = mapCoursesToDto(courses);
         return dto
     }
@@ -47,6 +56,13 @@ class StudentCourseService implements IStudentCourseService {
     async getTopRatedCourse(): Promise<ICourseDto[] | null> {
         const courses = await this._studentCourseRepository.getTopRatedCourse();
         if (!courses) return null;
+
+        for (const course of courses) {
+            if (course.imageThumbnail) {
+                course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+            }
+        }
+
         const dto = mapCoursesToDto(courses);
         return dto
     }
@@ -68,6 +84,12 @@ class StudentCourseService implements IStudentCourseService {
 
     async getCart(studentId: string): Promise<ICartWithDetails | null> {
         const response = await this._studentCourseRepository.getCart(studentId);
+        if(!response)return null;
+        for (const course of response?.items) {
+            if (course.courseImage) {
+                course.courseImage = getSignedImageUrl(course.courseImage);
+            }
+        }
         return response
     }
 
@@ -135,48 +157,107 @@ class StudentCourseService implements IStudentCourseService {
     async getCourses(page: number, limit: number): Promise<PaginatedResponse<ICourseDto> | null> {
         const response = await this._studentCourseRepository.getCourses(page, limit);
         if (!response) return null;
+
+        // Convert imageThumbnail to signed URL for each course
+        for (const course of response.courses) {
+            if (course.imageThumbnail) {
+                course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+            }
+        }
         const dto = mapCoursesToDto(response.courses);
         return { data: dto, totalRecord: response.totalRecord };
     }
 
     async getPurchasedCourses(userId: string): Promise<ICourseDto[] | null> {
-        const response = await this._studentCourseRepository.getPurchasedCourses(userId);
-        if(!response)return null;
-        const dto = mapCoursesToDto(response);
+        const courses = await this._studentCourseRepository.getPurchasedCourses(userId);
+        if (!courses) return null;
+
+        for (const course of courses) {
+            if (course.imageThumbnail) {
+                course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+            }
+        }
+        const dto = mapCoursesToDto(courses);
         return dto;
     }
 
     async getSections(id: string): Promise<ISectionDto[] | null> {
         const sections = await this._studentCourseRepository.getSections(id);
-        if(!sections)return null;
+        if (!sections) return null;
         const dto = MapToSectionsDto(sections)
         return dto;
     }
 
+
+    async getSignedVideoUrl(lectureId: string, expiresInSeconds = 300): Promise<string> {
+        const lecture = await this._studentCourseRepository.findById(lectureId);
+
+        if (!lecture) {
+            throw new Error(`Lecture with id ${lectureId} not found.`);
+        }
+
+        if (!lecture.videoKey) {
+            throw new Error("Video key not found for this lecture.");
+        }
+
+        const signedUrl = await s3.getSignedUrlPromise("getObject", {
+            Bucket: process.env.AWS_S3_BUCKET_NAME!,
+            Key: lecture.videoKey,
+            Expires: expiresInSeconds,
+        });
+
+        return signedUrl;
+    }
+
+
     async getLectures(id: string): Promise<ILectureDto[] | null> {
-        const response = await this._studentCourseRepository.getLectures(id);
-        if(!response)return null;
-        const dto = mapLecturesToDto(response)
+        const lectures = await this._studentCourseRepository.getLectures(id);
+        if (!lectures) return null;
+
+        const lecturesWithSignedUrls = await Promise.all(
+            lectures.map(async (lecture) => {
+                let videoUrl: string | null = null;
+
+                if (lecture.videoKey) {
+                    try {
+                        videoUrl = await this.getSignedVideoUrl(lecture._id);
+                    } catch (error) {
+                        console.error(`Error generating signed URL for lecture ${lecture._id}`, error);
+                    }
+                }
+
+                return {
+                    ...lecture.toObject(),
+                    videoUrl,
+                };
+            })
+        );
+
+        const dto = mapLecturesToDto(lecturesWithSignedUrls)
         return dto;
     }
 
     async getCourse(id: string): Promise<ICourseResponseDto | null> {
         const response = await this._studentCourseRepository.getCourse(id);
-        if(!response)return null;
+        if (!response) return null;
+
+        if (response.imageThumbnail) {
+            response.imageThumbnail = getSignedImageUrl(response.imageThumbnail);
+        }
         const dto = mapCourseResponseToDto(response)
         return dto;
     }
 
     async getTutor(id: string): Promise<ITutorDto | null> {
         const response = await this._studentCourseRepository.getTutor(id);
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapTutorToDto(response);
         return dto;
     }
 
     async getSubscription(): Promise<ISubscriptionDto[] | null> {
         const response = await this._studentCourseRepository.getSubscription();
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapSubscriptionsToDto(response);
         return dto;
     }
@@ -289,28 +370,28 @@ class StudentCourseService implements IStudentCourseService {
 
     async getReviews(id: string): Promise<IReviewDto[] | null> {
         const response = await this._studentCourseRepository.getReviews(id);
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapReviewsReponseToDtoList(response)
         return dto
     }
 
     async createReview(formData: review): Promise<IReviewDto | null> {
         const response = await this._studentCourseRepository.createReview(formData);
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapReviewReponseToDto(response);
         return dto;
     }
 
     async getProgress(courseId: string, userId: string): Promise<IProgressResponseDto | null> {
         const response = await this._studentCourseRepository.getProgress(courseId, userId);
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapProgressToDto(response);
         return dto;
     }
 
     async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgressResponseDto | null> {
         const response = await this._studentCourseRepository.addLectureToProgress(userId, courseId, lectureId);
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapProgressToDto(response)
         return dto;
     }
@@ -318,7 +399,7 @@ class StudentCourseService implements IStudentCourseService {
 
     async editReview(id: string, formData: review): Promise<IReviewResponseDto | null> {
         const response = await this._studentCourseRepository.editReview(id, formData);
-        if(!response)return null;
+        if (!response) return null;
         const dto = mapReviewToDto(response);
         return dto;
     }
@@ -329,9 +410,16 @@ class StudentCourseService implements IStudentCourseService {
     }
 
     async getWishlist(userId: string): Promise<ICourseDto[] | null> {
-        const response = await this._studentCourseRepository.getWishlist(userId);
-        if(!response)return null;
-        const dto = mapCoursesToDto(response);
+        const courses = await this._studentCourseRepository.getWishlist(userId);
+        if (!courses) return null;
+
+        for (const course of courses) {
+            if (course.imageThumbnail) {
+                course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+            }
+        }
+        
+        const dto = mapCoursesToDto(courses);
         return dto;
     }
 
@@ -348,7 +436,7 @@ class StudentCourseService implements IStudentCourseService {
     async isInWishlist(userId: string, courseId: string): Promise<boolean | null> {
         return this._studentCourseRepository.isInWishlist(userId, courseId);
     }
-    
+
 }
 
 export default StudentCourseService

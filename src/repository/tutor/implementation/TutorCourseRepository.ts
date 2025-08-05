@@ -1,22 +1,16 @@
-import { CourseData, IBasicStudentInfo, ICourseFullData, ICourseFullEditableFields, ILectureData, ISectionData } from "../../../Types/basicTypes";
+import { IBasicStudentInfo, ICourseFullData, ICourseFullEditableFields, ILectureData, ISectionData } from "../../../Types/basicTypes";
 import ITutorCourseRepository from "../ITutorCourseRepository";
 import { Course, ICourse, ICourseCategoryExtended } from "../../../model/course/courseModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
 import { CourseResponseDataType, StudentsResponseDataType } from "../../../Types/CategoryReturnType";
 import { ISection, Section } from "../../../model/section/sectionModel";
 import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
-import s3 from '../../../Config/awsConfig'
-
-import fs from "fs";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { INotification, Notification } from "../../../model/notification/notification.Model";
 import { IReview, IReviewExtended, Review } from "../../../model/review/review.model";
-import {  Student } from "../../../model/student/studentModel";
+import { Student } from "../../../model/student/studentModel";
 import { Types } from "mongoose";
 import { Tutor } from "../../../model/tutor/tutorModel";
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 class TutorCourseRepository implements ITutorCourseRepository {
 
@@ -25,23 +19,23 @@ class TutorCourseRepository implements ITutorCourseRepository {
         return categories
     }
 
-    async isTutorVerified(tutorId : string): Promise<boolean | null> {
+    async isTutorVerified(tutorId: string): Promise<boolean | null> {
         const tutor = await Tutor.findOne({ _id: tutorId });
-        if (tutor?.isVerified  ==  "verified") {
+        if (tutor?.isVerified == "verified") {
             return true
         } else {
             return false
         }
     }
 
-    async createCourse(courseData : ICourseFullData): Promise<boolean | null> {
+    async createCourse(courseData: ICourseFullData): Promise<boolean | null> {
         try {
             const existingCourse = await Course.findOne({ title: courseData?.title });
-            if ( existingCourse ) {
+            if (existingCourse) {
                 return false
             } else {
                 const newCourse = new Course(courseData);
-                
+
                 await newCourse.save();
                 return true;
             }
@@ -55,7 +49,7 @@ class TutorCourseRepository implements ITutorCourseRepository {
         try {
             const skip = (page - 1) * limit;
             const courses = await Course.find({ tutorId }).sort({ createdAt: -1 }).skip(skip).limit(limit).exec()
-            const totalRecord = await Course.find({tutorId}).countDocuments()
+            const totalRecord = await Course.find({ tutorId }).countDocuments()
             return { courses, totalRecord }
         } catch (error) {
             console.log("Error while retrieving courses")
@@ -66,8 +60,8 @@ class TutorCourseRepository implements ITutorCourseRepository {
     async getCourseDetails(id: string): Promise<ICourseCategoryExtended | null> {
         try {
             const courseDetails = await Course.findById(id)
-            .populate('category', 'name')
-            .lean<ICourseCategoryExtended>();
+                .populate('category', 'name')
+                .lean<ICourseCategoryExtended>();
             return courseDetails
         } catch (error) {
             console.log("Error while retrieving course details")
@@ -75,9 +69,9 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
+
     async editCourse(id: string, editCourse: ICourseFullEditableFields): Promise<ICourse | null> {
         try {
-            console.log("in repository =========>",id,editCourse)
             const updatedCourse = await Course.findByIdAndUpdate(
                 id,
                 { $set: editCourse },
@@ -257,78 +251,26 @@ class TutorCourseRepository implements ITutorCourseRepository {
         }
     }
 
-  
 
-    async getVideoDuration(filePath: string): Promise<number> {
-        return new Promise((resolve, reject) => {
-            ffmpeg.ffprobe(filePath, (err, metadata) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(metadata.format.duration || 0);
-                }
-            });
-        });
+
+    async findById(lectureId: string): Promise<ILecture | null> {
+        return Lecture.findById(lectureId).exec();
     }
 
-    async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null> {
-        const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
-        const filePath = `/tmp/${fileName}`; // Temporary storage
-
-        try {
-            // Save the file temporarily
-            await fs.promises.writeFile(filePath, videoFile.buffer);
-
-            // Get video duration
-            const duration = Math.round(await this.getVideoDuration(filePath));
-
-            // Upload video to S3
-            const uploadResult = await s3.upload({
-                Bucket: process.env.AWS_S3_BUCKET_NAME || "your-bucket-name",
-                Key: `lectures/${fileName}`,
-                Body: videoFile.buffer,
-                ContentType: videoFile.mimetype,
-            }).promise();
-
-
-            const videoUrl = uploadResult.Location;
-
-            // Find the lecture
-            const lecture = await Lecture.findById(lectureId);
-            if (!lecture) throw new Error("Lecture not found");
-
-            const { sectionId, courseId } = lecture;
-
-            // Update the lecture with the video URL and duration
-            const updatedLecture = await Lecture.findByIdAndUpdate(
-                lectureId,
-                { videoUrl, duration, status: "processed" },
-                { new: true }
-            );
-
-            if (!updatedLecture) throw new Error("Failed to update lecture");
-
-            // Update the total duration of the section
-            await Section.findByIdAndUpdate(
-                sectionId,
-                { $inc: { totalDuration: duration } }
-            );
-
-            // Update the total duration of the course
-            await Course.findByIdAndUpdate(
-                courseId,
-                { $inc: { totalDuration: duration } }
-            );
-
-            // Remove the temporary file
-            await fs.promises.unlink(filePath);
-
-            return videoUrl;
-        } catch (error) {
-            console.error("Error processing video:", error);
-            return null;
-        }
+    async updateVideoKeyAndDuration(lectureId: string, videoKey: string, duration: number): Promise<ILecture | null> {
+        const response = await Lecture.findByIdAndUpdate(
+            lectureId,
+            {
+                videoKey,
+                duration,
+                status: "processed",
+            },
+            { new: true }
+        ).exec();
+        console.log("response from reposittory", response)
+        return response
     }
+
 
     async applyReview(courseId: string): Promise<boolean | null> {
         try {

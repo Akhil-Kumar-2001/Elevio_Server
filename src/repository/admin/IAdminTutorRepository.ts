@@ -28,6 +28,8 @@ interface IAdminTutorRepository {
     getCategoryName(id:string):Promise<string | null>
     getSections(id:string):Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
+    findById(lectureId: string): Promise<ILecture | null>
+    
     rejectCourse(id:string,reason:string):Promise<INotification | null>
     getTutorMail(tutorId:string):Promise<string | null>
     approveCourse(id:string):Promise<boolean | null>

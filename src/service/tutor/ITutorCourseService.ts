@@ -1,9 +1,5 @@
-import { ICourse } from "../../model/course/courseModel"
-import { ILecture } from "../../model/lecture/lectureModel"
-import { ISection } from "../../model/section/sectionModel"
-import { CourseData, ICourseCreateData, ICourseFullData, ILectureData, ISectionData, IServiceResponse } from "../../Types/basicTypes"
+import { ICourseEditableFields, ICourseFullData, ILectureData, ISectionData, IServiceResponse } from "../../Types/basicTypes"
 import { PaginatedResponse, StudentsResponseDataType } from "../../Types/CategoryReturnType"
-import { IReview } from "../../model/review/review.model"
 import { ICategoryDto } from "../../dtos/category/categoryDto"
 import { ICourseCategoryDto, ICourseDto } from "../../dtos/course/courseDto"
 import { ISectionDto } from "../../dtos/section/ISectionDto"
@@ -17,7 +13,7 @@ interface ITutorCourseService {
     getCourses(tutorId:string,page:number,limit:number): Promise<PaginatedResponse<ICourseDto> | null>
     createCourseWithImage(courseData: ICourseFullData, file: Express.Multer.File, tutorId: string):Promise<IServiceResponse<boolean>>
     getCourseDetails(id:string):Promise<ICourseCategoryDto | null>
-    editCourseWithImage(id: string,fields: any,file: Express.Multer.File | undefined):Promise<IServiceResponse<ICourseDto> | null>
+    editCourseWithImage(id: string,fields: ICourseEditableFields,file: Express.Multer.File | undefined):Promise<IServiceResponse<ICourseDto> | null>
     createSection(id:string,sectionData:ISectionData):Promise<ISectionDto | null>
     createLecture(data:ILectureData):Promise<ILectureDto | null>
     getSections(id:string):Promise<ISectionDto[] | null>

@@ -1,3 +1,4 @@
+import s3 from "../../../Config/awsConfig";
 import { getIO, getReceiverSocketId } from "../../../Config/socketConfig";
 import { ICategoryDto } from "../../../dtos/category/categoryDto";
 import { ICourseDto } from "../../../dtos/course/courseDto";
@@ -6,7 +7,7 @@ import { ISectionDto } from "../../../dtos/section/ISectionDto";
 import { ISubscriptionDto } from "../../../dtos/subsription/subscriptionDto";
 import { ITutorDto } from "../../../dtos/tutor/tutorDto";
 import { ITutorWalletDto } from "../../../dtos/wallet/tutorwallet/tutorWalletDto";
-import { mapCategoriesToDto, mapCategoryToDto } from "../../../mapper/category/categoryMapper";
+import { mapCategoriesToDto } from "../../../mapper/category/categoryMapper";
 import { mapCoursesToDto, mapCourseToDto } from "../../../mapper/course/courseMapper";
 import { mapLecturesToDto } from "../../../mapper/lecture/lectureMapper";
 import { MapToSectionsDto } from "../../../mapper/section/sectionMapper";
@@ -14,7 +15,6 @@ import { mapSubscriptionsToDto } from "../../../mapper/subscription/subscription
 import { mapTutorsToDto, mapTutorToDto } from "../../../mapper/tutor/tutorMapper";
 import { mapTutorWalletsToPaginatedDto } from "../../../mapper/wallet/tutorwallet/tutorWalletMapper";
 import { ICategory } from "../../../model/category/categoryModel";
-import { ICourse } from "../../../model/course/courseModel";
 import { ILecture } from "../../../model/lecture/lectureModel";
 import { ISection } from "../../../model/section/sectionModel";
 import { ISubscription } from "../../../model/subscription/subscriptionModel";
@@ -23,6 +23,7 @@ import { ITutorWallet } from "../../../model/wallet/walletModel";
 import IAdminTutorRepository from "../../../repository/admin/IAdminTutorRepository";
 import { ISubscriptionPlan } from "../../../Types/basicTypes";
 import { PaginatedResponse } from "../../../Types/CategoryReturnType";
+import { getSignedImageUrl } from "../../../utils/cloudinaryUtility";
 import IAdminTutorService from "../IAdminTutorService";
 
 class AdminTutorService implements IAdminTutorService {
@@ -86,6 +87,12 @@ class AdminTutorService implements IAdminTutorService {
 
         if (!response) return null;
 
+        for (const course of response.courses) {
+            if (course.imageThumbnail) {
+                course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+            }
+        }
+
         const dto = mapCoursesToDto(response.courses)
         return { data: dto, totalRecord: response.totalRecord }
     }
@@ -99,7 +106,13 @@ class AdminTutorService implements IAdminTutorService {
 
     async courseDetails(id: string): Promise<ICourseDto | null> {
         const course = await this._adminTutorRepository.courseDetails(id);
-        const dto = mapCourseToDto(course as ICourse)
+        if (!course) return null;
+
+        if (course.imageThumbnail) {
+            course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
+        }
+
+        const dto = mapCourseToDto(course)
         return dto;
     }
 
@@ -114,9 +127,56 @@ class AdminTutorService implements IAdminTutorService {
         return dto;
     }
 
+    /**
+       * Generate signed URL from private S3 key for temporary secure access
+       */
+    async getSignedVideoUrl(lectureId: string, expiresInSeconds = 600): Promise<string> {
+        const lecture = await this._adminTutorRepository.findById(lectureId);
+
+        if (!lecture) {
+            throw new Error(`Lecture with id ${lectureId} not found.`);
+        }
+
+        if (!lecture.videoKey) {
+            throw new Error("Video key not found for this lecture.");
+        }
+
+        const signedUrl = await s3.getSignedUrlPromise("getObject", {
+            Bucket: process.env.AWS_S3_BUCKET_NAME!,
+            Key: lecture.videoKey,
+            Expires: expiresInSeconds,
+        });
+
+        return signedUrl;
+    }
+
+
+
+
     async getLectures(id: string): Promise<ILectureDto[] | null> {
-        const response = await this._adminTutorRepository.getLectures(id);
-        const dto = mapLecturesToDto(response as ILecture[])
+        const lectures = await this._adminTutorRepository.getLectures(id);
+        if (!lectures) return null;
+
+        const lecturesWithSignedUrls = await Promise.all(
+            lectures.map(async (lecture) => {
+                let videoUrl: string | null = null;
+
+                if (lecture.videoKey) {
+                    try {
+                        videoUrl = await this.getSignedVideoUrl(lecture._id);
+                    } catch (error) {
+                        console.error(`Error generating signed URL for lecture ${lecture._id}`, error);
+                    }
+                }
+
+                return {
+                    ...lecture.toObject(),
+                    videoUrl,
+                };
+            })
+        );
+
+        const dto = mapLecturesToDto(lecturesWithSignedUrls)
         return dto
     }
 

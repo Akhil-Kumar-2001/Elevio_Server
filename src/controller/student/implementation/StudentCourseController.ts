@@ -92,7 +92,6 @@ class StudentCourseController implements IStudentCourseController {
 
     async createOrder(req: Request, res: Response): Promise<void> {
         try {
-            console.log("Request data for create order ===============================>>>>>>>>>>>>>>", req.body)
             const { studentId, amount, courseIds } = req.body;
             if (!studentId || !amount || !courseIds) {
                 res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
@@ -238,7 +237,6 @@ class StudentCourseController implements IStudentCourseController {
         try {
             const {id} = req.params ;
             const response = await this._studentCourseService.getReviews(id);
-            console.log("get review response in controller =>>>>>>>>>>>>>",response)
             res.status(STATUS_CODES.OK).json({success:true,message:"Review retrieved successfully",data:response})
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
@@ -250,7 +248,6 @@ class StudentCourseController implements IStudentCourseController {
             const { formData } = req.body
             console.log("form data",formData)
             const response = await this._studentCourseService.createReview(formData);
-            console.log("Response create review",response)
             if(response){
                 res.status(STATUS_CODES.CREATED).json({success:true,message:"Review added Successfully",data:response});
             }else{

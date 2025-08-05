@@ -1,5 +1,4 @@
 import { IChat } from "../../../model/chat/chat.model";
-import { IStudent } from "../../../model/student/studentModel";
 import IChatRepository from "../../../repository/chat/IChatRepository";
 import { UserMinimal } from "../../../Types/basicTypes";
 import IChatService from "../IChatService";

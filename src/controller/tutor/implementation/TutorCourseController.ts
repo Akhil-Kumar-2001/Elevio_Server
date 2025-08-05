@@ -24,45 +24,40 @@ class TutorCourseController implements ITutorCourseController {
         }
     }
 
+
     async createCourse(req: Request, res: Response): Promise<void> {
         try {
-            const courseData = req.body;
+            const file = req.file;
             const tutorId = req.userId;
+            const courseData = req.body;
 
-            if ( !courseData ) {
-                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Course data is required" });
+            if (!file) {
+                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Course thumbnail image is required" });
+                return;
+            }
+            if (!tutorId) {
+                res.status(STATUS_CODES.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
                 return;
             }
 
-            if ( courseData.price < 1 ) {
-                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Price should be greater than 0" });
-                return;
-            }
+            const serviceResponse = await this._tutorCourseService.createCourseWithImage(courseData, file, tutorId);
 
-            const isTutorVerified = await this._tutorCourseService.isTutorVerified(tutorId as string);
-
-            if ( !isTutorVerified ) {
-                res.status(STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Tutor is not verified" });
-                return; 
-            }
-
-            const response = await this._tutorCourseService.createCourse(courseData);
-            if (!response) {
-                res.status(STATUS_CODES.CONFLICT).json({ success: false, message: "course alredy existed", data: null })
-            }
-            if (response) {
-                res.status(STATUS_CODES.CREATED).json({ success: true, message: "Course created Successfully", data: response })
+            if (serviceResponse.success) {
+                res.status(STATUS_CODES.CREATED).json(serviceResponse);
+            } else {
+                res.status(serviceResponse.statusCode || STATUS_CODES.BAD_REQUEST).json(serviceResponse);
             }
         } catch (error) {
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+            console.error('Error in controller createCourse:', error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
     }
 
+
     async getCourses(req: Request, res: Response): Promise<void> {
         try {
-            const page = parseInt(req.query.page as string) || 1; 
-            const limit = parseInt(req.query.limit as string) || 5; 
-            console.log("page and limit",page,limit)
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
             const { tutorId } = req.query;
 
             if (!tutorId) {
@@ -90,14 +85,25 @@ class TutorCourseController implements ITutorCourseController {
         }
     }
 
+
+
+
+
+    
+
     async editCourse(req: Request, res: Response): Promise<void> {
         try {
-            const { id, editedCourse } = req.body;
-            const response = this._tutorCourseService.editCourse(id, editedCourse);
-            res.status(STATUS_CODES.OK).json({ success: true, message: "Course details updated successfully", data: response })
+            const id = req.body.id || req.body._id; // get ID from form-data
+            const editedCourse = req.body;
+            const file = req.file;
+            const response = await this._tutorCourseService.editCourseWithImage(id, editedCourse, file);
+            if (!response || !response.success) {
+                res.status((response && response.statusCode) || STATUS_CODES.BAD_REQUEST).json(response);
+                return;
+            }
+            res.status(STATUS_CODES.OK).json(response);
         } catch (error) {
-            console.log("Error editing course details", error);
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error editing Course details" });
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error editing course details" });
         }
     }
 
@@ -289,7 +295,7 @@ class TutorCourseController implements ITutorCourseController {
             const tutorId = req.userId;
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 5;
-            const response = await this._tutorCourseService.getStudents(tutorId as string,page,limit);
+            const response = await this._tutorCourseService.getStudents(tutorId as string, page, limit);
             res.status(STATUS_CODES.OK).json({ success: true, message: "Students retrieved Successfully", data: response })
         } catch (error) {
             console.log("Error while fetching students", error);

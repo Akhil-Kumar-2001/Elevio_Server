@@ -22,28 +22,30 @@ interface IStudentCourseRepository {
     createOrder(orderData: IOrderCreateData): Promise<IOrder | null>
     updateByOrderId(razorpay_order_id: string, status: string): Promise<string | null>
     getCategories(): Promise<ICategory[] | null>
-    getCourses( page: number, limit: number): Promise<CourseResponseDataType | null>
-    getPurchasedCourses( userId:string ): Promise<ICourse[] | null>
-    getCourse(id:string):Promise<ICourseExtended | null>
-    getTutor(id:string):Promise<ITutor | null>
-    getSections(id:string):Promise<ISection[] | null>
+    getCourses(page: number, limit: number): Promise<CourseResponseDataType | null>
+    getPurchasedCourses(userId: string): Promise<ICourse[] | null>
+    getCourse(id: string): Promise<ICourseExtended | null>
+    getTutor(id: string): Promise<ITutor | null>
+    getSections(id: string): Promise<ISection[] | null>
     getLectures(id: string): Promise<ILecture[] | null>
+    findById(lectureId: string): Promise<ILecture | null>
+
     getSubscription(): Promise<ISubscription[] | null>
-    createSubscritionOrder(orderData:IOrderCreateSubscriptionData):Promise<ISubscriptionPurchased | null>
-    isValidPlan(studentId:string):Promise<boolean | null>
-    findByOrderId(orderId:string):Promise<ISubscriptionPurchased | null>
-    findPlanById(_id:string):Promise<ISubscription | null>
-    updateSubscriptionByOrderId(orderId:string,data:PaymentData):Promise<string | null>
-    getReviews(id:string):Promise<IReviewExtended[] | null>
-    createReview(formData:review):Promise<IReviewExtended | null>
-    getProgress(courseId:string,userId:string):Promise<IProgress | null>
-    addLectureToProgress(userId:string,courseId:string,lectureId:string):Promise<IProgress | null>
-    editReview(id:string,formData:review):Promise<IReview | null>
-    deleteReview(id:string):Promise<boolean | null>
-    getWishlist(userId:string):Promise<ICourse[] | null>
-    addToWishlist(userId:string,courseId:string):Promise<boolean | null>
-    removeFromWishlist(userId:string,courseId:string):Promise<boolean | null>
-    isInWishlist(userId:string,courseId:string):Promise<boolean | null>
+    createSubscritionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null>
+    isValidPlan(studentId: string): Promise<boolean | null>
+    findByOrderId(orderId: string): Promise<ISubscriptionPurchased | null>
+    findPlanById(_id: string): Promise<ISubscription | null>
+    updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null>
+    getReviews(id: string): Promise<IReviewExtended[] | null>
+    createReview(formData: review): Promise<IReviewExtended | null>
+    getProgress(courseId: string, userId: string): Promise<IProgress | null>
+    addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgress | null>
+    editReview(id: string, formData: review): Promise<IReview | null>
+    deleteReview(id: string): Promise<boolean | null>
+    getWishlist(userId: string): Promise<ICourse[] | null>
+    addToWishlist(userId: string, courseId: string): Promise<boolean | null>
+    removeFromWishlist(userId: string, courseId: string): Promise<boolean | null>
+    isInWishlist(userId: string, courseId: string): Promise<boolean | null>
 
 }
 

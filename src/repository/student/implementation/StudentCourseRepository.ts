@@ -99,25 +99,20 @@ class StudentCourseRepository implements IStudentCourseRepository {
     }
 
     async getCart(studentId: string): Promise<ICartWithDetails | null> {
-        // Step 1: Get the cart for the student
+
         const cart = await Cart.findOne({ userId: studentId, status: 'active' });
 
-        // If no cart exists, return null
         if (!cart) {
             return null;
         }
 
-        // Step 2: Get all course IDs from the cart
         const courseIds = cart.items.map(item => item.courseId);
-
-        // Step 3: Fetch course details for those IDs
         const courses = await Course.find({ _id: { $in: courseIds } });
 
-        // Step 4: Combine cart items with course details
         const itemsWithDetails: ICartItemWithDetails[] = cart.items.map(item => {
             const course = courses.find(c => c._id.toString() === item.courseId.toString());
             return {
-                courseId: item.courseId.toString(), // Convert ObjectId to string
+                courseId: item.courseId.toString(), 
                 price: item.price,
                 courseTitle: course ? course.title : "Unknown Course",
                 courseSubtitle: course ? course.subtitle : "No description",
@@ -127,21 +122,17 @@ class StudentCourseRepository implements IStudentCourseRepository {
             };
         });
 
-        // Step 5: Create the enriched cart object
         const enrichedCart: ICartWithDetails = {
-            userId: cart.userId.toString(), // Convert ObjectId to string
+            userId: cart.userId.toString(), 
             items: itemsWithDetails,
             totalPrice: cart.totalPrice,
             status: cart.status,
             createdAt: cart.createdAt,
             updatedAt: cart.updatedAt,
-            _id: cart._id.toString(), // Convert ObjectId to string
+            _id: cart._id.toString(), 
 
         };
 
-
-
-        // Step 6: Return the object
         return enrichedCart;
     }
 
@@ -150,7 +141,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const cart = await Cart.findOne({ userId: studentId });
 
             if (!cart) {
-                return null; // Cart does not exist
+                return null; 
             }
             const updatedItems = cart.items.filter(item => item.courseId.toString() !== id);
 
@@ -172,23 +163,19 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async createOrder(orderData: IOrderCreateData): Promise<IOrder | null> {
         try {
-            // Create a new Order document with the provided orderData
             const order = new Order(orderData);
 
-            // Save the order to the database
             const savedOrder = await order.save();
 
-            // Return true if the order was saved successfully
             return savedOrder;
         } catch (error) {
             console.error("Error creating order in repository:", error);
-            return null; // Return null if an error occurs (e.g., database failure)
+            return null; 
         }
     }
 
     async updateByOrderId(razorpay_order_id: string, status: string): Promise<string | null> {
         try {
-            // Update the order status
             const updatedOrder = await Order.findOneAndUpdate(
                 { razorpayOrderId: razorpay_order_id },
                 { $set: { status: status } },
@@ -206,14 +193,12 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
                 try {
                     for (const courseId of updatedOrder.courseIds) {
-                        // Check if progress already exists for this student and course
                         const existingProgress = await Progress.findOne({
                             studentId: updatedOrder.userId,
                             courseId: courseId
                         });
 
                         if (!existingProgress) {
-                            // Create new progress record
                             const newProgress = new Progress({
                                 studentId: updatedOrder.userId,
                                 courseId: courseId,
@@ -316,17 +301,14 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async getPurchasedCourses(userId: string): Promise<ICourse[] | null> {
         try {
-            // Await the query to get actual results
             const orders = await Order.find({ userId, status: "success" }).select("courseIds");
 
-            if (!orders || orders.length === 0) return null; // No successful orders found
+            if (!orders || orders.length === 0) return null;
 
-            // Extract all course IDs from orders
-            const courseIds = orders.map(order => order.courseIds).flat(); // Flatten array of arrays
+            const courseIds = orders.map(order => order.courseIds).flat(); 
 
-            if (courseIds.length === 0) return null; // No purchased courses found
+            if (courseIds.length === 0) return null; 
 
-            // Fetch course details
             const purchasedCourses = await Course.find({ _id: { $in: courseIds } });
 
             return purchasedCourses;
@@ -339,8 +321,8 @@ class StudentCourseRepository implements IStudentCourseRepository {
     async getCourse(id: string): Promise<ICourseExtended | null> {
         try {
             const course = await Course.findOne({ _id: id })
-            .populate('tutorId', 'username')
-            .lean<ICourseExtended>();
+                .populate('tutorId', 'username')
+                .lean<ICourseExtended>();
             return course
         } catch (error) {
             console.log("Error while getting Course details");
@@ -377,6 +359,10 @@ class StudentCourseRepository implements IStudentCourseRepository {
         }
     }
 
+    async findById(lectureId: string): Promise<ILecture | null> {
+        return Lecture.findById(lectureId).exec();
+    }
+
     async getSubscription(): Promise<ISubscription[] | null> {
         const subscriptions = await Subscription.find({ status: true });
         return subscriptions ?? null;
@@ -392,13 +378,10 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async createSubscritionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null> {
         try {
-            // Create a new Order document with the provided orderData
             const order = new SubscriptionPurchased(orderData);
 
-            // Save the order to the database
             const savedOrder = await order.save();
 
-            // Return true if the order was saved successfully
             return savedOrder;
         } catch (error) {
             console.error("Error creating order in repository:", error);
@@ -417,15 +400,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
     }
 
 
-    // async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
-    //     console.log("data of update subscription",data)
-    //     const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
-    //         { orderId: orderId },
-    //         data,
-    //         { new: true }
-    //     );
-    //     return updatedOrder ? updatedOrder.paymentStatus : null;
-    // }
 
     async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
         console.log("data of update subscription", data);
@@ -437,10 +411,8 @@ class StudentCourseRepository implements IStudentCourseRepository {
         );
         console.log("Updated order", updatedOrder)
 
-        // Add payment to admin wallet if payment status is 'paid'
         if (updatedOrder && data.paymentStatus === 'paid' && data.paymentDetails?.paymentAmount) {
             try {
-                // Find admin wallet or create if doesn't exist
                 let adminWallet = await AdminWallet.findOne({ email: process.env.ADMIN_MAIL });
 
                 if (!adminWallet) {
@@ -455,7 +427,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
                 const amount = (data.paymentDetails.paymentAmount) / 100;
 
-                // Create transaction record
                 const transaction: IAdminTransaction = {
                     amount: amount,
                     type: 'credit',
@@ -466,7 +437,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
                     referenceId: updatedOrder._id
                 };
 
-                // Update wallet balances
                 adminWallet.balance += amount;
                 adminWallet.totalRevenue += amount;
                 adminWallet.transactions.push(transaction);
@@ -489,9 +459,9 @@ class StudentCourseRepository implements IStudentCourseRepository {
     async getReviews(id: string): Promise<IReviewExtended[] | null> {
         try {
             const reviews = await Review.find({ courseId: id, isVisible: true })
-                .populate('userId', 'username') // Populate username from User model
+                .populate('userId', 'username') 
                 .sort({ createdAt: -1 })
-                .lean<IReviewExtended[]>() // Sort by newest first
+                .lean<IReviewExtended[]>() 
             return reviews.length > 0 ? reviews : [];
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -503,7 +473,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async createReview(formData: review): Promise<IReviewExtended | null> {
         try {
-            // Step 1: Create the new review
+            
             const newReview = await Review.create({
                 courseId: new Types.ObjectId(formData.courseId),
                 userId: new Types.ObjectId(formData.userId),
@@ -511,20 +481,17 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 review: formData.review,
             });
 
-            // Step 2: Fetch all reviews of the course to recalculate avgRating
             const courseReviews = await Review.find({ courseId: formData.courseId });
 
             const totalReviews = courseReviews.length;
             const totalRating = courseReviews.reduce((sum, review) => sum + review.rating, 0);
             const avgRating = parseFloat((totalRating / totalReviews).toFixed(1));
 
-            // Step 3: Update the course with new average rating and total reviews
             await Course.findByIdAndUpdate(formData.courseId, {
                 avgRating,
                 totalReviews,
             });
 
-            // Step 4: Refetch the newly created review with populated userId and lean result
             const populatedReview = await Review.findById(newReview._id)
                 .populate('userId', 'username')
                 .lean<IReviewExtended>();
@@ -543,7 +510,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async addLectureToProgress(userId: string, courseId: string, lectureId: string): Promise<IProgress | null> {
         try {
-            // Find the progress record for the given user and course
             const progress = await Progress.findOne({
                 studentId: new Types.ObjectId(userId),
                 courseId: new Types.ObjectId(courseId)
@@ -554,32 +520,26 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 return null;
             }
 
-            // Convert lectureId to ObjectId
             const lectureObjectId = new Types.ObjectId(lectureId);
 
-            // Check if lecture is already in completedLectures to avoid duplicates
             if (!progress.completedLectures.includes(lectureObjectId)) {
-                // Add lectureId to completedLectures
+
                 progress.completedLectures.push(lectureObjectId);
                 progress.lastAccessedLecture = lectureObjectId;
                 progress.lastAccessDate = new Date();
 
-                // Get total number of lectures for the course from Lecture collection
                 const totalLectures = await Lecture.countDocuments({
                     courseId: new Types.ObjectId(courseId)
                 });
 
                 if (totalLectures > 0) {
-                    // Calculate progress percentage
                     progress.progressPercentage = Math.round((progress.completedLectures.length / totalLectures) * 100);
 
-                    // Check if course is completed
                     if (progress.completedLectures.length === totalLectures && !progress.isCompleted) {
                         progress.isCompleted = true;
                         progress.completionDate = new Date();
                     }
                 }
-                // Save the updated progress
                 await progress.save();
                 console.log(`Lecture ${lectureId} added to progress for user ${userId} and course ${courseId}`);
             }
@@ -593,13 +553,11 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async editReview(id: string, formData: review): Promise<IReview | null> {
         try {
-            // Find the review first to get the courseId
             const oldReview = await Review.findById(id);
             if (!oldReview) {
                 return null;
             }
-            const courseId = oldReview.courseId; // Assuming review has courseId field
-            // Update the review
+            const courseId = oldReview.courseId; 
             const updatedReview = await Review.findByIdAndUpdate(
                 id,
                 {
@@ -611,15 +569,12 @@ class StudentCourseRepository implements IStudentCourseRepository {
             if (!updatedReview) {
                 return null;
             }
-            // Find all reviews for this course to recalculate average
             const allCourseReviews = await Review.find({ courseId });
-            // Calculate new average rating
             let newAvgRating = 0;
             if (allCourseReviews.length > 0) {
                 const totalRating = allCourseReviews.reduce((sum, review) => sum + review.rating, 0);
                 newAvgRating = totalRating / allCourseReviews.length;
             }
-            // Update the course with new avgRating
             await Course.findByIdAndUpdate(courseId, {
                 avgRating: newAvgRating
             });
@@ -632,27 +587,25 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async deleteReview(id: string): Promise<boolean | null> {
         try {
-            // First, find the review to get its courseId and rating
             const review = await Review.findById(id);
             if (!review) {
                 return false;
             }
-            const courseId = review.courseId; // Assuming review has courseId field
-            // Delete the review
+            const courseId = review.courseId; 
+
             const deletedReview = await Review.findByIdAndDelete(id);
             if (!deletedReview) {
                 return false;
             }
-            // Find all remaining reviews for this course
+
             const remainingReviews = await Review.find({ courseId });
 
-            // Calculate new average rating
             let newAvgRating = 0;
             if (remainingReviews.length > 0) {
                 const totalRating = remainingReviews.reduce((sum, review) => sum + review.rating, 0);
                 newAvgRating = totalRating / remainingReviews.length;
             }
-            // Update the course with new totalReviews and avgRating
+
             await Course.findByIdAndUpdate(courseId, {
                 totalReviews: remainingReviews.length,
                 avgRating: newAvgRating
@@ -670,10 +623,8 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const wishlist = await Wishlist.findOne({ userId })
                 .populate("items.courseId")
                 .exec();
-            console.log("Wishlist in repository = ================>", wishlist?.items)
             if (!wishlist) return []
 
-            // Extract populated course objects
             const courses = wishlist.items.map(item => item.courseId);
             const wishlistedCourses = Course.find({ _id: { $in: courses } });
             return wishlistedCourses;
@@ -689,18 +640,15 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const wishlist = await Wishlist.findOne({ userId });
 
             if (!wishlist) {
-                // Create a new wishlist if it doesn't exist
                 const newWishlist = new Wishlist({
                     userId,
                     items: [{ courseId }]
                 });
                 await newWishlist.save();
             } else {
-                // Check if the course is already in the wishlist
                 const courseExists = wishlist.items.some(item => item.courseId.toString() === courseId);
 
                 if (!courseExists) {
-                    // Add the course to the existing wishlist
                     wishlist.items.push({ courseId: new Types.ObjectId(courseId) });
                     await wishlist.save();
                 }
@@ -732,9 +680,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 console.error("Wishlist not found for user:", userId);
                 return null;
             }
-            // Filter out the courseId to be removed
             const updatedItems = wishlist.items.filter(item => item.courseId.toString() !== courseId);
-            // Update the wishlist
             await Wishlist.updateOne(
                 { userId },
                 { items: updatedItems }

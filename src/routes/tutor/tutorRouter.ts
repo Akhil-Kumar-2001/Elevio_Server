@@ -76,7 +76,7 @@ router.patch("/update-profile",isBlocked,validateToken("Tutor"),tutorProfileCont
 router.get("/get-categories",isBlocked,validateToken("Tutor"),tutorCourseController.getCategories.bind(tutorCourseController))
 router.post("/create-course",isBlocked,validateToken("Tutor"),imageUpload.single('imageThumbnail'),tutorCourseController.createCourse.bind(tutorCourseController))
 router.get('/courses',validateToken("Tutor"),isBlocked,tutorCourseController.getCourses.bind(tutorCourseController))
-router.get('/get-category',validateToken("Tutor"),isBlocked,tutorCourseController.getCourseDetails.bind(tutorCourseController))
+router.get('/get-course',validateToken("Tutor"),isBlocked,tutorCourseController.getCourseDetails.bind(tutorCourseController))
 router.post('/edit-course',validateToken('Tutor'),isBlocked,imageUpload.single('imageThumbnail'),tutorCourseController.editCourse.bind(tutorCourseController))
 
 

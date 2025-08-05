@@ -1,4 +1,4 @@
-import { ICourseCategoryDto, ICourseDto, ICourseResponseDto } from "../../dtos/course/courseDto";
+import { ICourseCategoryDto, ICourseDto, ICourseResponseDto, ICourseTutorDto } from "../../dtos/course/courseDto";
 import { ICourse, ICourseCategoryExtended, ICourseExtended } from "../../model/course/courseModel";
 
 
@@ -29,6 +29,33 @@ export const mapCourseToDto = (course: ICourse): ICourseDto => {
 export const mapCoursesToDto = (courses: ICourse[]): ICourseDto[] => {
   return courses.map(mapCourseToDto);
 };
+export const mapCourseTutorToDto = (course: ICourse): ICourseTutorDto => {
+  return {
+    _id: course._id,
+    tutorId: course.tutorId.toString(),
+    title: course.title,
+    price: course.price,
+    subtitle: course.subtitle,
+    description: course.description,
+    category: course.category.toString(),
+    totalDuration: course.totalDuration,
+    totalLectures: course.totalLectures,
+    totalSections: course.totalSections,
+    purchasedStudents: course.purchasedStudents?.map(id => id.toString()) || [],
+    isBlocked: course.isBlocked,
+    status: course.status,
+    rejectedReason: course.rejectedReason,
+    imageThumbnailId: course.imageThumbnailId,
+    avgRating: course.avgRating,
+    totalReviews: course.totalReviews,
+    createdAt: course.createdAt.toISOString(),
+    updatedAt: course.updatedAt.toISOString(),
+  };
+};
+
+export const mapCoursesTutorToDto = (courses: ICourse[]): ICourseTutorDto[] => {
+  return courses.map(mapCourseTutorToDto);
+};
 
 
 
@@ -52,7 +79,7 @@ export const mapCourseResponseToDto = (course: ICourseExtended): ICourseResponse
     isBlocked: course.isBlocked,
     status: course.status,
     rejectedReason: course.rejectedReason,
-    imageThumbnail: course.imageThumbnail,
+    imageThumbnailId: course.imageThumbnailId,
     avgRating: course.avgRating,
     totalReviews: course.totalReviews,
     createdAt: course.createdAt.toISOString(),

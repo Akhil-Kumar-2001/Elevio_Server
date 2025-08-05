@@ -14,7 +14,7 @@ import { CategoryResponseDataType, CourseResponseDataType, PaginatedResponse, Su
 import IAdminTutorRepository from '../IAdminTutorRepository'
 
 class AdminTutorRepository implements IAdminTutorRepository {
-    async getPendingTutors(page: number, limit: number): Promise<PaginatedResponse<ITutorDto>  | null> {
+    async getPendingTutors(page: number, limit: number): Promise<PaginatedResponse<ITutorDto> | null> {
         const skip = (page - 1) * limit;
         const tutors = await Tutor.find({ isVerified: "pending" })
             .sort({ createdAt: -1 })
@@ -23,9 +23,9 @@ class AdminTutorRepository implements IAdminTutorRepository {
             .exec();
         const totalRecord = await Tutor.countDocuments()
         console.log(tutors)
-        return { data:tutors, totalRecord };
+        return { data: tutors, totalRecord };
     }
-    
+
     async getTutorById(id: string): Promise<ITutorDto | null> {
         const tutor = await Tutor.findById(id);
         return tutor;
@@ -121,14 +121,14 @@ class AdminTutorRepository implements IAdminTutorRepository {
             { status: newStatus },
             { new: true } // Returns the updated document
         )
-        if(!updatedCategory)return null;
+        if (!updatedCategory) return null;
         const categoryDtos: ICategoryDto = {
-                _id: updatedCategory._id.toString(),
-                name: updatedCategory.name,
-                status: updatedCategory.status,
-                createdAt: updatedCategory.get('createdAt'),
-                updatedAt: updatedCategory.get('updatedAt')
-            }
+            _id: updatedCategory._id.toString(),
+            name: updatedCategory.name,
+            status: updatedCategory.status,
+            createdAt: updatedCategory.get('createdAt'),
+            updatedAt: updatedCategory.get('updatedAt')
+        }
         return categoryDtos
     }
 
@@ -164,8 +164,8 @@ class AdminTutorRepository implements IAdminTutorRepository {
     }
 
     async getCategoryName(id: string): Promise<string | null> {
-        const category = await Category.findOne({_id:id});
-        return  category?.name ?? null
+        const category = await Category.findOne({ _id: id });
+        return category?.name ?? null
 
     }
 
@@ -177,6 +177,10 @@ class AdminTutorRepository implements IAdminTutorRepository {
             console.log("Error while getting Sections");
             return null
         }
+    }
+
+    async findById(lectureId: string): Promise<ILecture | null> {
+        return Lecture.findById(lectureId).exec();
     }
 
     async getLectures(id: string): Promise<ILecture[] | null> {
@@ -251,14 +255,14 @@ class AdminTutorRepository implements IAdminTutorRepository {
         try {
             const skip = (page - 1) * limit;
             const subscriptions = await Subscription.find()
-            .sort({ createdAt: 1 })
+                .sort({ createdAt: 1 })
                 .skip(skip)
                 .limit(limit)
                 .exec();
 
-                const totalRecord = await Subscription.countDocuments()
-            console.log("total record suscription",totalRecord);
-            
+            const totalRecord = await Subscription.countDocuments()
+            console.log("total record suscription", totalRecord);
+
             return { subscriptions, totalRecord }
             // return subscriptions ?? null;
         } catch (error) {

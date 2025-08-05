@@ -5,6 +5,7 @@ export interface ILectureDto {
   courseId: string;
   title: string;
   videoUrl?: string;
+  videoKey?: string;
   duration: number;
   order: number;
   status: "processing" | "processed";
