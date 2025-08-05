@@ -1,21 +1,17 @@
 import { Schema, Document, model, ObjectId } from "mongoose";
 
 interface IStudent extends Document {
+    _id:string;
     username?: string;
     email?: string;
     password?: string;
     status?: number;
-    role: string;  
-    // subscription?: {
-    //     subscriptionId: ObjectId;
-    //     isActive: boolean;
-    //     startDate: Date;
-    //     endDate: Date;
-    // };
+    role: string;
     googleID?: String
-    // freeCourseCount?: number;
     enrolledCourseCount?: number;
     profilePicture?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 const studentSchema = new Schema<IStudent>({
@@ -42,25 +38,15 @@ const studentSchema = new Schema<IStudent>({
     },
     role: {
         type: String,
-        enum: ["Student"],  
+        enum: ["Student"],
         default: "Student",
     },
-    // subscription: {
-    //     subscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription" },
-    //     isActive: { type: Boolean, default: false },
-    //     startDate: { type: Date },
-    //     endDate: { type: Date },
-    // },
     googleID: {
         type: String
     },
-    // freeCourseCount: {
-    //     type: Number,
-    //     default: 0, 
-    // },
     enrolledCourseCount: {
         type: Number,
-        default: 0, 
+        default: 0,
     },
     profilePicture: {
         type: String,

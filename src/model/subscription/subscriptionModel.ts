@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ISubscription extends Document {
+    _id:string;
     planName: string;
     duration: {
         value: number;
@@ -9,8 +10,8 @@ export interface ISubscription extends Document {
     price: number;
     features: string[];
     status: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt?: string;
+    updatedAt?: string;
 
 }
 

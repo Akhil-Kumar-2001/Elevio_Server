@@ -4,7 +4,7 @@ import { ISubscription } from "./subscriptionModel";
 
 interface ISubscriptionPurchased extends Document {
     userId: Types.ObjectId;
-    planId: Types.ObjectId | ISubscription;
+    planId: Types.ObjectId;
     orderId: string; // Razorpay Order ID
     startDate: Date | null; // Nullable, set after payment
     endDate: Date | null;
@@ -17,9 +17,15 @@ interface ISubscriptionPurchased extends Document {
     };
     createdAt: Date;
     updatedAt: Date;
-    _id: Types.ObjectId; // Explicitly define _id
-    __v: number; // Version key
+
+    _id: Types.ObjectId;
+    __v: number;
 }
+
+export interface ISubscriptionPurchasedExtended extends Omit<ISubscriptionPurchased,'planId'>{
+    planId: ISubscription
+}
+
 
 const subscriptionPurchasedSchema = new Schema<ISubscriptionPurchased>({
     userId: {

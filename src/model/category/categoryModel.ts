@@ -4,6 +4,8 @@ interface ICategory extends Document {
     _id: Types.ObjectId;
     name: string;
     status?: number;
+    createdAt?:string;
+    updatedAt?:string;
 }
 
 const categorySchema = new Schema<ICategory>({

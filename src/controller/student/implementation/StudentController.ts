@@ -127,12 +127,8 @@ class StudentController implements IStudentController {
                 return;
             }
 
-            const userData: IStudent = { ...currentUser.toObject(), status: 1 };
 
-            const updatedUser = await this._studentService.updateUser(
-                email,
-                userData
-            );
+            const updatedUser = await this._studentService.updateUserStatus(email);
 
             if (updatedUser) {
                 res.status(STATUS_CODES.OK).json({
@@ -206,7 +202,7 @@ class StudentController implements IStudentController {
             console.log(user.status);
 
             if (user?.status == 0) {
-                res.status(STATUS_CODES.FORBIDDEN).json({success: false, message: "OTP not verified in Signup", data: null});
+                res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: "OTP not verified in Signup", data: null });
                 return;
             }
             if (user?.status == -1) {
@@ -239,9 +235,9 @@ class StudentController implements IStudentController {
             }
 
 
-            if (user?.id) {
+            if (user?._id) {
                 const tokenInstance = new Token();
-                const { accessToken, refreshToken } = tokenInstance.generatingTokens(user.id, user.role);
+                const { accessToken, refreshToken } = tokenInstance.generatingTokens(user._id, user.role);
                 console.log("Accesstoken : ", accessToken)
                 console.log("Refreshtoken : ", refreshToken)
                 const filteredData = {
@@ -301,22 +297,22 @@ class StudentController implements IStudentController {
             }
 
             // **Verify the refresh token**
-            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: unknown, decoded: JwtPayload | string  | undefined  ) => {
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string, (err: unknown, decoded: JwtPayload | string | undefined) => {
                 if (err) {
                     return res.status(STATUS_CODES.FORBIDDEN).json({ success: false, message: 'Invalid refresh token' });
                 }
 
-                console.log("Decode in refresh token",decoded)
+                console.log("Decode in refresh token", decoded)
 
                 // Generate a new access token
                 const tokenInstance = new Token();
-                const {role,userId} = decoded as {role:string,userId:string}
-                const newAccessToken = tokenInstance.generatingTokens(userId,role).accessToken;
+                const { role, userId } = decoded as { role: string, userId: string }
+                const newAccessToken = tokenInstance.generatingTokens(userId, role).accessToken;
                 res.cookie("accessToken", newAccessToken, {
                     httpOnly: true,
                     secure: true,
                     sameSite: "none",
-          
+
                     maxAge: 15 * 60 * 1000,
                 });
 
@@ -522,47 +518,45 @@ class StudentController implements IStudentController {
                 return;
             }
 
-            const userData: IStudent = { ...user.toObject(), status: 1 };
-
-            await this._studentService.updateUser(
-                email,
-                userData
-            );
+            await this._studentService.updateUserStatus(email);
 
             const tokenInstance = new Token();
-            const { accessToken, refreshToken } = tokenInstance.generatingTokens(user.id, user.role);
-            console.log("Accesstoken : ", accessToken)
-            console.log("Refreshtoken : ", refreshToken)
-            const filteredData = {
-                id: user._id,
-                role: user.role,
-            };
-            if (accessToken && refreshToken) {
-                console.log("cookie set")
-                res.cookie("refreshToken", refreshToken, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/",
-                    maxAge: 24 * 60 * 60 * 1000,
-                });
-                res.cookie("accessToken", accessToken, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: "none",
-                    domain: ".elevic.site",
-                    path: "/",
-                    maxAge: 15 * 60 * 1000,
-                });
-                res
-                    .status(STATUS_CODES.OK)
-                    .json({
-                        success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
-                    });
-                console.log("User signin successfull")
-                return
+            if (typeof user._id === "string" && typeof user.role === "string") {
+                const { accessToken, refreshToken } = tokenInstance.generatingTokens(user._id, user.role);
 
+                console.log("Accesstoken : ", accessToken)
+                console.log("Refreshtoken : ", refreshToken)
+                const filteredData = {
+                    id: user._id,
+                    role: user.role,
+                };
+                if (accessToken && refreshToken) {
+                    console.log("cookie set")
+                    res.cookie("refreshToken", refreshToken, {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
+                        maxAge: 24 * 60 * 60 * 1000,
+                    });
+                    res.cookie("accessToken", accessToken, {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: "none",
+                        domain: ".elevic.site",
+                        path: "/",
+                        maxAge: 15 * 60 * 1000,
+                    });
+                    res
+                        .status(STATUS_CODES.OK)
+                        .json({
+                            success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
+                        });
+                    console.log("User signin successfull")
+                    return
+
+                }
             }
         } catch (error) {
             console.log(error);

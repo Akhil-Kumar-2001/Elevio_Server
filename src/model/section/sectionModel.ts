@@ -1,6 +1,7 @@
 import { Schema, Document, model } from "mongoose";
 
 interface ISection extends Document {
+    _id:string;
     courseId: Schema.Types.ObjectId;
     title: string;
     description: string;
@@ -8,6 +9,8 @@ interface ISection extends Document {
     totalLectures?: number;
     totalDuration?: number;
     isPublished?: boolean;
+    createdAt?:string;
+    updatedAt?:string;
 }
 
 const sectionSchema = new Schema<ISection>({

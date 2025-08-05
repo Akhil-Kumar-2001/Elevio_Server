@@ -9,21 +9,23 @@ interface IAdminTransaction {
     type: AdminTransaction;
     description: string;
     date: Date;
-    relatedUserId?: Types.ObjectId; 
-    referenceId?: Types.ObjectId; 
+    relatedUserId?: Types.ObjectId;
+    referenceId?: Types.ObjectId;
     userType?: 'Tutor' | 'Student';
 }
 
 // Admin Wallet Schema Interface
 interface IAdminWallet extends Document {
-    email: string;            
+    email: string;
     balance: number;
-    totalRevenue: number;    
-    totalOutflow: number;   
+    totalRevenue: number;
+    totalOutflow: number;
     transactions: IAdminTransaction[];
     isActive: boolean;
     lastTransactionDate?: Date;
     _id: Types.ObjectId;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 const adminTransactionSchema = new Schema<IAdminTransaction>({
@@ -96,7 +98,7 @@ const adminWalletSchema = new Schema<IAdminWallet>({
 }, { timestamps: true });
 
 // Pre-save middleware to update lastTransactionDate
-adminWalletSchema.pre('save', function(next) {
+adminWalletSchema.pre('save', function (next) {
     if (this.transactions.length > 0) {
         this.lastTransactionDate = this.transactions[this.transactions.length - 1].date;
     }
@@ -105,9 +107,9 @@ adminWalletSchema.pre('save', function(next) {
 
 const AdminWallet = model<IAdminWallet>("AdminWallet", adminWalletSchema);
 
-export { 
-    AdminWallet, 
-    IAdminWallet, 
-    IAdminTransaction, 
-    AdminTransaction 
+export {
+    AdminWallet,
+    IAdminWallet,
+    IAdminTransaction,
+    AdminTransaction
 };

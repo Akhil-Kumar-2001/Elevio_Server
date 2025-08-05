@@ -1,6 +1,7 @@
 import { Schema, Document, model } from "mongoose";
 
 interface ISession extends Document {
+  _id:string;
   tutorId: string;
   studentId: string;
   startTime: Date;

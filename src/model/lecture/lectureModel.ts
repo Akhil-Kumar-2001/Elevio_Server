@@ -1,14 +1,18 @@
 import { Schema, Document, model } from "mongoose";
 
 interface ILecture extends Document {
+    _id: string;
     sectionId: Schema.Types.ObjectId;
     courseId: Schema.Types.ObjectId;
     title: string;
     videoUrl?: string;
+    videoKey?: string;
     duration: number;
     order: number;
     status: "processing" | "processed";
     isPreview?: boolean;
+    createdAt?: string,
+    updatedAt?: string
 }
 
 const lectureSchema = new Schema<ILecture>({
@@ -30,6 +34,10 @@ const lectureSchema = new Schema<ILecture>({
         type: String,
         required: false, // Make it optional
         default: ""
+    },
+    videoKey: {
+        type: String,
+        default: null,
     },
     duration: {
         type: Number,

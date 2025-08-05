@@ -5,12 +5,13 @@ type TransactionType = 'credit' | 'debit' | 'withdrawal' | 'refund' | 'commissio
 
 // Interface for wallet transactions
 interface ITransaction {
+    _id?: string;
     amount: number;
     type: TransactionType;
     description: string;
     date: Date;
-    studentId?: Schema.Types.ObjectId; 
-    referenceId?: Types.ObjectId; 
+    studentId?: Schema.Types.ObjectId;
+    referenceId?: Types.ObjectId;
 }
 
 // Wallet Schema Interface
@@ -23,6 +24,8 @@ interface ITutorWallet extends Document {
     isActive: boolean;
     lastTransactionDate?: Date;
     _id: Types.ObjectId;
+    createdAt: string,
+    updatedAt: string,
 }
 
 const transactionSchema = new Schema<ITransaction>({
@@ -46,7 +49,7 @@ const transactionSchema = new Schema<ITransaction>({
     },
     studentId: {
         type: Schema.Types.ObjectId,
-        ref: "Student", 
+        ref: "Student",
         default: null
     },
     referenceId: {
@@ -92,7 +95,7 @@ const tutorWalletSchema = new Schema<ITutorWallet>({
 }, { timestamps: true });
 
 // Pre-save middleware to update lastTransactionDate
-tutorWalletSchema.pre('save', function(next) {
+tutorWalletSchema.pre('save', function (next) {
     if (this.transactions.length > 0) {
         this.lastTransactionDate = this.transactions[this.transactions.length - 1].date;
     }
@@ -101,9 +104,9 @@ tutorWalletSchema.pre('save', function(next) {
 
 const TutorWallet = model<ITutorWallet>("TutorWallet", tutorWalletSchema);
 
-export { 
-    TutorWallet, 
-    ITutorWallet, 
-    ITransaction, 
-    TransactionType 
+export {
+    TutorWallet,
+    ITutorWallet,
+    ITransaction,
+    TransactionType
 };

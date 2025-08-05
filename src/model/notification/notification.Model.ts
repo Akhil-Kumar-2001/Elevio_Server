@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 // Interface for Notification document
 interface INotification extends Document {
+  _id:string;
   receiverId: mongoose.Types.ObjectId;
   content: string;
   isRead: boolean;

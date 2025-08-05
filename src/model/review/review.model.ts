@@ -13,6 +13,16 @@ interface IReview extends Document {
     __v: number;
 }
 
+
+export interface IUser {
+  _id: string,
+  username: string,
+}
+
+export interface IReviewExtended extends Omit<IReview,'userId'>{
+    userId: IUser
+}
+
 const reviewSchema = new Schema<IReview>({
     courseId: {
         type: Schema.Types.ObjectId,

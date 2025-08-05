@@ -15,13 +15,35 @@ interface ICourse extends Document {
     status?: "pending" | "accepted" | "rejected" | "draft" | "listed";
     rejectedReason?: string;
     imageThumbnail: string;
+    imageThumbnailId:string;
     avgRating?: number;
     totalReviews?: number;
     createdAt: Date;
     updatedAt: Date;
-    _id: Types.ObjectId;
+    _id: string;
     __v: number;
 }
+
+
+export interface IUser {
+    _id: string,
+    username: string,
+}
+
+export interface ICourseExtended extends Omit<ICourse, 'tutorId'> {
+    tutorId: IUser
+}
+
+export interface ICategory {
+    _id: string,
+    name: string,
+}
+
+export interface ICourseCategoryExtended extends Omit<ICourse, 'category'> {
+    category: ICategory
+}
+
+
 
 const courseSchema = new Schema<ICourse>({
     tutorId: {
@@ -82,6 +104,10 @@ const courseSchema = new Schema<ICourse>({
     imageThumbnail: {
         type: String,
         required: true,
+    },
+    imageThumbnailId: {
+        type: String,
+        required: true, // make it required for new entries
     },
     avgRating: {
         type: Number,

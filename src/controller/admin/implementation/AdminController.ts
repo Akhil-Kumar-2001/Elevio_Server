@@ -178,6 +178,36 @@ class AdminController implements IAdminController {
         }
     }
 
+
+    async searchTutors(req: Request, res: Response): Promise<void> {
+        try {
+            const { query, page, limit } = req.query;
+            const searchQuery = typeof query === 'string' ? query : '';
+            const pageNumber = typeof page === 'string' ? parseInt(page) : 1;
+            const limitNumber = typeof limit === 'string' ? parseInt(limit) : 5;
+            const response = await this._adminService.searchTutor(searchQuery, pageNumber, limitNumber);
+            console.log(response)
+            if (response) res.status(STATUS_CODES.OK).json({ success: true, message: "Change status success", data: response })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+    async searchStudents(req: Request, res: Response): Promise<void> {
+        try {
+            const { query, page, limit } = req.query;
+            const searchQuery = typeof query === 'string' ? query : '';
+            const pageNumber = typeof page === 'string' ? parseInt(page) : 1;
+            const limitNumber = typeof limit === 'string' ? parseInt(limit) : 5;
+            const response = await this._adminService.searchStudents(searchQuery, pageNumber, limitNumber);
+            console.log(response)
+            if (response) res.status(STATUS_CODES.OK).json({ success: true, message: "Change status success", data: response })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
 }
 
 export default AdminController

@@ -1,6 +1,7 @@
 import { Schema, Document, model } from "mongoose";
 
 interface ITutor extends Document {
+    _id:string;
     username: string;
     email: string;
     password: string;
@@ -18,8 +19,8 @@ interface ITutor extends Document {
             fileUrl: string;
         }[];
     };
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 const tutorSchema = new Schema<ITutor>({

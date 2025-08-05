@@ -1,6 +1,7 @@
 import { Schema, Document, model, Types } from "mongoose";
 
 interface IProgress extends Document {
+    _id:string;
     studentId: Types.ObjectId;
     courseId: Types.ObjectId;
     completedLectures: Types.ObjectId[];
@@ -10,6 +11,8 @@ interface IProgress extends Document {
     startDate: Date;
     lastAccessDate?: Date;
     completionDate?: Date;
+    createdAt:Date;
+    updatedAt:Date;
 }
 
 const progressSchema = new Schema<IProgress>({
