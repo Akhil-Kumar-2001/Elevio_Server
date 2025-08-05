@@ -6,8 +6,8 @@ import IAdminService from "../IAdminService";
 import { PaginatedResponse } from "../../../Types/CategoryReturnType";
 import { IStudentDto } from "../../../dtos/student/studentDto";
 import { ITutorDto } from "../../../dtos/tutor/tutorDto";
-import { mapStudentToDto } from "../../../mapper/student/studentMapper";
-import { mapTutorToDto } from "../../../mapper/tutor/tutorMapper";
+import { mapStudentsToDto, mapStudentToDto } from "../../../mapper/student/studentMapper";
+import { mapTutorsToDto, mapTutorToDto } from "../../../mapper/tutor/tutorMapper";
 
 class AdminService implements IAdminService {
 
@@ -47,6 +47,25 @@ class AdminService implements IAdminService {
 
         const dto = mapStudentToDto(student as IStudent);
         return dto;
+    }
+
+    async searchTutor(query: string,page:number,limit:number): Promise<PaginatedResponse<ITutorDto>  | null> {
+        const tutor = await this._adminRepository.searchTutor(query,page,limit);
+
+        if (!tutor) return null;
+
+        const dto = mapTutorsToDto(tutor.data as ITutor[]);
+        return {data:dto,totalRecord:tutor.totalRecord};
+    }
+
+
+    async searchStudents(query: string,page:number,limit:number): Promise<PaginatedResponse<IStudentDto>  | null> {
+        const students = await this._adminRepository.searchStudents(query,page,limit);
+
+        if (!students) return null;
+
+        const dto = mapStudentsToDto(students.data as ITutor[]);
+        return {data:dto,totalRecord:students.totalRecord};
     }
 }
 

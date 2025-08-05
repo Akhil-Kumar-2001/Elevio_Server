@@ -108,6 +108,53 @@ class StudentCourseController implements IStudentCourseController {
         }
     }
 
+    async searchCourse(req: Request, res: Response): Promise<void> {
+        try {
+            const { query, page, limit, category, minPrice, maxPrice, sortOrder } = req.query;
+
+            const searchQuery = typeof query === 'string' ? query : '';
+            const pageNumber = typeof page === 'string' ? parseInt(page) : 1;
+            const limitNumber = typeof limit === 'string' ? parseInt(limit) : 8;
+            const categoryFilter = typeof category === 'string' ? category : 'all';
+            const minPriceValue = typeof minPrice === 'string' ? parseFloat(minPrice) : 0;
+            const maxPriceValue = typeof maxPrice === 'string' ? parseFloat(maxPrice) : 5000;
+            const sortOrderValue = typeof sortOrder === 'string' ? sortOrder as 'asc' | 'desc' : null;
+
+            const response = await this._studentCourseService.searchCourse(
+                searchQuery,
+                pageNumber,
+                limitNumber,
+                categoryFilter !== 'all' ? categoryFilter : '',
+                [minPriceValue, maxPriceValue],
+                sortOrderValue ?? ''
+            );
+
+            if (response) {
+                res.status(STATUS_CODES.OK).json({
+                    success: true,
+                    message: 'Course search successful',
+                    data: response,
+                });
+            } else {
+                res.status(STATUS_CODES.NOT_FOUND).json({
+                    success: false,
+                    message: 'No courses found',
+                    data: null,
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'Failed to search courses',
+                data: null,
+            });
+        }
+    }
+
+
+
+
     async verifyPayment(req: Request, res: Response): Promise<void> {
         console.log("Request data for verfiy payment", req.body)
         try {
@@ -206,8 +253,8 @@ class StudentCourseController implements IStudentCourseController {
             }
 
             const validplan = await this._studentCourseService.isValidPlan(studentId);
-            if(validplan){
-                res.status(STATUS_CODES.CONFLICT).json({success:false,message:"You are currently in an active plan. Unable to purchase new plan!",data:null})
+            if (validplan) {
+                res.status(STATUS_CODES.CONFLICT).json({ success: false, message: "You are currently in an active plan. Unable to purchase new plan!", data: null })
                 return
             }
 
@@ -232,26 +279,26 @@ class StudentCourseController implements IStudentCourseController {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
         }
     }
-    
+
     async getReviews(req: Request, res: Response): Promise<void> {
         try {
-            const {id} = req.params ;
+            const { id } = req.params;
             const response = await this._studentCourseService.getReviews(id);
-            res.status(STATUS_CODES.OK).json({success:true,message:"Review retrieved successfully",data:response})
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Review retrieved successfully", data: response })
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
         }
     }
-    
+
     async createReview(req: Request, res: Response): Promise<void> {
         try {
             const { formData } = req.body
-            console.log("form data",formData)
+            console.log("form data", formData)
             const response = await this._studentCourseService.createReview(formData);
-            if(response){
-                res.status(STATUS_CODES.CREATED).json({success:true,message:"Review added Successfully",data:response});
-            }else{
-                res.status(STATUS_CODES.CONFLICT).json({success:false,message:"Alread Give review to this course",data:response})
+            if (response) {
+                res.status(STATUS_CODES.CREATED).json({ success: true, message: "Review added Successfully", data: response });
+            } else {
+                res.status(STATUS_CODES.CONFLICT).json({ success: false, message: "Alread Give review to this course", data: response })
             }
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
@@ -260,10 +307,10 @@ class StudentCourseController implements IStudentCourseController {
 
     async getProgress(req: Request, res: Response): Promise<void> {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             const userId = req.userId as string;
-            const response = await this._studentCourseService.getProgress(id,userId );
-            res.status(STATUS_CODES.OK).json({success:true,message:"progress get Successfully",data:response});
+            const response = await this._studentCourseService.getProgress(id, userId);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "progress get Successfully", data: response });
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
@@ -271,10 +318,10 @@ class StudentCourseController implements IStudentCourseController {
 
     async addLectureToProgress(req: Request, res: Response): Promise<void> {
         try {
-            const {courseId,lectureId} = req.body;
+            const { courseId, lectureId } = req.body;
             const userId = req.userId as string;
-            const response = await this._studentCourseService.addLectureToProgress(userId,courseId,lectureId);
-            res.status(STATUS_CODES.OK).json({success:true,message:"progress updated Successfully",data:response});
+            const response = await this._studentCourseService.addLectureToProgress(userId, courseId, lectureId);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "progress updated Successfully", data: response });
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
@@ -282,10 +329,10 @@ class StudentCourseController implements IStudentCourseController {
 
     async editReview(req: Request, res: Response): Promise<void> {
         try {
-            const {id} = req.params;
-            const {formData} = req.body;
-            const response = await this._studentCourseService.editReview(id,formData);
-            res.status(STATUS_CODES.OK).json({success:true,message:"Review updated Successfully",data:response});
+            const { id } = req.params;
+            const { formData } = req.body;
+            const response = await this._studentCourseService.editReview(id, formData);
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Review updated Successfully", data: response });
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
@@ -293,9 +340,9 @@ class StudentCourseController implements IStudentCourseController {
 
     async deleteReview(req: Request, res: Response): Promise<void> {
         try {
-            const {id} = req.params;
+            const { id } = req.params;
             const response = await this._studentCourseService.deleteReview(id);
-            res.status(STATUS_CODES.OK).json({success:true,message:"Review deleted Successfully",data:response});
+            res.status(STATUS_CODES.OK).json({ success: true, message: "Review deleted Successfully", data: response });
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
         }
@@ -305,7 +352,7 @@ class StudentCourseController implements IStudentCourseController {
         try {
             const userId = req.userId as string;
             const response = await this._studentCourseService.getWishlist(userId);
-            console.log("Wishlist response",response)
+            console.log("Wishlist response", response)
             res.status(STATUS_CODES.OK).json({ success: true, message: "Wishlist retrieved successfully", data: response })
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
@@ -315,13 +362,13 @@ class StudentCourseController implements IStudentCourseController {
         try {
             const { id } = req.params;
             const userId = req.userId;
-            const isInWishlist = await this._studentCourseService.isInWishlist( userId as string,id);
-            console.log("isInWishlist",isInWishlist)
-            if (isInWishlist) { 
+            const isInWishlist = await this._studentCourseService.isInWishlist(userId as string, id);
+            console.log("isInWishlist", isInWishlist)
+            if (isInWishlist) {
                 res.status(STATUS_CODES.CONFLICT).json({ success: true, message: "Course Already exist On Wishlist", data: isInWishlist })
                 return
             }
-            const response = await this._studentCourseService.addToWishlist( userId as string,id);
+            const response = await this._studentCourseService.addToWishlist(userId as string, id);
             if (response) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Add To Wishlist Successfully", data: response })
             }
@@ -336,7 +383,7 @@ class StudentCourseController implements IStudentCourseController {
             const { id } = req.params;
             const studentId = req.userId as string;
             console.log(studentId)
-            const response = await this._studentCourseService.removeFromWishlist( studentId,id)
+            const response = await this._studentCourseService.removeFromWishlist(studentId, id)
             if (response) {
                 res.status(STATUS_CODES.OK).json({ success: true, message: "Course Removed from Wishlist successfully", data: response })
 

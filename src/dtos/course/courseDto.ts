@@ -99,3 +99,31 @@ export interface ICourseCategoryDto {
   createdAt: string;
   updatedAt: string;
 }
+
+
+
+export interface ICourseSearchDto {
+  id: string;
+  title: string;
+  price: number;
+  imageThumbnail: string;
+  category: {
+    _id:string,
+    name:string,
+  };
+  createdAt: Date;
+  purchasedStudents: string[];
+}
+
+export interface ICourseSearchServiceDto {
+  id: string;
+  title: string;
+  price: number;
+  imageThumbnail: string;
+  category: string;
+  createdAt: Date;
+  purchasedStudents: string[];
+}
+
+
+

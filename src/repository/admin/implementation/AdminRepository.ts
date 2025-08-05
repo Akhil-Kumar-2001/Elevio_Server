@@ -15,8 +15,8 @@ class AdminRepository implements IAdminRepository {
             .limit(limit)
             .exec();
 
-            const totalRecord = await Student.countDocuments()
-            return { data:students, totalRecord }
+        const totalRecord = await Student.countDocuments()
+        return { data: students, totalRecord }
     }
 
     async getTutors(page: number, limit: number): Promise<PaginatedResponse<ITutorDto> | null> {
@@ -28,7 +28,7 @@ class AdminRepository implements IAdminRepository {
             .exec();
 
         const totalRecord = await Tutor.countDocuments()
-        return { data:tutors, totalRecord }
+        return { data: tutors, totalRecord }
     }
 
     async blockTutor(id: string): Promise<ITutorDto | null> {
@@ -51,6 +51,67 @@ class AdminRepository implements IAdminRepository {
             { new: true } // Returns the updated document
         );
         return updatedStudent
+    }
+
+    async searchTutor(query: string, page: number, limit: number): Promise<PaginatedResponse<ITutorDto> | null> {
+        try {
+            const skip = (page - 1) * limit;
+            const tutors = await Tutor.find(
+                {
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } }
+                    ]
+                },
+                { _id: 1, username: 1, email: 1, status: 1, role: 1, createdAt: 1 }
+            )
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .exec();
+
+            const totalRecord = await Tutor.countDocuments({
+                $or: [
+                    { username: { $regex: query, $options: 'i' } },
+                    { email: { $regex: query, $options: 'i' } }
+                ]
+            });
+            return { data: tutors, totalRecord };
+        } catch (error) {
+            console.error('Error searching tutors:', error);
+            return null;
+        }
+    }
+
+
+    async searchStudents(query: string, page: number, limit: number): Promise<PaginatedResponse<IStudentDto> | null> {
+        try {
+            const skip = (page - 1) * limit;
+            const students = await Student.find(
+                {
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } }
+                    ]
+                },
+                { _id: 1, username: 1, email: 1, status: 1, role: 1, createdAt: 1 }
+            )
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .exec();
+
+            const totalRecord = await Student.countDocuments({
+                $or: [
+                    { username: { $regex: query, $options: 'i' } },
+                    { email: { $regex: query, $options: 'i' } }
+                ]
+            });
+            return { data: students, totalRecord };
+        } catch (error) {
+            console.error('Error searching tutors:', error);
+            return null;
+        }
     }
 
 }

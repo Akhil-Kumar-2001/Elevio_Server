@@ -67,6 +67,7 @@ router.delete('/remove-item/:id',validateToken("Student"),studentCourseControlle
 
 // Course Purchase
 
+router.get("/search-courses",validateToken("Student"),studentCourseController.searchCourse.bind(studentCourseController))
 router.post("/payment/create-order",validateToken("Student"),studentCourseController.createOrder.bind(studentCourseController))
 router.post("/payment/verify-payment",validateToken("Student"),studentCourseController.verifyPayment.bind(studentCourseController))
 router.get('/getcategories',validateToken("Student"),studentCourseController.getCategories.bind(studentCourseController))

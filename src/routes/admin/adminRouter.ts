@@ -36,10 +36,12 @@ router.post('/refresh-token', adminController.refreshToken.bind(adminController)
 //students management
 router.get('/getstudents', validateToken("admin"), adminController.getStudents.bind(adminController))
 router.patch('/updatestudentstatus', validateToken("admin"), adminController.blockStudent.bind(adminController))
+router.get('/searchstudents', validateToken("admin"), adminController.searchStudents.bind(adminController))
 
 // tutor mangement
 router.get('/gettutors', validateToken("admin"), adminController.getTutors.bind(adminController))
 router.patch('/updatetutorstatus', validateToken("admin"), adminController.blockTutor.bind(adminController))
+router.get('/searchtutors', validateToken("admin"), adminController.searchTutors.bind(adminController))
 
 // tutor verificaton
 router.get('/pending-tutor', validateToken("admin"), adminTutorController.getPendingTutors.bind(adminTutorController))

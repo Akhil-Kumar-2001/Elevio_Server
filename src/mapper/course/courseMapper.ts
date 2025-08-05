@@ -1,5 +1,6 @@
-import { ICourseCategoryDto, ICourseDto, ICourseResponseDto, ICourseTutorDto } from "../../dtos/course/courseDto";
+import { ICourseCategoryDto, ICourseDto, ICourseResponseDto, ICourseSearchDto, ICourseSearchServiceDto, ICourseTutorDto } from "../../dtos/course/courseDto";
 import { ICourse, ICourseCategoryExtended, ICourseExtended } from "../../model/course/courseModel";
+import { getSignedImageUrl } from "../../utils/cloudinaryUtility";
 
 
 export const mapCourseToDto = (course: ICourse): ICourseDto => {
@@ -122,4 +123,22 @@ export const mapCourseCategoryToDto = (course: ICourseCategoryExtended): ICourse
 
 export const mapCourseCategorysToDto = (courses: ICourseCategoryExtended[]): ICourseCategoryDto[] => {
   return courses.map(mapCourseCategoryToDto);
+};
+
+
+
+
+
+
+
+export const mapToCourseSearchDto = (course: ICourseCategoryExtended): ICourseSearchServiceDto => {
+  return {
+    id: course._id,
+    title: course.title || '',
+    price: course.price || 0,
+    imageThumbnail: course.imageThumbnail ? getSignedImageUrl(course.imageThumbnail) : '', // Apply signed URL
+    category: course.category ? course.category.name || '' : '', // Flatten category to string
+    createdAt: course.createdAt || new Date(),
+    purchasedStudents: course.purchasedStudents ? course.purchasedStudents.map(id => id.toString()) : [],
+  };
 };

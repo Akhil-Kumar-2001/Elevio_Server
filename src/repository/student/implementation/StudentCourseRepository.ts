@@ -1,12 +1,12 @@
 import mongoose, { Types } from "mongoose";
-import { Course, ICourse, ICourseExtended } from "../../../model/course/courseModel";
+import { Course, ICourse, ICourseCategoryExtended, ICourseExtended } from "../../../model/course/courseModel";
 import IStudentCourseRepository from "../IStudentCourseRepository";
 import { Cart } from "../../../model/cart/cartModel";
 import { ICartItemWithDetails, ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData, PaymentData, review } from "../../../Types/basicTypes";
 import { IOrder, Order } from "../../../model/order/orderModel";
 import { ITransaction, TutorWallet } from "../../../model/wallet/walletModel";
 import { Category, ICategory } from "../../../model/category/categoryModel";
-import { CourseResponseDataType } from "../../../Types/CategoryReturnType";
+import { CourseResponseDataType, PaginatedResponse } from "../../../Types/CategoryReturnType";
 import { ISection, Section } from "../../../model/section/sectionModel";
 import { ILecture, Lecture } from "../../../model/lecture/lectureModel";
 import Subscription, { ISubscription } from "../../../model/subscription/subscriptionModel";
@@ -17,6 +17,7 @@ import { IReview, IReviewExtended, Review } from "../../../model/review/review.m
 import { AdminWallet, IAdminTransaction } from "../../../model/adminwallet/adminwallet";
 import { IProgress, Progress } from "../../../model/progress/progress.model";
 import { Wishlist } from "../../../model/wishlist/wishlist.model";
+import { ICourseDto, ICourseSearchDto } from "../../../dtos/course/courseDto";
 
 class StudentCourseRepository implements IStudentCourseRepository {
 
@@ -112,7 +113,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
         const itemsWithDetails: ICartItemWithDetails[] = cart.items.map(item => {
             const course = courses.find(c => c._id.toString() === item.courseId.toString());
             return {
-                courseId: item.courseId.toString(), 
+                courseId: item.courseId.toString(),
                 price: item.price,
                 courseTitle: course ? course.title : "Unknown Course",
                 courseSubtitle: course ? course.subtitle : "No description",
@@ -123,13 +124,13 @@ class StudentCourseRepository implements IStudentCourseRepository {
         });
 
         const enrichedCart: ICartWithDetails = {
-            userId: cart.userId.toString(), 
+            userId: cart.userId.toString(),
             items: itemsWithDetails,
             totalPrice: cart.totalPrice,
             status: cart.status,
             createdAt: cart.createdAt,
             updatedAt: cart.updatedAt,
-            _id: cart._id.toString(), 
+            _id: cart._id.toString(),
 
         };
 
@@ -141,7 +142,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             const cart = await Cart.findOne({ userId: studentId });
 
             if (!cart) {
-                return null; 
+                return null;
             }
             const updatedItems = cart.items.filter(item => item.courseId.toString() !== id);
 
@@ -170,7 +171,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             return savedOrder;
         } catch (error) {
             console.error("Error creating order in repository:", error);
-            return null; 
+            return null;
         }
     }
 
@@ -299,15 +300,84 @@ class StudentCourseRepository implements IStudentCourseRepository {
         }
     }
 
+
+    async searchCourse(
+        query: string,
+        page: number,
+        limit: number,
+        category: string,
+        priceRange: [number, number],
+        sortOrder: string | null
+    ): Promise<PaginatedResponse<ICourseCategoryExtended> | null> {
+        try {
+            const skip = (page - 1) * limit;
+            const filter: any = {
+                $or: [
+                    { title: { $regex: query, $options: 'i' } },
+                    { description: { $regex: query, $options: 'i' } },
+                    { subtitle: { $regex: query, $options: 'i' } }, // Added for completeness
+                ],
+            };
+
+            if (category && category.toLowerCase() !== "all") {
+                const categoryDoc = await Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
+                if (categoryDoc) {
+                    filter.category = categoryDoc._id; 
+                    console.log("Found category _id:", categoryDoc._id);
+                } else {
+                    console.log(`No category found with name: ${category}`);
+                    return { data: [], totalRecord: 0 }; 
+                }
+            }
+
+            if (priceRange && (priceRange[0] > 0 || priceRange[1] < 5000)) {
+                filter.price = { $gte: priceRange[0], $lte: priceRange[1] };
+            }
+
+            let sortObj: any = { createdAt: -1 };
+            if (sortOrder === 'asc' || sortOrder === 'desc') {
+                sortObj = { title: sortOrder === 'asc' ? 1 : -1 };
+            }
+
+            const courses = await Course.find(
+                filter,
+                { _id: 1, title: 1, price: 1, imageThumbnail: 1, category: 1, createdAt: 1, purchasedStudents: 1 }
+            )
+                .populate('category', 'name')
+                .sort(sortObj)
+                .skip(skip)
+                .limit(limit)
+                .exec();
+
+            // Validate courses array
+            if (!courses || courses.length === 0) {
+                return { data: [], totalRecord: 0 };
+            }
+
+            const totalRecord = await Course.countDocuments(filter);
+
+            const typedCourses = courses as unknown as ICourseCategoryExtended[];
+            return { data: typedCourses, totalRecord };
+        } catch (error) {
+            console.error('Error searching courses:', error);
+            return null;
+        }
+    }
+
+
+
+
+
+
     async getPurchasedCourses(userId: string): Promise<ICourse[] | null> {
         try {
             const orders = await Order.find({ userId, status: "success" }).select("courseIds");
 
             if (!orders || orders.length === 0) return null;
 
-            const courseIds = orders.map(order => order.courseIds).flat(); 
+            const courseIds = orders.map(order => order.courseIds).flat();
 
-            if (courseIds.length === 0) return null; 
+            if (courseIds.length === 0) return null;
 
             const purchasedCourses = await Course.find({ _id: { $in: courseIds } });
 
@@ -459,9 +529,9 @@ class StudentCourseRepository implements IStudentCourseRepository {
     async getReviews(id: string): Promise<IReviewExtended[] | null> {
         try {
             const reviews = await Review.find({ courseId: id, isVisible: true })
-                .populate('userId', 'username') 
+                .populate('userId', 'username')
                 .sort({ createdAt: -1 })
-                .lean<IReviewExtended[]>() 
+                .lean<IReviewExtended[]>()
             return reviews.length > 0 ? reviews : [];
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -473,7 +543,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
     async createReview(formData: review): Promise<IReviewExtended | null> {
         try {
-            
+
             const newReview = await Review.create({
                 courseId: new Types.ObjectId(formData.courseId),
                 userId: new Types.ObjectId(formData.userId),
@@ -557,7 +627,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             if (!oldReview) {
                 return null;
             }
-            const courseId = oldReview.courseId; 
+            const courseId = oldReview.courseId;
             const updatedReview = await Review.findByIdAndUpdate(
                 id,
                 {
@@ -591,7 +661,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
             if (!review) {
                 return false;
             }
-            const courseId = review.courseId; 
+            const courseId = review.courseId;
 
             const deletedReview = await Review.findByIdAndDelete(id);
             if (!deletedReview) {

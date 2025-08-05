@@ -1,5 +1,5 @@
 import { ICategoryDto } from "../../dtos/category/categoryDto"
-import { ICourseDto, ICourseResponseDto } from "../../dtos/course/courseDto"
+import { ICourseDto, ICourseResponseDto, ICourseSearchDto, ICourseSearchServiceDto } from "../../dtos/course/courseDto"
 import { ILectureDto } from "../../dtos/lecture/ILectureDto"
 import { IOrderDto } from "../../dtos/order/orderDto"
 import { IProgressResponseDto } from "../../dtos/progress/progressDto"
@@ -20,6 +20,7 @@ interface IStudentCourseService {
     getCart(studentId: string): Promise<ICartWithDetails | null>
     removeItem(id: string, studentId: string): Promise<boolean | null>
     createOrder(studentId: string, amount: number, courseIds: string[]): Promise<IOrderDto | null>
+    searchCourse(query: string, page: number, limit: number, category:string, priceRange:[number,number],sortOrder:string): Promise<PaginatedResponse<ICourseSearchServiceDto> | null>
     verifyPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null>
     getCategories(): Promise<ICategoryDto[] | null>
     getCourses(page: number, limit: number): Promise<PaginatedResponse<ICourseDto> | null>

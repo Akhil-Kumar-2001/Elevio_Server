@@ -7,6 +7,8 @@ interface IAdminController{
     getStudents(req:Request,res:Response):Promise<void>
     getTutors(req:Request,res:Response):Promise<void>
     blockTutor(req:Request,res:Response):Promise<void>
+    searchTutors(req:Request,res:Response):Promise<void>
+    searchStudents(req:Request,res:Response):Promise<void>
     blockStudent(req:Request,res:Response):Promise<void>
 }
 

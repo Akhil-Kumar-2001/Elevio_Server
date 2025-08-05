@@ -6,8 +6,8 @@ import { ICartWithDetails, IOrderCreateSubscriptionData, review } from "../../..
 import IStudentCourseService from "../IStudentCourseService";
 import { PaginatedResponse } from '../../../Types/CategoryReturnType';
 import { ISubscriptionPurchased } from '../../../model/subscription/SubscriptionPurchased';
-import { mapCourseResponseToDto, mapCoursesToDto, mapCourseToDto } from '../../../mapper/course/courseMapper';
-import { ICourseDto, ICourseResponseDto } from '../../../dtos/course/courseDto';
+import { mapCourseResponseToDto, mapCoursesToDto, mapCourseToDto, mapToCourseSearchDto } from '../../../mapper/course/courseMapper';
+import { ICourseDto, ICourseResponseDto, ICourseSearchDto, ICourseSearchServiceDto } from '../../../dtos/course/courseDto';
 import { mapOrderToDto } from '../../../mapper/order/orderMapper';
 import { IOrderDto } from '../../../dtos/order/orderDto';
 import { ICategoryDto } from '../../../dtos/category/categoryDto';
@@ -84,7 +84,7 @@ class StudentCourseService implements IStudentCourseService {
 
     async getCart(studentId: string): Promise<ICartWithDetails | null> {
         const response = await this._studentCourseRepository.getCart(studentId);
-        if(!response)return null;
+        if (!response) return null;
         for (const course of response?.items) {
             if (course.courseImage) {
                 course.courseImage = getSignedImageUrl(course.courseImage);
@@ -167,6 +167,37 @@ class StudentCourseService implements IStudentCourseService {
         const dto = mapCoursesToDto(response.courses);
         return { data: dto, totalRecord: response.totalRecord };
     }
+
+
+
+    async searchCourse(
+        query: string,
+        page: number,
+        limit: number,
+        category?: string,
+        priceRange?: [number, number],
+        sortOrder?: string | null
+    ): Promise<PaginatedResponse<ICourseSearchServiceDto> | null> {
+        const course = await this._studentCourseRepository.searchCourse(
+            query,
+            page,
+            limit,
+            category ?? "",
+            priceRange ?? [0, 5000],
+            sortOrder ?? null
+        );
+
+        if (!course) return null;
+
+        const dto = {
+            data: course.data.map(mapToCourseSearchDto),
+            totalRecord: course.totalRecord,
+        };
+        return dto;
+    }
+
+
+
 
     async getPurchasedCourses(userId: string): Promise<ICourseDto[] | null> {
         const courses = await this._studentCourseRepository.getPurchasedCourses(userId);
@@ -418,7 +449,7 @@ class StudentCourseService implements IStudentCourseService {
                 course.imageThumbnail = getSignedImageUrl(course.imageThumbnail);
             }
         }
-        
+
         const dto = mapCoursesToDto(courses);
         return dto;
     }

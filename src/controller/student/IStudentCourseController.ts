@@ -7,6 +7,7 @@ interface IStudentCourseController{
     addToCart(req:Request,res:Response):Promise<void>;
     getCart(req:Request,res:Response):Promise<void>;
     removeItem(req:Request,res:Response):Promise<void>;
+    searchCourse(req:Request,res:Response):Promise<void>;
     createOrder(req:Request,res:Response):Promise<void>;
     verifyPayment(req:Request,res:Response):Promise<void>;
     getCategories(req:Request,res:Response):Promise<void>;

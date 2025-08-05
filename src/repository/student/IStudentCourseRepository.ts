@@ -1,5 +1,6 @@
+import { ICourseSearchDto } from "../../dtos/course/courseDto";
 import { ICategory } from "../../model/category/categoryModel";
-import { ICourse, ICourseExtended } from "../../model/course/courseModel";
+import { ICourse, ICourseCategoryExtended, ICourseExtended } from "../../model/course/courseModel";
 import { ILecture } from "../../model/lecture/lectureModel";
 import { IOrder } from "../../model/order/orderModel";
 import { IProgress } from "../../model/progress/progress.model";
@@ -9,7 +10,7 @@ import { ISubscription } from "../../model/subscription/subscriptionModel";
 import { ISubscriptionPurchased } from "../../model/subscription/SubscriptionPurchased";
 import { ITutor } from "../../model/tutor/tutorModel";
 import { ICartWithDetails, IOrderCreateData, IOrderCreateSubscriptionData, PaymentData, review } from "../../Types/basicTypes";
-import { CourseResponseDataType } from "../../Types/CategoryReturnType";
+import { CourseResponseDataType, PaginatedResponse } from "../../Types/CategoryReturnType";
 
 interface IStudentCourseRepository {
     getListedCourse(): Promise<ICourse[] | null>
@@ -23,6 +24,7 @@ interface IStudentCourseRepository {
     updateByOrderId(razorpay_order_id: string, status: string): Promise<string | null>
     getCategories(): Promise<ICategory[] | null>
     getCourses(page: number, limit: number): Promise<CourseResponseDataType | null>
+    searchCourse(query:string,page: number, limit: number, category:string, priceRange:[number,number],sortOrder:string | null): Promise<PaginatedResponse<ICourseCategoryExtended> | null>
     getPurchasedCourses(userId: string): Promise<ICourse[] | null>
     getCourse(id: string): Promise<ICourseExtended | null>
     getTutor(id: string): Promise<ITutor | null>
