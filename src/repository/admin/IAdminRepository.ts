@@ -1,6 +1,4 @@
-import { ITutor } from "../../model/tutor/tutorModel"
-import { IStudent } from "../../model/student/studentModel"
-import { PaginatedResponse, TutorResponseDataType } from "../../Types/CategoryReturnType"
+import { PaginatedResponse } from "../../Types/CategoryReturnType"
 import { IStudentDto } from "../../dtos/student/studentDto"
 import { ITutorDto } from "../../dtos/tutor/tutorDto"
 

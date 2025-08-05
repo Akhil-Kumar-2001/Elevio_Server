@@ -1,5 +1,5 @@
 import { ICategoryDto } from "../../dtos/category/categoryDto"
-import { ICourseDto, ICourseResponseDto, ICourseSearchDto, ICourseSearchServiceDto } from "../../dtos/course/courseDto"
+import { ICourseDto, ICourseResponseDto, ICourseSearchServiceDto } from "../../dtos/course/courseDto"
 import { ILectureDto } from "../../dtos/lecture/ILectureDto"
 import { IOrderDto } from "../../dtos/order/orderDto"
 import { IProgressResponseDto } from "../../dtos/progress/progressDto"

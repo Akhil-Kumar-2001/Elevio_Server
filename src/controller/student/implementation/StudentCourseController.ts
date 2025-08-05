@@ -352,7 +352,6 @@ class StudentCourseController implements IStudentCourseController {
         try {
             const userId = req.userId as string;
             const response = await this._studentCourseService.getWishlist(userId);
-            console.log("Wishlist response", response)
             res.status(STATUS_CODES.OK).json({ success: true, message: "Wishlist retrieved successfully", data: response })
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })

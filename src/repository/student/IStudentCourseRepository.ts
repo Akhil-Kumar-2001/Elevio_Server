@@ -1,4 +1,3 @@
-import { ICourseSearchDto } from "../../dtos/course/courseDto";
 import { ICategory } from "../../model/category/categoryModel";
 import { ICourse, ICourseCategoryExtended, ICourseExtended } from "../../model/course/courseModel";
 import { ILecture } from "../../model/lecture/lectureModel";

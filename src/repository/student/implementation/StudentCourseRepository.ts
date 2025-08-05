@@ -17,7 +17,6 @@ import { IReview, IReviewExtended, Review } from "../../../model/review/review.m
 import { AdminWallet, IAdminTransaction } from "../../../model/adminwallet/adminwallet";
 import { IProgress, Progress } from "../../../model/progress/progress.model";
 import { Wishlist } from "../../../model/wishlist/wishlist.model";
-import { ICourseDto, ICourseSearchDto } from "../../../dtos/course/courseDto";
 
 class StudentCourseRepository implements IStudentCourseRepository {
 
@@ -315,8 +314,9 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 $or: [
                     { title: { $regex: query, $options: 'i' } },
                     { description: { $regex: query, $options: 'i' } },
-                    { subtitle: { $regex: query, $options: 'i' } }, // Added for completeness
+                    { subtitle: { $regex: query, $options: 'i' } },
                 ],
+                status: "listed",
             };
 
             if (category && category.toLowerCase() !== "all") {
