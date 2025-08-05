@@ -8,24 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const courseModel_1 = require("../../../model/course/courseModel");
 const categoryModel_1 = require("../../../model/category/categoryModel");
 const sectionModel_1 = require("../../../model/section/sectionModel");
 const lectureModel_1 = require("../../../model/lecture/lectureModel");
-const awsConfig_1 = __importDefault(require("../../../Config/awsConfig"));
-const fs_1 = __importDefault(require("fs"));
-const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-const ffmpeg_1 = __importDefault(require("@ffmpeg-installer/ffmpeg"));
 const notification_Model_1 = require("../../../model/notification/notification.Model");
 const review_model_1 = require("../../../model/review/review.model");
 const studentModel_1 = require("../../../model/student/studentModel");
 const mongoose_1 = require("mongoose");
 const tutorModel_1 = require("../../../model/tutor/tutorModel");
-fluent_ffmpeg_1.default.setFfmpegPath(ffmpeg_1.default.path);
 class TutorCourseRepository {
     getCategories() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -80,7 +72,9 @@ class TutorCourseRepository {
     getCourseDetails(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const courseDetails = yield courseModel_1.Course.findById(id).populate('category', 'name');
+                const courseDetails = yield courseModel_1.Course.findById(id)
+                    .populate('category', 'name')
+                    .lean();
                 return courseDetails;
             }
             catch (error) {
@@ -258,86 +252,20 @@ class TutorCourseRepository {
             }
         });
     }
-    // async uploadLectureVideo(lectureId: string, videoFile: Express.Multer.File): Promise<string | null> {
-    //     const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
-    //     const params = {
-    //         Bucket: process.env.AWS_S3_BUCKET_NAME || 'your-bucket-name',
-    //         Key: `lectures/${fileName}`,
-    //         Body: videoFile.buffer,
-    //         ContentType: videoFile.mimetype,
-    //         // Remove ACL: 'public-read'
-    //     };
-    //     try {
-    //         // Upload to S3
-    //         const uploadResult = await s3.upload(params).promise();
-    //         const videoUrl = uploadResult.Location;
-    //         // Update lecture in the database
-    //         const updatedLecture = await Lecture.findByIdAndUpdate(
-    //             lectureId,
-    //             { videoUrl, status: 'completed' },
-    //             { new: true }
-    //         );
-    //         if (!updatedLecture) {
-    //             throw new Error('Lecture not found');
-    //         }
-    //         return videoUrl;
-    //     } catch (error) {
-    //         console.error('Error uploading video to S3:', error);
-    //         return null;
-    //     }
-    // }
-    getVideoDuration(filePath) {
+    findById(lectureId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                fluent_ffmpeg_1.default.ffprobe(filePath, (err, metadata) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(metadata.format.duration || 0);
-                    }
-                });
-            });
+            return lectureModel_1.Lecture.findById(lectureId).exec();
         });
     }
-    uploadLectureVideo(lectureId, videoFile) {
+    updateVideoKeyAndDuration(lectureId, videoKey, duration) {
         return __awaiter(this, void 0, void 0, function* () {
-            const fileName = `${lectureId}-${Date.now()}-${videoFile.originalname}`;
-            const filePath = `/tmp/${fileName}`; // Temporary storage
-            try {
-                // Save the file temporarily
-                yield fs_1.default.promises.writeFile(filePath, videoFile.buffer);
-                // Get video duration
-                const duration = Math.round(yield this.getVideoDuration(filePath));
-                // Upload video to S3
-                const uploadResult = yield awsConfig_1.default.upload({
-                    Bucket: process.env.AWS_S3_BUCKET_NAME || "your-bucket-name",
-                    Key: `lectures/${fileName}`,
-                    Body: videoFile.buffer,
-                    ContentType: videoFile.mimetype,
-                }).promise();
-                const videoUrl = uploadResult.Location;
-                // Find the lecture
-                const lecture = yield lectureModel_1.Lecture.findById(lectureId);
-                if (!lecture)
-                    throw new Error("Lecture not found");
-                const { sectionId, courseId } = lecture;
-                // Update the lecture with the video URL and duration
-                const updatedLecture = yield lectureModel_1.Lecture.findByIdAndUpdate(lectureId, { videoUrl, duration, status: "processed" }, { new: true });
-                if (!updatedLecture)
-                    throw new Error("Failed to update lecture");
-                // Update the total duration of the section
-                yield sectionModel_1.Section.findByIdAndUpdate(sectionId, { $inc: { totalDuration: duration } });
-                // Update the total duration of the course
-                yield courseModel_1.Course.findByIdAndUpdate(courseId, { $inc: { totalDuration: duration } });
-                // Remove the temporary file
-                yield fs_1.default.promises.unlink(filePath);
-                return videoUrl;
-            }
-            catch (error) {
-                console.error("Error processing video:", error);
-                return null;
-            }
+            const response = yield lectureModel_1.Lecture.findByIdAndUpdate(lectureId, {
+                videoKey,
+                duration,
+                status: "processed",
+            }, { new: true }).exec();
+            console.log("response from reposittory", response);
+            return response;
         });
     }
     applyReview(courseId) {
@@ -458,7 +386,8 @@ class TutorCourseRepository {
             try {
                 const reviews = yield review_model_1.Review.find({ courseId, isVisible: true })
                     .populate('userId', 'username')
-                    .sort({ createdAt: -1 });
+                    .sort({ createdAt: -1 })
+                    .lean();
                 return reviews.length > 0 ? reviews : null;
             }
             catch (error) {

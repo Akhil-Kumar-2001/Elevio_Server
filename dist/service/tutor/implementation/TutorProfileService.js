@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const tutorMapper_1 = require("../../../mapper/tutor/tutorMapper");
+const sessionMapper_1 = require("../../../mapper/session/sessionMapper");
 class TutorProfileService {
     constructor(tutorProfileRepository) {
         this._tutorProfileRepository = tutorProfileRepository;
@@ -16,13 +18,19 @@ class TutorProfileService {
     getTutorById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const tutor = yield this._tutorProfileRepository.getTutorById(id);
-            return tutor;
+            if (!tutor)
+                return null;
+            const dto = (0, tutorMapper_1.mapTutorToDto)(tutor);
+            return dto;
         });
     }
     verifyTutor(formData) {
         return __awaiter(this, void 0, void 0, function* () {
             const tutor = yield this._tutorProfileRepository.verifyTutor(formData);
-            return tutor;
+            if (!tutor)
+                return null;
+            const dto = (0, tutorMapper_1.mapTutorToDto)(tutor);
+            return dto;
         });
     }
     updateProfile(id, formData) {
@@ -52,7 +60,10 @@ class TutorProfileService {
     getSessionDetails(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._tutorProfileRepository.getSessionDetails(id);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, sessionMapper_1.mapSessionToDto)(response);
+            return dto;
         });
     }
     updateSessionStatus(_id, status) {

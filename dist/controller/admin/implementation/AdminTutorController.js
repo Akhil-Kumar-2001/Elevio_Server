@@ -38,7 +38,6 @@ class AdminTutorController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id } = req.params;
-                console.log("entered get tutor");
                 if (!id) {
                     res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ error: errorMessage_1.ERROR_MESSAGES.BAD_REQUEST });
                 }
@@ -240,7 +239,6 @@ class AdminTutorController {
                 const { id } = req.params;
                 const reason = req.body.reason;
                 const tutorId = req.body.tutorId;
-                console.log("==================>", tutorId);
                 const email = yield this._adminTutorService.getTutorMail(tutorId);
                 // console.log(object)
                 const response = yield this._adminTutorService.rejectCourse(id, reason);
@@ -266,7 +264,6 @@ class AdminTutorController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id } = req.params;
-                console.log("==================>", id);
                 const response = yield this._adminTutorService.approveCourse(id);
                 if (!response) {
                     res.status(statusCode_1.STATUS_CODES.NOT_FOUND).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.NOT_FOUND, data: null });

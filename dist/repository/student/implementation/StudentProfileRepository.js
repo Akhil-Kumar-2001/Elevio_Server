@@ -30,7 +30,8 @@ class StudentProfileRepository {
                     paymentStatus: 'paid'
                 })
                     .populate('planId')
-                    .sort({ createdAt: -1 });
+                    .sort({ createdAt: -1 })
+                    .lean();
                 return subscription;
             }
             catch (error) {

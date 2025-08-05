@@ -32,30 +32,27 @@ class TutorCourseController {
     createCourse(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const courseData = req.body;
+                const file = req.file;
                 const tutorId = req.userId;
-                if (!courseData) {
-                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Course data is required" });
+                const courseData = req.body;
+                if (!file) {
+                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Course thumbnail image is required" });
                     return;
                 }
-                if (courseData.price < 1) {
-                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Price should be greater than 0" });
+                if (!tutorId) {
+                    res.status(statusCode_1.STATUS_CODES.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
                     return;
                 }
-                const isTutorVerified = yield this._tutorCourseService.isTutorVerified(tutorId);
-                if (!isTutorVerified) {
-                    res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Tutor is not verified" });
-                    return;
+                const serviceResponse = yield this._tutorCourseService.createCourseWithImage(courseData, file, tutorId);
+                if (serviceResponse.success) {
+                    res.status(statusCode_1.STATUS_CODES.CREATED).json(serviceResponse);
                 }
-                const response = yield this._tutorCourseService.createCourse(courseData);
-                if (!response) {
-                    res.status(statusCode_1.STATUS_CODES.CONFLICT).json({ success: false, message: "course alredy existed", data: null });
-                }
-                if (response) {
-                    res.status(statusCode_1.STATUS_CODES.CREATED).json({ success: true, message: "Course created Successfully", data: response });
+                else {
+                    res.status(serviceResponse.statusCode || statusCode_1.STATUS_CODES.BAD_REQUEST).json(serviceResponse);
                 }
             }
             catch (error) {
+                console.error('Error in controller createCourse:', error);
                 res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
             }
         });
@@ -65,7 +62,6 @@ class TutorCourseController {
             try {
                 const page = parseInt(req.query.page) || 1;
                 const limit = parseInt(req.query.limit) || 5;
-                console.log("page and limit", page, limit);
                 const { tutorId } = req.query;
                 if (!tutorId) {
                     res.status(statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: false, message: "Tutor ID is required" });
@@ -96,13 +92,18 @@ class TutorCourseController {
     editCourse(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id, editedCourse } = req.body;
-                const response = this._tutorCourseService.editCourse(id, editedCourse);
-                res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Course details updated successfully", data: response });
+                const id = req.body.id || req.body._id; // get ID from form-data
+                const editedCourse = req.body;
+                const file = req.file;
+                const response = yield this._tutorCourseService.editCourseWithImage(id, editedCourse, file);
+                if (!response || !response.success) {
+                    res.status((response && response.statusCode) || statusCode_1.STATUS_CODES.BAD_REQUEST).json(response);
+                    return;
+                }
+                res.status(statusCode_1.STATUS_CODES.OK).json(response);
             }
             catch (error) {
-                console.log("Error editing course details", error);
-                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error editing Course details" });
+                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Error editing course details" });
             }
         });
     }

@@ -62,6 +62,10 @@ const courseSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    imageThumbnailId: {
+        type: String,
+        required: true, // make it required for new entries
+    },
     avgRating: {
         type: Number,
         default: 0,

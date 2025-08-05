@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const studentMapper_1 = require("../../../mapper/student/studentMapper");
+const adminWalletMapper_1 = require("../../../mapper/wallet/adminwallet/adminWalletMapper");
 class AdminDashboardService {
     constructor(adminDashboardRepository) {
         this._adminDashboardRepository = adminDashboardRepository;
@@ -22,13 +24,15 @@ class AdminDashboardService {
     getWallet(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._adminDashboardRepository.getWallet(page, limit);
-            return response;
+            const dto = (0, adminWalletMapper_1.mapAdminWalletToDto)(response);
+            return dto;
         });
     }
     getStudents() {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._adminDashboardRepository.getStudents();
-            return response;
+            const dto = (0, studentMapper_1.mapStudentsToDto)(response);
+            return dto;
         });
     }
     getCategoryIncomeDistribution() {

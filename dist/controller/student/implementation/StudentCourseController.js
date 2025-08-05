@@ -97,7 +97,6 @@ class StudentCourseController {
     createOrder(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log("Request data for create order ===============================>>>>>>>>>>>>>>", req.body);
                 const { studentId, amount, courseIds } = req.body;
                 if (!studentId || !amount || !courseIds) {
                     res.status(statusCode_1.STATUS_CODES.NOT_FOUND).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.NOT_FOUND, data: null });
@@ -108,6 +107,43 @@ class StudentCourseController {
             }
             catch (error) {
                 res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+            }
+        });
+    }
+    searchCourse(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { query, page, limit, category, minPrice, maxPrice, sortOrder } = req.query;
+                const searchQuery = typeof query === 'string' ? query : '';
+                const pageNumber = typeof page === 'string' ? parseInt(page) : 1;
+                const limitNumber = typeof limit === 'string' ? parseInt(limit) : 8;
+                const categoryFilter = typeof category === 'string' ? category : 'all';
+                const minPriceValue = typeof minPrice === 'string' ? parseFloat(minPrice) : 0;
+                const maxPriceValue = typeof maxPrice === 'string' ? parseFloat(maxPrice) : 5000;
+                const sortOrderValue = typeof sortOrder === 'string' ? sortOrder : null;
+                const response = yield this._studentCourseService.searchCourse(searchQuery, pageNumber, limitNumber, categoryFilter !== 'all' ? categoryFilter : '', [minPriceValue, maxPriceValue], sortOrderValue !== null && sortOrderValue !== void 0 ? sortOrderValue : '');
+                if (response) {
+                    res.status(statusCode_1.STATUS_CODES.OK).json({
+                        success: true,
+                        message: 'Course search successful',
+                        data: response,
+                    });
+                }
+                else {
+                    res.status(statusCode_1.STATUS_CODES.NOT_FOUND).json({
+                        success: false,
+                        message: 'No courses found',
+                        data: null,
+                    });
+                }
+            }
+            catch (error) {
+                console.log(error);
+                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    message: 'Failed to search courses',
+                    data: null,
+                });
             }
         });
     }
@@ -254,7 +290,6 @@ class StudentCourseController {
             try {
                 const { id } = req.params;
                 const response = yield this._studentCourseService.getReviews(id);
-                console.log("get review response in controller =>>>>>>>>>>>>>", response);
                 res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Review retrieved successfully", data: response });
             }
             catch (error) {
@@ -268,7 +303,6 @@ class StudentCourseController {
                 const { formData } = req.body;
                 console.log("form data", formData);
                 const response = yield this._studentCourseService.createReview(formData);
-                console.log("Response create review", response);
                 if (response) {
                     res.status(statusCode_1.STATUS_CODES.CREATED).json({ success: true, message: "Review added Successfully", data: response });
                 }
@@ -337,7 +371,6 @@ class StudentCourseController {
             try {
                 const userId = req.userId;
                 const response = yield this._studentCourseService.getWishlist(userId);
-                console.log("Wishlist response", response);
                 res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Wishlist retrieved successfully", data: response });
             }
             catch (error) {

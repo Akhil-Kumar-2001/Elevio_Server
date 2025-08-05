@@ -135,21 +135,16 @@ class StudentCourseRepository {
     }
     getCart(studentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Step 1: Get the cart for the student
             const cart = yield cartModel_1.Cart.findOne({ userId: studentId, status: 'active' });
-            // If no cart exists, return null
             if (!cart) {
                 return null;
             }
-            // Step 2: Get all course IDs from the cart
             const courseIds = cart.items.map(item => item.courseId);
-            // Step 3: Fetch course details for those IDs
             const courses = yield courseModel_1.Course.find({ _id: { $in: courseIds } });
-            // Step 4: Combine cart items with course details
             const itemsWithDetails = cart.items.map(item => {
                 const course = courses.find(c => c._id.toString() === item.courseId.toString());
                 return {
-                    courseId: item.courseId.toString(), // Convert ObjectId to string
+                    courseId: item.courseId.toString(),
                     price: item.price,
                     courseTitle: course ? course.title : "Unknown Course",
                     courseSubtitle: course ? course.subtitle : "No description",
@@ -158,18 +153,15 @@ class StudentCourseRepository {
                     courseImage: course ? course.imageThumbnail : "https://via.placeholder.com/300x200"
                 };
             });
-            // Step 5: Create the enriched cart object
             const enrichedCart = {
-                userId: cart.userId.toString(), // Convert ObjectId to string
+                userId: cart.userId.toString(),
                 items: itemsWithDetails,
                 totalPrice: cart.totalPrice,
                 status: cart.status,
                 createdAt: cart.createdAt,
                 updatedAt: cart.updatedAt,
-                _id: cart._id.toString(), // Convert ObjectId to string
-                __v: cart.__v
+                _id: cart._id.toString(),
             };
-            // Step 6: Return the object
             return enrichedCart;
         });
     }
@@ -178,7 +170,7 @@ class StudentCourseRepository {
             try {
                 const cart = yield cartModel_1.Cart.findOne({ userId: studentId });
                 if (!cart) {
-                    return null; // Cart does not exist
+                    return null;
                 }
                 const updatedItems = cart.items.filter(item => item.courseId.toString() !== id);
                 const updatedTotalPrice = updatedItems.reduce((total, item) => total + item.price, 0);
@@ -197,23 +189,19 @@ class StudentCourseRepository {
     createOrder(orderData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Create a new Order document with the provided orderData
                 const order = new orderModel_1.Order(orderData);
-                // Save the order to the database
                 const savedOrder = yield order.save();
-                // Return true if the order was saved successfully
                 return savedOrder;
             }
             catch (error) {
                 console.error("Error creating order in repository:", error);
-                return null; // Return null if an error occurs (e.g., database failure)
+                return null;
             }
         });
     }
     updateByOrderId(razorpay_order_id, status) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Update the order status
                 const updatedOrder = yield orderModel_1.Order.findOneAndUpdate({ razorpayOrderId: razorpay_order_id }, { $set: { status: status } }, { new: true });
                 console.log("updated order ", updatedOrder);
                 if (!updatedOrder) {
@@ -223,13 +211,11 @@ class StudentCourseRepository {
                 if (status === 'success' && updatedOrder.courseIds && updatedOrder.courseIds.length > 0) {
                     try {
                         for (const courseId of updatedOrder.courseIds) {
-                            // Check if progress already exists for this student and course
                             const existingProgress = yield progress_model_1.Progress.findOne({
                                 studentId: updatedOrder.userId,
                                 courseId: courseId
                             });
                             if (!existingProgress) {
-                                // Create new progress record
                                 const newProgress = new progress_model_1.Progress({
                                     studentId: updatedOrder.userId,
                                     courseId: courseId,
@@ -309,18 +295,65 @@ class StudentCourseRepository {
             }
         });
     }
+    searchCourse(query, page, limit, category, priceRange, sortOrder) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const skip = (page - 1) * limit;
+                const filter = {
+                    $or: [
+                        { title: { $regex: query, $options: 'i' } },
+                        { description: { $regex: query, $options: 'i' } },
+                        { subtitle: { $regex: query, $options: 'i' } },
+                    ],
+                    status: "listed",
+                };
+                if (category && category.toLowerCase() !== "all") {
+                    const categoryDoc = yield categoryModel_1.Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
+                    if (categoryDoc) {
+                        filter.category = categoryDoc._id;
+                        console.log("Found category _id:", categoryDoc._id);
+                    }
+                    else {
+                        console.log(`No category found with name: ${category}`);
+                        return { data: [], totalRecord: 0 };
+                    }
+                }
+                if (priceRange && (priceRange[0] > 0 || priceRange[1] < 5000)) {
+                    filter.price = { $gte: priceRange[0], $lte: priceRange[1] };
+                }
+                let sortObj = { createdAt: -1 };
+                if (sortOrder === 'asc' || sortOrder === 'desc') {
+                    sortObj = { title: sortOrder === 'asc' ? 1 : -1 };
+                }
+                const courses = yield courseModel_1.Course.find(filter, { _id: 1, title: 1, price: 1, imageThumbnail: 1, category: 1, createdAt: 1, purchasedStudents: 1 })
+                    .populate('category', 'name')
+                    .sort(sortObj)
+                    .skip(skip)
+                    .limit(limit)
+                    .exec();
+                // Validate courses array
+                if (!courses || courses.length === 0) {
+                    return { data: [], totalRecord: 0 };
+                }
+                const totalRecord = yield courseModel_1.Course.countDocuments(filter);
+                const typedCourses = courses;
+                return { data: typedCourses, totalRecord };
+            }
+            catch (error) {
+                console.error('Error searching courses:', error);
+                return null;
+            }
+        });
+    }
     getPurchasedCourses(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Await the query to get actual results
                 const orders = yield orderModel_1.Order.find({ userId, status: "success" }).select("courseIds");
                 if (!orders || orders.length === 0)
-                    return null; // No successful orders found
-                // Extract all course IDs from orders
-                const courseIds = orders.map(order => order.courseIds).flat(); // Flatten array of arrays
+                    return null;
+                const courseIds = orders.map(order => order.courseIds).flat();
                 if (courseIds.length === 0)
-                    return null; // No purchased courses found
-                // Fetch course details
+                    return null;
                 const purchasedCourses = yield courseModel_1.Course.find({ _id: { $in: courseIds } });
                 return purchasedCourses;
             }
@@ -333,7 +366,9 @@ class StudentCourseRepository {
     getCourse(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const course = yield courseModel_1.Course.findOne({ _id: id }).populate('tutorId', 'username');
+                const course = yield courseModel_1.Course.findOne({ _id: id })
+                    .populate('tutorId', 'username')
+                    .lean();
                 return course;
             }
             catch (error) {
@@ -377,6 +412,11 @@ class StudentCourseRepository {
             }
         });
     }
+    findById(lectureId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return lectureModel_1.Lecture.findById(lectureId).exec();
+        });
+    }
     getSubscription() {
         return __awaiter(this, void 0, void 0, function* () {
             const subscriptions = yield subscriptionModel_1.default.find({ status: true });
@@ -395,11 +435,8 @@ class StudentCourseRepository {
     createSubscritionOrder(orderData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Create a new Order document with the provided orderData
                 const order = new SubscriptionPurchased_1.SubscriptionPurchased(orderData);
-                // Save the order to the database
                 const savedOrder = yield order.save();
-                // Return true if the order was saved successfully
                 return savedOrder;
             }
             catch (error) {
@@ -420,25 +457,14 @@ class StudentCourseRepository {
             return plan;
         });
     }
-    // async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
-    //     console.log("data of update subscription",data)
-    //     const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
-    //         { orderId: orderId },
-    //         data,
-    //         { new: true }
-    //     );
-    //     return updatedOrder ? updatedOrder.paymentStatus : null;
-    // }
     updateSubscriptionByOrderId(orderId, data) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             console.log("data of update subscription", data);
             const updatedOrder = yield SubscriptionPurchased_1.SubscriptionPurchased.findOneAndUpdate({ orderId: orderId }, data, { new: true });
             console.log("Updated order", updatedOrder);
-            // Add payment to admin wallet if payment status is 'paid'
             if (updatedOrder && data.paymentStatus === 'paid' && ((_a = data.paymentDetails) === null || _a === void 0 ? void 0 : _a.paymentAmount)) {
                 try {
-                    // Find admin wallet or create if doesn't exist
                     let adminWallet = yield adminwallet_1.AdminWallet.findOne({ email: process.env.ADMIN_MAIL });
                     if (!adminWallet) {
                         adminWallet = new adminwallet_1.AdminWallet({
@@ -450,7 +476,6 @@ class StudentCourseRepository {
                         });
                     }
                     const amount = (data.paymentDetails.paymentAmount) / 100;
-                    // Create transaction record
                     const transaction = {
                         amount: amount,
                         type: 'credit',
@@ -460,7 +485,6 @@ class StudentCourseRepository {
                         userType: 'Student',
                         referenceId: updatedOrder._id
                     };
-                    // Update wallet balances
                     adminWallet.balance += amount;
                     adminWallet.totalRevenue += amount;
                     adminWallet.transactions.push(transaction);
@@ -480,8 +504,9 @@ class StudentCourseRepository {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const reviews = yield review_model_1.Review.find({ courseId: id, isVisible: true })
-                    .populate('userId', 'username') // Populate username from User model
-                    .sort({ createdAt: -1 }); // Sort by newest first
+                    .populate('userId', 'username')
+                    .sort({ createdAt: -1 })
+                    .lean();
                 return reviews.length > 0 ? reviews : [];
             }
             catch (error) {
@@ -493,29 +518,27 @@ class StudentCourseRepository {
     createReview(formData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Step 1: Create the new review
                 const newReview = yield review_model_1.Review.create({
                     courseId: new mongoose_1.Types.ObjectId(formData.courseId),
                     userId: new mongoose_1.Types.ObjectId(formData.userId),
                     rating: formData.rating,
                     review: formData.review,
                 });
-                // Step 2: Fetch all reviews of the course to recalculate avgRating
                 const courseReviews = yield review_model_1.Review.find({ courseId: formData.courseId });
                 const totalReviews = courseReviews.length;
                 const totalRating = courseReviews.reduce((sum, review) => sum + review.rating, 0);
-                const avgRating = parseFloat((totalRating / totalReviews).toFixed(1)); // rounded to 1 decimal
-                // Step 3: Update the course with new average rating and total reviews
+                const avgRating = parseFloat((totalRating / totalReviews).toFixed(1));
                 yield courseModel_1.Course.findByIdAndUpdate(formData.courseId, {
                     avgRating,
                     totalReviews,
                 });
-                // Populate the user data (e.g., username) from the "Student" model
-                const populatedReview = yield newReview.populate('userId', 'username');
-                return populatedReview;
+                const populatedReview = yield review_model_1.Review.findById(newReview._id)
+                    .populate('userId', 'username')
+                    .lean();
+                return populatedReview !== null && populatedReview !== void 0 ? populatedReview : null;
             }
             catch (error) {
-                console.error('Error creating reviews:', error);
+                console.error('Error creating review:', error);
                 return null;
             }
         });
@@ -529,7 +552,6 @@ class StudentCourseRepository {
     addLectureToProgress(userId, courseId, lectureId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Find the progress record for the given user and course
                 const progress = yield progress_model_1.Progress.findOne({
                     studentId: new mongoose_1.Types.ObjectId(userId),
                     courseId: new mongoose_1.Types.ObjectId(courseId)
@@ -538,28 +560,21 @@ class StudentCourseRepository {
                     console.error(`Progress not found for user ${userId} and course ${courseId}`);
                     return null;
                 }
-                // Convert lectureId to ObjectId
                 const lectureObjectId = new mongoose_1.Types.ObjectId(lectureId);
-                // Check if lecture is already in completedLectures to avoid duplicates
                 if (!progress.completedLectures.includes(lectureObjectId)) {
-                    // Add lectureId to completedLectures
                     progress.completedLectures.push(lectureObjectId);
                     progress.lastAccessedLecture = lectureObjectId;
                     progress.lastAccessDate = new Date();
-                    // Get total number of lectures for the course from Lecture collection
                     const totalLectures = yield lectureModel_1.Lecture.countDocuments({
                         courseId: new mongoose_1.Types.ObjectId(courseId)
                     });
                     if (totalLectures > 0) {
-                        // Calculate progress percentage
                         progress.progressPercentage = Math.round((progress.completedLectures.length / totalLectures) * 100);
-                        // Check if course is completed
                         if (progress.completedLectures.length === totalLectures && !progress.isCompleted) {
                             progress.isCompleted = true;
                             progress.completionDate = new Date();
                         }
                     }
-                    // Save the updated progress
                     yield progress.save();
                     console.log(`Lecture ${lectureId} added to progress for user ${userId} and course ${courseId}`);
                 }
@@ -574,13 +589,11 @@ class StudentCourseRepository {
     editReview(id, formData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Find the review first to get the courseId
                 const oldReview = yield review_model_1.Review.findById(id);
                 if (!oldReview) {
                     return null;
                 }
-                const courseId = oldReview.courseId; // Assuming review has courseId field
-                // Update the review
+                const courseId = oldReview.courseId;
                 const updatedReview = yield review_model_1.Review.findByIdAndUpdate(id, {
                     rating: formData.rating,
                     review: formData.review
@@ -588,15 +601,12 @@ class StudentCourseRepository {
                 if (!updatedReview) {
                     return null;
                 }
-                // Find all reviews for this course to recalculate average
                 const allCourseReviews = yield review_model_1.Review.find({ courseId });
-                // Calculate new average rating
                 let newAvgRating = 0;
                 if (allCourseReviews.length > 0) {
                     const totalRating = allCourseReviews.reduce((sum, review) => sum + review.rating, 0);
                     newAvgRating = totalRating / allCourseReviews.length;
                 }
-                // Update the course with new avgRating
                 yield courseModel_1.Course.findByIdAndUpdate(courseId, {
                     avgRating: newAvgRating
                 });
@@ -611,26 +621,21 @@ class StudentCourseRepository {
     deleteReview(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // First, find the review to get its courseId and rating
                 const review = yield review_model_1.Review.findById(id);
                 if (!review) {
                     return false;
                 }
-                const courseId = review.courseId; // Assuming review has courseId field
-                // Delete the review
+                const courseId = review.courseId;
                 const deletedReview = yield review_model_1.Review.findByIdAndDelete(id);
                 if (!deletedReview) {
                     return false;
                 }
-                // Find all remaining reviews for this course
                 const remainingReviews = yield review_model_1.Review.find({ courseId });
-                // Calculate new average rating
                 let newAvgRating = 0;
                 if (remainingReviews.length > 0) {
                     const totalRating = remainingReviews.reduce((sum, review) => sum + review.rating, 0);
                     newAvgRating = totalRating / remainingReviews.length;
                 }
-                // Update the course with new totalReviews and avgRating
                 yield courseModel_1.Course.findByIdAndUpdate(courseId, {
                     totalReviews: remainingReviews.length,
                     avgRating: newAvgRating
@@ -650,10 +655,8 @@ class StudentCourseRepository {
                 const wishlist = yield wishlist_model_1.Wishlist.findOne({ userId })
                     .populate("items.courseId")
                     .exec();
-                console.log("Wishlist in repository", wishlist);
                 if (!wishlist)
                     return [];
-                // Extract populated course objects
                 const courses = wishlist.items.map(item => item.courseId);
                 const wishlistedCourses = courseModel_1.Course.find({ _id: { $in: courses } });
                 return wishlistedCourses;
@@ -670,7 +673,6 @@ class StudentCourseRepository {
                 console.log("userId in addToWishlist", userId);
                 const wishlist = yield wishlist_model_1.Wishlist.findOne({ userId });
                 if (!wishlist) {
-                    // Create a new wishlist if it doesn't exist
                     const newWishlist = new wishlist_model_1.Wishlist({
                         userId,
                         items: [{ courseId }]
@@ -678,10 +680,8 @@ class StudentCourseRepository {
                     yield newWishlist.save();
                 }
                 else {
-                    // Check if the course is already in the wishlist
                     const courseExists = wishlist.items.some(item => item.courseId.toString() === courseId);
                     if (!courseExists) {
-                        // Add the course to the existing wishlist
                         wishlist.items.push({ courseId: new mongoose_1.Types.ObjectId(courseId) });
                         yield wishlist.save();
                     }
@@ -717,9 +717,7 @@ class StudentCourseRepository {
                     console.error("Wishlist not found for user:", userId);
                     return null;
                 }
-                // Filter out the courseId to be removed
                 const updatedItems = wishlist.items.filter(item => item.courseId.toString() !== courseId);
-                // Update the wishlist
                 yield wishlist_model_1.Wishlist.updateOne({ userId }, { items: updatedItems });
                 return true;
             }

@@ -48,6 +48,7 @@ router.post('/addtocart/:id', (0, validateToken_1.validateToken)("Student"), stu
 router.get(`/cart/:id`, (0, validateToken_1.validateToken)("Student"), studentCourseController.getCart.bind(studentCourseController));
 router.delete('/remove-item/:id', (0, validateToken_1.validateToken)("Student"), studentCourseController.removeItem.bind(studentCourseController));
 // Course Purchase
+router.get("/search-courses", (0, validateToken_1.validateToken)("Student"), studentCourseController.searchCourse.bind(studentCourseController));
 router.post("/payment/create-order", (0, validateToken_1.validateToken)("Student"), studentCourseController.createOrder.bind(studentCourseController));
 router.post("/payment/verify-payment", (0, validateToken_1.validateToken)("Student"), studentCourseController.verifyPayment.bind(studentCourseController));
 router.get('/getcategories', (0, validateToken_1.validateToken)("Student"), studentCourseController.getCategories.bind(studentCourseController));

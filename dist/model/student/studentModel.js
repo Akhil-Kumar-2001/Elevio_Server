@@ -29,19 +29,9 @@ const studentSchema = new mongoose_1.Schema({
         enum: ["Student"],
         default: "Student",
     },
-    // subscription: {
-    //     subscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription" },
-    //     isActive: { type: Boolean, default: false },
-    //     startDate: { type: Date },
-    //     endDate: { type: Date },
-    // },
     googleID: {
         type: String
     },
-    // freeCourseCount: {
-    //     type: Number,
-    //     default: 0, 
-    // },
     enrolledCourseCount: {
         type: Number,
         default: 0,

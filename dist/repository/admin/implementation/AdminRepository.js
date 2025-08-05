@@ -21,7 +21,7 @@ class AdminRepository {
                 .limit(limit)
                 .exec();
             const totalRecord = yield studentModel_1.Student.countDocuments();
-            return { students, totalRecord };
+            return { data: students, totalRecord };
         });
     }
     getTutors(page, limit) {
@@ -33,7 +33,7 @@ class AdminRepository {
                 .limit(limit)
                 .exec();
             const totalRecord = yield tutorModel_1.Tutor.countDocuments();
-            return { tutors, totalRecord };
+            return { data: tutors, totalRecord };
         });
     }
     blockTutor(id) {
@@ -42,6 +42,7 @@ class AdminRepository {
             const newStatus = (tutor === null || tutor === void 0 ? void 0 : tutor.status) === 1 ? -1 : 1;
             const updatedTutor = yield tutorModel_1.Tutor.findByIdAndUpdate(id, { status: newStatus }, { new: true } // Returns the updated document
             );
+            console.log(updatedTutor);
             return updatedTutor;
         });
     }
@@ -52,6 +53,62 @@ class AdminRepository {
             const updatedStudent = yield studentModel_1.Student.findByIdAndUpdate(id, { status: newStatus }, { new: true } // Returns the updated document
             );
             return updatedStudent;
+        });
+    }
+    searchTutor(query, page, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const skip = (page - 1) * limit;
+                const tutors = yield tutorModel_1.Tutor.find({
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } }
+                    ]
+                }, { _id: 1, username: 1, email: 1, status: 1, role: 1, createdAt: 1 })
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .exec();
+                const totalRecord = yield tutorModel_1.Tutor.countDocuments({
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } }
+                    ]
+                });
+                return { data: tutors, totalRecord };
+            }
+            catch (error) {
+                console.error('Error searching tutors:', error);
+                return null;
+            }
+        });
+    }
+    searchStudents(query, page, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const skip = (page - 1) * limit;
+                const students = yield studentModel_1.Student.find({
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } }
+                    ]
+                }, { _id: 1, username: 1, email: 1, status: 1, role: 1, createdAt: 1 })
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .exec();
+                const totalRecord = yield studentModel_1.Student.countDocuments({
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } }
+                    ]
+                });
+                return { data: students, totalRecord };
+            }
+            catch (error) {
+                console.error('Error searching tutors:', error);
+                return null;
+            }
         });
     }
 }

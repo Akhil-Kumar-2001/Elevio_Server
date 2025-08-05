@@ -19,6 +19,7 @@ const multer_1 = __importDefault(require("multer"));
 const TutorDashboardRepository_1 = __importDefault(require("../../repository/tutor/implementation/TutorDashboardRepository"));
 const TutorDashboardService_1 = __importDefault(require("../../service/tutor/implementation/TutorDashboardService"));
 const TutorDashboardController_1 = __importDefault(require("../../controller/tutor/implementation/TutorDashboardController"));
+const multerConfig_1 = __importDefault(require("../../Config/multerConfig")); // path as per your structure
 const router = (0, express_1.default)();
 const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 const tutorRepository = new TutorRepository_1.default();
@@ -52,10 +53,10 @@ router.put("/verify-tutor", isBlocked_1.default, (0, validateToken_1.validateTok
 router.patch("/update-profile", isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorProfileController.updateProfile.bind(tutorProfileController));
 // Course creation
 router.get("/get-categories", isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.getCategories.bind(tutorCourseController));
-router.post("/create-course", isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.createCourse.bind(tutorCourseController));
+router.post("/create-course", isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), multerConfig_1.default.single('imageThumbnail'), tutorCourseController.createCourse.bind(tutorCourseController));
 router.get('/courses', (0, validateToken_1.validateToken)("Tutor"), isBlocked_1.default, tutorCourseController.getCourses.bind(tutorCourseController));
-router.get('/get-category', (0, validateToken_1.validateToken)("Tutor"), isBlocked_1.default, tutorCourseController.getCourseDetails.bind(tutorCourseController));
-router.post('/edit-course', (0, validateToken_1.validateToken)('Tutor'), isBlocked_1.default, tutorCourseController.editCourse.bind(tutorCourseController));
+router.get('/get-course', (0, validateToken_1.validateToken)("Tutor"), isBlocked_1.default, tutorCourseController.getCourseDetails.bind(tutorCourseController));
+router.post('/edit-course', (0, validateToken_1.validateToken)('Tutor'), isBlocked_1.default, multerConfig_1.default.single('imageThumbnail'), tutorCourseController.editCourse.bind(tutorCourseController));
 // Add Course Content
 router.post('/create-section', isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.createSection.bind(tutorCourseController));
 router.post('/create-lecture', isBlocked_1.default, (0, validateToken_1.validateToken)("Tutor"), tutorCourseController.createLecture.bind(tutorCourseController));

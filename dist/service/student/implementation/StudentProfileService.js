@@ -9,6 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const sessionMapper_1 = require("../../../mapper/session/sessionMapper");
+const studentMapper_1 = require("../../../mapper/student/studentMapper");
+const isSubsriptionPurchasedMapper_1 = require("../../../mapper/subscription/isSubsriptionPurchasedMapper");
 class StudentProfileService {
     constructor(studentProfileRepository) {
         this._studentProfileRepository = studentProfileRepository;
@@ -16,19 +19,28 @@ class StudentProfileService {
     getStudent(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const student = yield this._studentProfileRepository.getStudent(id);
-            return student;
+            if (!student)
+                return null;
+            const dto = (0, studentMapper_1.mapStudentToDto)(student);
+            return dto;
         });
     }
     getSubscriptionDetails(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const subscription = yield this._studentProfileRepository.getSubscriptionDetails(id);
-            return subscription;
+            if (!subscription)
+                return null;
+            const dto = (0, isSubsriptionPurchasedMapper_1.mapSubscriptionPurchaseToDto)(subscription);
+            return dto;
         });
     }
     editProfile(id, formData) {
         return __awaiter(this, void 0, void 0, function* () {
             const student = yield this._studentProfileRepository.editProfile(id, formData);
-            return student;
+            if (!student)
+                return null;
+            const dto = (0, studentMapper_1.mapStudentToDto)(student);
+            return dto;
         });
     }
     getSessions(studentId) {
@@ -40,7 +52,10 @@ class StudentProfileService {
     getSessionDetails(_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentProfileRepository.getSessionDetails(_id);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, sessionMapper_1.mapSessionToDto)(response);
+            return dto;
         });
     }
     updateSessionStatus(_id, status) {

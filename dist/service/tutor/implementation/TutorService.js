@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const tutorMapper_1 = require("../../../mapper/tutor/tutorMapper");
+const otpMapper_1 = require("../../../mapper/otp/otpMapper");
 class TutorService {
     constructor(tutorRepository) {
         this._tutorRepository = tutorRepository;
@@ -34,35 +36,46 @@ class TutorService {
     updateUser(email, data) {
         return __awaiter(this, void 0, void 0, function* () {
             const updatedUser = yield this._tutorRepository.updateUserByEmail(email, data);
-            return updatedUser;
+            if (!updatedUser)
+                return null;
+            const dto = (0, tutorMapper_1.mapTutorToDto)(updatedUser);
+            return dto;
         });
     }
     storeUserOtp(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const storedOtp = yield this._tutorRepository.storeOtpInDb(email, otp);
-            return storedOtp;
+            if (!storedOtp)
+                return null;
+            const dto = (0, otpMapper_1.mapOtpToDto)(storedOtp);
+            return dto;
         });
     }
     getOtpByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
             const otp = yield this._tutorRepository.findOtpByemail(email);
-            return otp;
+            if (!otp)
+                return null;
+            const dto = (0, otpMapper_1.mapOtpToDto)(otp);
+            return dto;
         });
     }
     storeUserResendOtp(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const storedOtp = yield this._tutorRepository.storeResendOtpInDb(email, otp);
-            return storedOtp;
+            if (!storedOtp)
+                return null;
+            const dto = (0, otpMapper_1.mapOtpToDto)(storedOtp);
+            return dto;
         });
     }
-    // async loginUser(email: string, password: string): Promise<ITutor | null> {
-    //     const user = await this._tutorRepository.loginUser(email,password);
-    //     return user
-    // }
     getTutorById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const tutor = yield this._tutorRepository.getTutorById(id);
-            return tutor;
+            if (!tutor)
+                return null;
+            const dto = (0, tutorMapper_1.mapTutorToDto)(tutor);
+            return dto;
         });
     }
 }

@@ -32,6 +32,12 @@ class StudentRepository extends BaseRepository_1.BaseRepository {
             return updatedUser;
         });
     }
+    updateUserStatus(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updatedUser = yield studentModel_1.Student.findOneAndUpdate({ email }, { $set: { status: 1 } }, { new: true });
+            return updatedUser;
+        });
+    }
     storeOtpInDb(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const storedOtp = yield _otpModel_1.OTP.create({ email, otp });

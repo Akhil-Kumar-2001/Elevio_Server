@@ -15,6 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const razorpay_1 = __importDefault(require("razorpay"));
 const mongoose_1 = require("mongoose");
 const crypto_1 = __importDefault(require("crypto"));
+const courseMapper_1 = require("../../../mapper/course/courseMapper");
+const orderMapper_1 = require("../../../mapper/order/orderMapper");
+const categoryMapper_1 = require("../../../mapper/category/categoryMapper");
+const tutorMapper_1 = require("../../../mapper/tutor/tutorMapper");
+const sectionMapper_1 = require("../../../mapper/section/sectionMapper");
+const lectureMapper_1 = require("../../../mapper/lecture/lectureMapper");
+const subscriptionMapper_1 = require("../../../mapper/subscription/subscriptionMapper");
+const reviewMapper_1 = require("../../../mapper/review/reviewMapper");
+const progressMapper_1 = require("../../../mapper/progress/progressMapper");
+const awsConfig_1 = __importDefault(require("../../../Config/awsConfig"));
+const cloudinaryUtility_1 = require("../../../utils/cloudinaryUtility");
 class StudentCourseService {
     constructor(studentCourseRepository) {
         this._studentCourseRepository = studentCourseRepository;
@@ -26,13 +37,29 @@ class StudentCourseService {
     getListedCourse() {
         return __awaiter(this, void 0, void 0, function* () {
             const courses = yield this._studentCourseRepository.getListedCourse();
-            return courses;
+            if (!courses)
+                return null;
+            for (const course of courses) {
+                if (course.imageThumbnail) {
+                    course.imageThumbnail = (0, cloudinaryUtility_1.getSignedImageUrl)(course.imageThumbnail);
+                }
+            }
+            const dto = (0, courseMapper_1.mapCoursesToDto)(courses);
+            return dto;
         });
     }
     getTopRatedCourse() {
         return __awaiter(this, void 0, void 0, function* () {
             const courses = yield this._studentCourseRepository.getTopRatedCourse();
-            return courses;
+            if (!courses)
+                return null;
+            for (const course of courses) {
+                if (course.imageThumbnail) {
+                    course.imageThumbnail = (0, cloudinaryUtility_1.getSignedImageUrl)(course.imageThumbnail);
+                }
+            }
+            const dto = (0, courseMapper_1.mapCoursesToDto)(courses);
+            return dto;
         });
     }
     addToCart(id, userId) {
@@ -56,6 +83,13 @@ class StudentCourseService {
     getCart(studentId) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getCart(studentId);
+            if (!response)
+                return null;
+            for (const course of response === null || response === void 0 ? void 0 : response.items) {
+                if (course.courseImage) {
+                    course.courseImage = (0, cloudinaryUtility_1.getSignedImageUrl)(course.courseImage);
+                }
+            }
             return response;
         });
     }
@@ -83,8 +117,10 @@ class StudentCourseService {
                 paymentMethod: "razorpay",
             };
             const createdOrder = yield this._studentCourseRepository.createOrder(orderData);
-            console.log("c", createdOrder);
-            return createdOrder;
+            if (!createdOrder)
+                return null;
+            const dto = (0, orderMapper_1.mapOrderToDto)(createdOrder);
+            return dto;
         });
     }
     verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
@@ -111,49 +147,128 @@ class StudentCourseService {
     getCategories() {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getCategories();
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, categoryMapper_1.mapCategoriesToDto)(response);
+            return dto;
         });
     }
     getCourses(page, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getCourses(page, limit);
-            return response;
+            if (!response)
+                return null;
+            // Convert imageThumbnail to signed URL for each course
+            for (const course of response.courses) {
+                if (course.imageThumbnail) {
+                    course.imageThumbnail = (0, cloudinaryUtility_1.getSignedImageUrl)(course.imageThumbnail);
+                }
+            }
+            const dto = (0, courseMapper_1.mapCoursesToDto)(response.courses);
+            return { data: dto, totalRecord: response.totalRecord };
+        });
+    }
+    searchCourse(query, page, limit, category, priceRange, sortOrder) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const course = yield this._studentCourseRepository.searchCourse(query, page, limit, category !== null && category !== void 0 ? category : "", priceRange !== null && priceRange !== void 0 ? priceRange : [0, 5000], sortOrder !== null && sortOrder !== void 0 ? sortOrder : null);
+            if (!course)
+                return null;
+            const dto = {
+                data: course.data.map(courseMapper_1.mapToCourseSearchDto),
+                totalRecord: course.totalRecord,
+            };
+            return dto;
         });
     }
     getPurchasedCourses(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield this._studentCourseRepository.getPurchasedCourses(userId);
-            return response;
+            const courses = yield this._studentCourseRepository.getPurchasedCourses(userId);
+            if (!courses)
+                return null;
+            for (const course of courses) {
+                if (course.imageThumbnail) {
+                    course.imageThumbnail = (0, cloudinaryUtility_1.getSignedImageUrl)(course.imageThumbnail);
+                }
+            }
+            const dto = (0, courseMapper_1.mapCoursesToDto)(courses);
+            return dto;
         });
     }
     getSections(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const sections = yield this._studentCourseRepository.getSections(id);
-            return sections;
+            if (!sections)
+                return null;
+            const dto = (0, sectionMapper_1.MapToSectionsDto)(sections);
+            return dto;
+        });
+    }
+    getSignedVideoUrl(lectureId_1) {
+        return __awaiter(this, arguments, void 0, function* (lectureId, expiresInSeconds = 300) {
+            const lecture = yield this._studentCourseRepository.findById(lectureId);
+            if (!lecture) {
+                throw new Error(`Lecture with id ${lectureId} not found.`);
+            }
+            if (!lecture.videoKey) {
+                throw new Error("Video key not found for this lecture.");
+            }
+            const signedUrl = yield awsConfig_1.default.getSignedUrlPromise("getObject", {
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: lecture.videoKey,
+                Expires: expiresInSeconds,
+            });
+            return signedUrl;
         });
     }
     getLectures(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield this._studentCourseRepository.getLectures(id);
-            return response;
+            const lectures = yield this._studentCourseRepository.getLectures(id);
+            if (!lectures)
+                return null;
+            const lecturesWithSignedUrls = yield Promise.all(lectures.map((lecture) => __awaiter(this, void 0, void 0, function* () {
+                let videoUrl = null;
+                if (lecture.videoKey) {
+                    try {
+                        videoUrl = yield this.getSignedVideoUrl(lecture._id);
+                    }
+                    catch (error) {
+                        console.error(`Error generating signed URL for lecture ${lecture._id}`, error);
+                    }
+                }
+                return Object.assign(Object.assign({}, lecture.toObject()), { videoUrl });
+            })));
+            const dto = (0, lectureMapper_1.mapLecturesToDto)(lecturesWithSignedUrls);
+            return dto;
         });
     }
     getCourse(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getCourse(id);
-            return response;
+            if (!response)
+                return null;
+            if (response.imageThumbnail) {
+                response.imageThumbnail = (0, cloudinaryUtility_1.getSignedImageUrl)(response.imageThumbnail);
+            }
+            const dto = (0, courseMapper_1.mapCourseResponseToDto)(response);
+            return dto;
         });
     }
     getTutor(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getTutor(id);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, tutorMapper_1.mapTutorToDto)(response);
+            return dto;
         });
     }
     getSubscription() {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getSubscription();
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, subscriptionMapper_1.mapSubscriptionsToDto)(response);
+            return dto;
         });
     }
     isValidPlan(studentId) {
@@ -186,6 +301,7 @@ class StudentCourseService {
                 }
             };
             const order = yield this._studentCourseRepository.createSubscritionOrder(orderData);
+            console.log(order);
             return order;
         });
     }
@@ -249,31 +365,46 @@ class StudentCourseService {
     getReviews(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getReviews(id);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, reviewMapper_1.mapReviewsReponseToDtoList)(response);
+            return dto;
         });
     }
     createReview(formData) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.createReview(formData);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, reviewMapper_1.mapReviewReponseToDto)(response);
+            return dto;
         });
     }
     getProgress(courseId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.getProgress(courseId, userId);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, progressMapper_1.mapProgressToDto)(response);
+            return dto;
         });
     }
     addLectureToProgress(userId, courseId, lectureId) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.addLectureToProgress(userId, courseId, lectureId);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, progressMapper_1.mapProgressToDto)(response);
+            return dto;
         });
     }
     editReview(id, formData) {
         return __awaiter(this, void 0, void 0, function* () {
             const response = yield this._studentCourseRepository.editReview(id, formData);
-            return response;
+            if (!response)
+                return null;
+            const dto = (0, reviewMapper_1.mapReviewToDto)(response);
+            return dto;
         });
     }
     deleteReview(id) {
@@ -284,8 +415,16 @@ class StudentCourseService {
     }
     getWishlist(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const response = yield this._studentCourseRepository.getWishlist(userId);
-            return response;
+            const courses = yield this._studentCourseRepository.getWishlist(userId);
+            if (!courses)
+                return null;
+            for (const course of courses) {
+                if (course.imageThumbnail) {
+                    course.imageThumbnail = (0, cloudinaryUtility_1.getSignedImageUrl)(course.imageThumbnail);
+                }
+            }
+            const dto = (0, courseMapper_1.mapCoursesToDto)(courses);
+            return dto;
         });
     }
     addToWishlist(userId, courseId) {

@@ -120,8 +120,7 @@ class StudentController {
                     res.status(statusCode_1.STATUS_CODES.NOT_FOUND).json({ message: "User not found" });
                     return;
                 }
-                const userData = Object.assign(Object.assign({}, currentUser.toObject()), { status: 1 });
-                const updatedUser = yield this._studentService.updateUser(email, userData);
+                const updatedUser = yield this._studentService.updateUserStatus(email);
                 if (updatedUser) {
                     res.status(statusCode_1.STATUS_CODES.OK).json({
                         message: "Otp Verified Successfully",
@@ -218,9 +217,9 @@ class StudentController {
                     });
                     return;
                 }
-                if (user === null || user === void 0 ? void 0 : user.id) {
+                if (user === null || user === void 0 ? void 0 : user._id) {
                     const tokenInstance = new tokenUtility_1.Token();
-                    const { accessToken, refreshToken } = tokenInstance.generatingTokens(user.id, user.role);
+                    const { accessToken, refreshToken } = tokenInstance.generatingTokens(user._id, user.role);
                     console.log("Accesstoken : ", accessToken);
                     console.log("Refreshtoken : ", refreshToken);
                     const filteredData = {
@@ -494,41 +493,42 @@ class StudentController {
                     res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: "Failed to create user", data: null });
                     return;
                 }
-                const userData = Object.assign(Object.assign({}, user.toObject()), { status: 1 });
-                yield this._studentService.updateUser(email, userData);
+                yield this._studentService.updateUserStatus(email);
                 const tokenInstance = new tokenUtility_1.Token();
-                const { accessToken, refreshToken } = tokenInstance.generatingTokens(user.id, user.role);
-                console.log("Accesstoken : ", accessToken);
-                console.log("Refreshtoken : ", refreshToken);
-                const filteredData = {
-                    id: user._id,
-                    role: user.role,
-                };
-                if (accessToken && refreshToken) {
-                    console.log("cookie set");
-                    res.cookie("refreshToken", refreshToken, {
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
-                        maxAge: 24 * 60 * 60 * 1000,
-                    });
-                    res.cookie("accessToken", accessToken, {
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: "none",
-                        domain: ".elevic.site",
-                        path: "/",
-                        maxAge: 15 * 60 * 1000,
-                    });
-                    res
-                        .status(statusCode_1.STATUS_CODES.OK)
-                        .json({
-                        success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
-                    });
-                    console.log("User signin successfull");
-                    return;
+                if (typeof user._id === "string" && typeof user.role === "string") {
+                    const { accessToken, refreshToken } = tokenInstance.generatingTokens(user._id, user.role);
+                    console.log("Accesstoken : ", accessToken);
+                    console.log("Refreshtoken : ", refreshToken);
+                    const filteredData = {
+                        id: user._id,
+                        role: user.role,
+                    };
+                    if (accessToken && refreshToken) {
+                        console.log("cookie set");
+                        res.cookie("refreshToken", refreshToken, {
+                            httpOnly: true,
+                            secure: true,
+                            sameSite: "none",
+                            domain: ".elevic.site",
+                            path: "/",
+                            maxAge: 24 * 60 * 60 * 1000,
+                        });
+                        res.cookie("accessToken", accessToken, {
+                            httpOnly: true,
+                            secure: true,
+                            sameSite: "none",
+                            domain: ".elevic.site",
+                            path: "/",
+                            maxAge: 15 * 60 * 1000,
+                        });
+                        res
+                            .status(statusCode_1.STATUS_CODES.OK)
+                            .json({
+                            success: true, message: "Sign-in successful", data: { accessToken, user: filteredData }
+                        });
+                        console.log("User signin successfull");
+                        return;
+                    }
                 }
             }
             catch (error) {

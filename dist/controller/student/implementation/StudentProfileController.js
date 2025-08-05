@@ -35,6 +35,7 @@ class StudentProfileController {
                 // const { id } = req.params;
                 const id = req.userId;
                 const subscription = yield this._studentProfileService.getSubscriptionDetails(id);
+                console.log(subscription);
                 res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Student data retrieved successfully", data: subscription });
             }
             catch (error) {

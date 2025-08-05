@@ -30,9 +30,11 @@ router.post('/refresh-token', adminController.refreshToken.bind(adminController)
 //students management
 router.get('/getstudents', (0, validateToken_1.validateToken)("admin"), adminController.getStudents.bind(adminController));
 router.patch('/updatestudentstatus', (0, validateToken_1.validateToken)("admin"), adminController.blockStudent.bind(adminController));
+router.get('/searchstudents', (0, validateToken_1.validateToken)("admin"), adminController.searchStudents.bind(adminController));
 // tutor mangement
 router.get('/gettutors', (0, validateToken_1.validateToken)("admin"), adminController.getTutors.bind(adminController));
 router.patch('/updatetutorstatus', (0, validateToken_1.validateToken)("admin"), adminController.blockTutor.bind(adminController));
+router.get('/searchtutors', (0, validateToken_1.validateToken)("admin"), adminController.searchTutors.bind(adminController));
 // tutor verificaton
 router.get('/pending-tutor', (0, validateToken_1.validateToken)("admin"), adminTutorController.getPendingTutors.bind(adminTutorController));
 router.get('/get-tutor/:id', (0, validateToken_1.validateToken)("admin"), adminTutorController.getTutor.bind(adminTutorController));

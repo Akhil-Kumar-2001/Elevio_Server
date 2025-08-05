@@ -30,7 +30,8 @@ class AdminTutorRepository {
                 .limit(limit)
                 .exec();
             const totalRecord = yield tutorModel_1.Tutor.countDocuments();
-            return { tutors, totalRecord };
+            console.log(tutors);
+            return { data: tutors, totalRecord };
         });
     }
     getTutorById(id) {
@@ -109,7 +110,14 @@ class AdminTutorRepository {
                     .limit(limit)
                     .exec();
                 const totalRecord = yield categoryModel_1.Category.countDocuments();
-                return { categories, totalRecord };
+                const categoryDtos = categories.map((category) => ({
+                    _id: category._id.toString(),
+                    name: category.name,
+                    status: category.status,
+                    createdAt: category.get('createdAt'),
+                    updatedAt: category.get('updatedAt')
+                }));
+                return { data: categoryDtos, totalRecord };
             }
             catch (error) {
                 console.log("Error while retrieving categories");
@@ -123,7 +131,16 @@ class AdminTutorRepository {
             const newStatus = (category === null || category === void 0 ? void 0 : category.status) === 1 ? -1 : 1;
             const updatedCategory = yield categoryModel_1.Category.findByIdAndUpdate(id, { status: newStatus }, { new: true } // Returns the updated document
             );
-            return updatedCategory;
+            if (!updatedCategory)
+                return null;
+            const categoryDtos = {
+                _id: updatedCategory._id.toString(),
+                name: updatedCategory.name,
+                status: updatedCategory.status,
+                createdAt: updatedCategory.get('createdAt'),
+                updatedAt: updatedCategory.get('updatedAt')
+            };
+            return categoryDtos;
         });
     }
     deleteCategory(id) {
@@ -178,6 +195,11 @@ class AdminTutorRepository {
                 console.log("Error while getting Sections");
                 return null;
             }
+        });
+    }
+    findById(lectureId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return lectureModel_1.Lecture.findById(lectureId).exec();
         });
     }
     getLectures(id) {

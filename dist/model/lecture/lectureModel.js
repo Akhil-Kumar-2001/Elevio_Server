@@ -22,6 +22,10 @@ const lectureSchema = new mongoose_1.Schema({
         required: false, // Make it optional
         default: ""
     },
+    videoKey: {
+        type: String,
+        default: null,
+    },
     duration: {
         type: Number,
         required: true,

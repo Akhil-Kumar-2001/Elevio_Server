@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const otpMapper_1 = require("../../../mapper/otp/otpMapper");
+const studentMapper_1 = require("../../../mapper/student/studentMapper");
 class StudentService {
     constructor(studentRepository) {
         this._studentRepository = studentRepository;
@@ -31,28 +33,42 @@ class StudentService {
             return updatedUser;
         });
     }
+    updateUserStatus(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updatedUser = yield this._studentRepository.updateUserStatus(email);
+            if (!updatedUser)
+                return null;
+            const dto = (0, studentMapper_1.mapStudentToDto)(updatedUser);
+            return dto;
+        });
+    }
     storeUserOtp(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const storedOtp = yield this._studentRepository.storeOtpInDb(email, otp);
-            return storedOtp;
+            if (!storedOtp)
+                return null;
+            const dto = (0, otpMapper_1.mapOtpToDto)(storedOtp);
+            return dto;
         });
     }
     getOtpByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
             const otp = yield this._studentRepository.findOtpByemail(email);
-            return otp;
+            if (!otp)
+                return null;
+            const dto = (0, otpMapper_1.mapOtpToDto)(otp);
+            return dto;
         });
     }
     storeUserResendOtp(email, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const storedOtp = yield this._studentRepository.storeResendOtpInDb(email, otp);
-            return storedOtp;
+            if (!storedOtp)
+                return null;
+            const dto = (0, otpMapper_1.mapOtpToDto)(storedOtp);
+            return dto;
         });
     }
-    // async loginUser(email: string): Promise<IStudent | null> {
-    //     const user = await this._studentRepository.findByEmail(email);   
-    //     return user
-    // }
     isBlocked(_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this._studentRepository.isBlocked(_id);

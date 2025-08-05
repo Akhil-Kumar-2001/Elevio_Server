@@ -192,5 +192,39 @@ class AdminController {
             }
         });
     }
+    searchTutors(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { query, page, limit } = req.query;
+                const searchQuery = typeof query === 'string' ? query : '';
+                const pageNumber = typeof page === 'string' ? parseInt(page) : 1;
+                const limitNumber = typeof limit === 'string' ? parseInt(limit) : 5;
+                const response = yield this._adminService.searchTutor(searchQuery, pageNumber, limitNumber);
+                console.log(response);
+                if (response)
+                    res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Change status success", data: response });
+            }
+            catch (error) {
+                console.log(error);
+            }
+        });
+    }
+    searchStudents(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { query, page, limit } = req.query;
+                const searchQuery = typeof query === 'string' ? query : '';
+                const pageNumber = typeof page === 'string' ? parseInt(page) : 1;
+                const limitNumber = typeof limit === 'string' ? parseInt(limit) : 5;
+                const response = yield this._adminService.searchStudents(searchQuery, pageNumber, limitNumber);
+                console.log(response);
+                if (response)
+                    res.status(statusCode_1.STATUS_CODES.OK).json({ success: true, message: "Change status success", data: response });
+            }
+            catch (error) {
+                console.log(error);
+            }
+        });
+    }
 }
 exports.default = AdminController;
