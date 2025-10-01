@@ -99,14 +99,30 @@ class StudentCourseController {
             try {
                 const { studentId, amount, courseIds } = req.body;
                 if (!studentId || !amount || !courseIds) {
-                    res.status(statusCode_1.STATUS_CODES.NOT_FOUND).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.NOT_FOUND, data: null });
+                    res.status(statusCode_1.STATUS_CODES.NOT_FOUND).json({
+                        success: false,
+                        message: errorMessage_1.ERROR_MESSAGES.NOT_FOUND,
+                        data: null
+                    });
                     return;
                 }
                 const response = yield this._studentCourseService.createOrder(studentId, amount, courseIds);
-                res.status(statusCode_1.STATUS_CODES.CREATED).json({ success: true, message: "Order created successfully", data: response });
+                res.status(statusCode_1.STATUS_CODES.CREATED).json({
+                    success: true,
+                    message: "Order created successfully",
+                    data: response
+                });
             }
             catch (error) {
-                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+                const errorMessage = error.message || errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
+                const statusCode = errorMessage.includes('payment is already in progress')
+                    ? statusCode_1.STATUS_CODES.BAD_REQUEST // or CONFLICT
+                    : statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR;
+                res.status(statusCode).json({
+                    success: false,
+                    message: errorMessage,
+                    data: null
+                });
             }
         });
     }
@@ -149,11 +165,9 @@ class StudentCourseController {
     }
     verifyPayment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Request data for verfiy payment", req.body);
             try {
                 const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
                 const response = yield this._studentCourseService.verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
-                console.log("controlelr response", response);
                 res.status(response == "success" ? statusCode_1.STATUS_CODES.OK : statusCode_1.STATUS_CODES.BAD_REQUEST).json({ success: response === "success", message: response === "success" ? "Payment successful" : "Payment failed", status: response });
             }
             catch (error) {
@@ -267,13 +281,21 @@ class StudentCourseController {
                 res.status(statusCode_1.STATUS_CODES.CREATED).json({ success: true, message: "Order created successfully", data: response });
             }
             catch (error) {
-                res.status(statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null });
+                // res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+                const errorMessage = error.message || errorMessage_1.ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
+                const statusCode = errorMessage.includes('payment for this plan is already in progress')
+                    ? statusCode_1.STATUS_CODES.BAD_REQUEST
+                    : statusCode_1.STATUS_CODES.INTERNAL_SERVER_ERROR;
+                res.status(statusCode).json({
+                    success: false,
+                    message: errorMessage,
+                    data: null
+                });
             }
         });
     }
     verifySubscriptionPayment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Request data for verfiy sub payment", req.body);
             try {
                 const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
                 const response = yield this._studentCourseService.verifySubscriptionPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubscriptionPurchased = void 0;
-// model/subscription/subscriptionPurchasedModel.ts
 const mongoose_1 = require("mongoose");
 const subscriptionPurchasedSchema = new mongoose_1.Schema({
     userId: {
@@ -19,14 +18,8 @@ const subscriptionPurchasedSchema = new mongoose_1.Schema({
         required: true,
         unique: true
     },
-    startDate: {
-        type: Date,
-        default: null
-    },
-    endDate: {
-        type: Date,
-        default: null
-    },
+    startDate: { type: Date, default: null },
+    endDate: { type: Date, default: null },
     status: {
         type: String,
         enum: ["pending", "active", "expired", "canceled"],
@@ -42,6 +35,14 @@ const subscriptionPurchasedSchema = new mongoose_1.Schema({
         paymentMethod: { type: String },
         paymentAmount: { type: Number },
     },
+    expireAt: {
+        type: Date,
+        index: { expireAfterSeconds: 0 },
+        default: function () {
+            return new Date(Date.now() + 5 * 60 * 1000);
+        },
+    }
 }, { timestamps: true });
+subscriptionPurchasedSchema.index({ userId: 1, planId: 1, status: 1 }, { unique: true, partialFilterExpression: { status: "pending" } });
 const SubscriptionPurchased = (0, mongoose_1.model)("SubscriptionPurchased", subscriptionPurchasedSchema);
 exports.SubscriptionPurchased = SubscriptionPurchased;

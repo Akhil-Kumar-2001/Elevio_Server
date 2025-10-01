@@ -188,23 +188,53 @@ class StudentCourseRepository {
     }
     createOrder(orderData) {
         return __awaiter(this, void 0, void 0, function* () {
+            const session = yield mongoose_1.default.startSession();
+            session.startTransaction();
             try {
-                const order = new orderModel_1.Order(orderData);
-                const savedOrder = yield order.save();
+                const existing = yield orderModel_1.Order.findOne({
+                    userId: orderData.userId,
+                    courseIds: { $in: orderData.courseIds },
+                    status: "pending",
+                    expireAt: { $gt: new Date() }
+                }, null, { session });
+                if (existing) {
+                    yield session.abortTransaction();
+                    session.endSession();
+                    return existing;
+                }
+                // Step 2: create new
+                const newOrder = new orderModel_1.Order(orderData);
+                const savedOrder = yield newOrder.save({ session });
+                yield session.commitTransaction();
+                session.endSession();
                 return savedOrder;
             }
-            catch (error) {
-                console.error("Error creating order in repository:", error);
+            catch (err) {
+                yield session.abortTransaction();
+                session.endSession();
+                console.error("Error creating order:", err);
                 return null;
             }
+        });
+    }
+    findPendingOrder(studentId, courseId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const now = new Date();
+            const order = yield orderModel_1.Order.findOne({
+                userId: new mongoose_1.Types.ObjectId(studentId),
+                courseIds: new mongoose_1.Types.ObjectId(courseId),
+                status: "pending",
+                expireAt: { $gt: now }
+            });
+            return order || null;
         });
     }
     updateByOrderId(razorpay_order_id, status) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const updatedOrder = yield orderModel_1.Order.findOneAndUpdate({ razorpayOrderId: razorpay_order_id }, { $set: { status: status } }, { new: true });
-                console.log("updated order ", updatedOrder);
                 if (!updatedOrder) {
+                    console.error("❌ No order found for razorpay_order_id:", razorpay_order_id);
                     console.error("Order status not updated:");
                     return null;
                 }
@@ -225,7 +255,6 @@ class StudentCourseRepository {
                                     startDate: new Date()
                                 });
                                 yield newProgress.save();
-                                console.log(`Initialized progress for course ${courseId} for user ${updatedOrder.userId}`);
                             }
                         }
                     }
@@ -262,11 +291,10 @@ class StudentCourseRepository {
                             tutorWallet.totalEarnings += course.price;
                             tutorWallet.transactions.push(transaction);
                             yield tutorWallet.save();
-                            // console.log("Tutor wallet after the transaction", tutorWallet)
                         }
                     }
+                    yield cartModel_1.Cart.findOneAndUpdate({ userId: updatedOrder.userId }, { $set: { items: [], totalPrice: 0 } }, { new: true });
                 }
-                yield cartModel_1.Cart.findOneAndUpdate({ userId: updatedOrder.userId }, { $set: { items: [], totalPrice: 0 } }, { new: true });
                 return updatedOrder ? updatedOrder.status : null;
             }
             catch (error) {
@@ -432,15 +460,45 @@ class StudentCourseRepository {
             return !!isValid;
         });
     }
-    createSubscritionOrder(orderData) {
+    findPendingSubscriptionOrder(studentId) {
         return __awaiter(this, void 0, void 0, function* () {
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+            const subscription = yield SubscriptionPurchased_1.SubscriptionPurchased.findOne({
+                userId: studentId,
+                status: 'pending',
+                createdAt: { $gte: fiveMinutesAgo }
+            });
+            if (!subscription)
+                return null;
+            return subscription;
+        });
+    }
+    createSubscriptionOrder(orderData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const session = yield mongoose_1.default.startSession();
             try {
+                session.startTransaction();
+                if (!orderData.status || orderData.status === "pending") {
+                    orderData.expireAt = new Date(Date.now() + 5 * 60 * 1000); // 10 minutes
+                }
+                const existingOrder = yield SubscriptionPurchased_1.SubscriptionPurchased.findOne({
+                    userId: orderData.userId,
+                    planId: orderData.planId,
+                    status: "pending",
+                }, null, { session });
+                if (existingOrder) {
+                    throw new Error("You already have a pending subscription for this plan.");
+                }
                 const order = new SubscriptionPurchased_1.SubscriptionPurchased(orderData);
-                const savedOrder = yield order.save();
+                const savedOrder = yield order.save({ session });
+                yield session.commitTransaction();
+                session.endSession();
                 return savedOrder;
             }
             catch (error) {
-                console.error("Error creating order in repository:", error);
+                yield session.abortTransaction();
+                session.endSession();
+                console.error("Error creating subscription order:", error);
                 return null;
             }
         });
@@ -460,9 +518,7 @@ class StudentCourseRepository {
     updateSubscriptionByOrderId(orderId, data) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            console.log("data of update subscription", data);
             const updatedOrder = yield SubscriptionPurchased_1.SubscriptionPurchased.findOneAndUpdate({ orderId: orderId }, data, { new: true });
-            console.log("Updated order", updatedOrder);
             if (updatedOrder && data.paymentStatus === 'paid' && ((_a = data.paymentDetails) === null || _a === void 0 ? void 0 : _a.paymentAmount)) {
                 try {
                     let adminWallet = yield adminwallet_1.AdminWallet.findOne({ email: process.env.ADMIN_MAIL });

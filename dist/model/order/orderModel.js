@@ -12,15 +12,12 @@ const orderSchema = new mongoose_1.Schema({
             type: mongoose_1.Schema.Types.ObjectId,
             ref: "Course",
             required: true,
-        }], // Array of course IDs
+        }],
     razorpayOrderId: {
         type: String,
         required: true,
-        unique: true, // Still unique per order
+        unique: true,
     },
-    // razorpayPaymentId: {
-    //     type: String,
-    // },
     amount: {
         type: Number,
         required: true,
@@ -33,8 +30,20 @@ const orderSchema = new mongoose_1.Schema({
     paymentMethod: {
         type: String,
     },
+    expireAt: {
+        type: Date,
+        index: { expireAfterSeconds: 0 },
+        default: function () {
+            return new Date(Date.now() + 5 * 60 * 1000);
+        },
+    },
 }, { timestamps: true });
-// Optional: Index to improve query performance (no unique constraint here)
-orderSchema.index({ userId: 1, razorpayOrderId: 1 });
+orderSchema.pre("save", function (next) {
+    if (this.isModified("status") && this.status !== "pending") {
+        this.expireAt = null;
+    }
+    next();
+});
+orderSchema.index({ userId: 1, "courseIds": 1 }, { unique: true, partialFilterExpression: { status: "pending" } });
 const Order = (0, mongoose_1.model)("Order", orderSchema);
 exports.Order = Order;

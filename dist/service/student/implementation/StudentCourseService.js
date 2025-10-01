@@ -101,6 +101,13 @@ class StudentCourseService {
     }
     createOrder(studentId, amount, courseIds) {
         return __awaiter(this, void 0, void 0, function* () {
+            const courseIdArray = Array.isArray(courseIds) ? courseIds : [courseIds];
+            for (const courseId of courseIdArray) {
+                const pendingOrder = yield this._studentCourseRepository.findPendingOrder(studentId, courseId);
+                if (pendingOrder) {
+                    throw new Error("A payment is already in progress for this course. Please complete it before retrying.");
+                }
+            }
             const options = {
                 amount: amount * 100,
                 currency: "INR",
@@ -115,16 +122,21 @@ class StudentCourseService {
                 amount: razorpayOrder.amount,
                 status: "pending",
                 paymentMethod: "razorpay",
+                // sessionId,
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000),
             };
             const createdOrder = yield this._studentCourseRepository.createOrder(orderData);
             if (!createdOrder)
                 return null;
-            const dto = (0, orderMapper_1.mapOrderToDto)(createdOrder);
-            return dto;
+            return (0, orderMapper_1.mapOrderToDto)(createdOrder);
         });
     }
     verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!razorpay_payment_id || !razorpay_signature) {
+                yield this._studentCourseRepository.updateByOrderId(razorpay_order_id, "failed");
+                return "failed";
+            }
             const expectedSignature = crypto_1.default
                 .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
                 .update(razorpay_order_id + "|" + razorpay_payment_id)
@@ -133,7 +145,6 @@ class StudentCourseService {
                 throw new Error("Payment signature verification failed");
             }
             const payment = yield this._razorpay.payments.fetch(razorpay_payment_id);
-            console.log("payment status capture", payment.status);
             if (payment.status === "captured") {
                 const updatedOrder = yield this._studentCourseRepository.updateByOrderId(razorpay_order_id, "success");
                 return updatedOrder;
@@ -279,6 +290,10 @@ class StudentCourseService {
     }
     createSubscritionOrder(studentId, amount, planId) {
         return __awaiter(this, void 0, void 0, function* () {
+            const pendingOrder = yield this._studentCourseRepository.findPendingSubscriptionOrder(studentId);
+            if (pendingOrder) {
+                throw new Error('A subscription payment is already in progress for this course. Please complete it before retrying.');
+            }
             const options = {
                 amount: amount * 100,
                 currency: "INR",
@@ -286,7 +301,6 @@ class StudentCourseService {
                 payment_capture: 1,
             };
             const razorpayOrder = yield this._razorpay.orders.create(options);
-            console.log("rz", razorpayOrder);
             const orderData = {
                 userId: new mongoose_1.Types.ObjectId(studentId),
                 planId: new mongoose_1.Types.ObjectId(planId),
@@ -295,18 +309,26 @@ class StudentCourseService {
                 orderId: razorpayOrder.id,
                 status: "pending",
                 paymentStatus: "pending",
+                expireAt: undefined,
                 paymentDetails: {
                     paymentAmount: Number(razorpayOrder.amount),
                     paymentMethod: "Razorpay"
-                }
+                },
             };
-            const order = yield this._studentCourseRepository.createSubscritionOrder(orderData);
+            const order = yield this._studentCourseRepository.createSubscriptionOrder(orderData);
             console.log(order);
             return order;
         });
     }
     verifySubscriptionPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!razorpay_payment_id || !razorpay_signature) {
+                yield this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id, {
+                    paymentStatus: "failed",
+                    status: "canceled",
+                });
+                return "failed";
+            }
             const expectedSignature = crypto_1.default
                 .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
                 .update(razorpay_order_id + "|" + razorpay_payment_id)
