@@ -99,13 +99,21 @@ class StudentCourseService implements IStudentCourseService {
     }
 
     async createOrder(studentId: string, amount: number, courseIds: string[]): Promise<IOrderDto | null> {
+        const courseIdArray = Array.isArray(courseIds) ? courseIds : [courseIds];
+
+        for (const courseId of courseIdArray) {
+            const pendingOrder = await this._studentCourseRepository.findPendingOrder(studentId, courseId);
+            if (pendingOrder) {
+                throw new Error("A payment is already in progress for this course. Please complete it before retrying.");
+            }
+        }
 
         const options = {
             amount: amount * 100,
             currency: "INR",
             receipt: `order_rcptid_${studentId}`,
             payment_capture: 1,
-        }
+        };
 
         const razorpayOrder = await this._razorpay.orders.create(options);
 
@@ -113,18 +121,25 @@ class StudentCourseService implements IStudentCourseService {
             userId: new Types.ObjectId(studentId),
             courseIds: courseIds.map((id) => new Types.ObjectId(id)),
             razorpayOrderId: razorpayOrder.id,
-            amount: (razorpayOrder.amount as number),
+            amount: razorpayOrder.amount as number,
             status: "pending" as const,
             paymentMethod: "razorpay",
+            // sessionId,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000),
         };
 
         const createdOrder = await this._studentCourseRepository.createOrder(orderData);
         if (!createdOrder) return null;
-        const dto = mapOrderToDto(createdOrder);
-        return dto
+
+        return mapOrderToDto(createdOrder);
     }
 
+
     async verifyPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null> {
+        if (!razorpay_payment_id || !razorpay_signature) {
+            await this._studentCourseRepository.updateByOrderId(razorpay_order_id, "failed");
+            return "failed";
+        }
         const expectedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
@@ -133,10 +148,8 @@ class StudentCourseService implements IStudentCourseService {
         if (expectedSignature !== razorpay_signature) {
             throw new Error("Payment signature verification failed");
         }
-
         const payment = await this._razorpay.payments.fetch(razorpay_payment_id);
 
-        console.log("payment status capture", payment.status)
 
         if (payment.status === "captured") {
             const updatedOrder = await this._studentCourseRepository.updateByOrderId(razorpay_order_id, "success");
@@ -300,6 +313,10 @@ class StudentCourseService implements IStudentCourseService {
 
     async createSubscritionOrder(studentId: string, amount: number, planId: string): Promise<ISubscriptionPurchased | null> {
 
+        const pendingOrder = await this._studentCourseRepository.findPendingSubscriptionOrder(studentId);
+        if (pendingOrder) {
+            throw new Error('A subscription payment is already in progress for this course. Please complete it before retrying.');
+        }
         const options = {
             amount: amount * 100,
             currency: "INR",
@@ -308,7 +325,6 @@ class StudentCourseService implements IStudentCourseService {
         }
 
         const razorpayOrder = await this._razorpay.orders.create(options);
-        console.log("rz", razorpayOrder)
 
         const orderData: IOrderCreateSubscriptionData = {
             userId: new Types.ObjectId(studentId),
@@ -318,20 +334,30 @@ class StudentCourseService implements IStudentCourseService {
             orderId: razorpayOrder.id,
             status: "pending",
             paymentStatus: "pending",
+            expireAt: undefined,
             paymentDetails: {
                 paymentAmount: Number(razorpayOrder.amount),
                 paymentMethod: "Razorpay"
-            }
+            },
+
+
         };
 
 
-        const order = await this._studentCourseRepository.createSubscritionOrder(orderData)
+        const order = await this._studentCourseRepository.createSubscriptionOrder(orderData)
         console.log(order)
         return order;
 
     }
 
     async verifySubscriptionPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null> {
+        if (!razorpay_payment_id || !razorpay_signature) {
+            await this._studentCourseRepository.updateSubscriptionByOrderId(razorpay_order_id, {
+                paymentStatus: "failed",
+                status: "canceled",
+            });
+            return "failed";
+        }
         const expectedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
             .update(razorpay_order_id + "|" + razorpay_payment_id)

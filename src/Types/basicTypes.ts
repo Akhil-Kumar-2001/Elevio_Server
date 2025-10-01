@@ -84,6 +84,8 @@ export interface IOrderCreateSubscriptionData {
     paymentMethod: String,
     paymentAmount: Number,
   },
+  expireAt?: Date;
+
 }
 
 export interface ISubscriptionPlan {

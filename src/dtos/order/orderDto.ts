@@ -8,6 +8,7 @@ export interface IOrderDto {
   amount: number;
   status: "pending" | "success" | "failed";
   paymentMethod?: string;
+  expireAt?: Date | null;
   createdAt: string;
   updatedAt: string;
 }

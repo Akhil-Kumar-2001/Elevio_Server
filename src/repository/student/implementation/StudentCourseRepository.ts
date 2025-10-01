@@ -99,9 +99,7 @@ class StudentCourseRepository implements IStudentCourseRepository {
     }
 
     async getCart(studentId: string): Promise<ICartWithDetails | null> {
-
         const cart = await Cart.findOne({ userId: studentId, status: 'active' });
-
         if (!cart) {
             return null;
         }
@@ -132,7 +130,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
             _id: cart._id.toString(),
 
         };
-
         return enrichedCart;
     }
 
@@ -162,17 +159,54 @@ class StudentCourseRepository implements IStudentCourseRepository {
     }
 
     async createOrder(orderData: IOrderCreateData): Promise<IOrder | null> {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
         try {
-            const order = new Order(orderData);
+            const existing = await Order.findOne(
+                {
+                    userId: orderData.userId,
+                    courseIds: { $in: orderData.courseIds },
+                    status: "pending",
+                    expireAt: { $gt: new Date() }
+                },
+                null,
+                { session }
+            );
 
-            const savedOrder = await order.save();
+            if (existing) {
+                await session.abortTransaction();
+                session.endSession();
+                return existing;
+            }
 
+            // Step 2: create new
+            const newOrder = new Order(orderData);
+            const savedOrder = await newOrder.save({ session });
+
+            await session.commitTransaction();
+            session.endSession();
             return savedOrder;
-        } catch (error) {
-            console.error("Error creating order in repository:", error);
+        } catch (err) {
+            await session.abortTransaction();
+            session.endSession();
+            console.error("Error creating order:", err);
             return null;
         }
     }
+
+    async findPendingOrder(studentId: string, courseId: string): Promise<IOrder | null> {
+        const now = new Date();
+        const order = await Order.findOne({
+            userId: new Types.ObjectId(studentId),
+            courseIds: new Types.ObjectId(courseId), 
+            status: "pending",
+            expireAt: { $gt: now }
+        });
+        return order || null;
+    }
+
+
 
     async updateByOrderId(razorpay_order_id: string, status: string): Promise<string | null> {
         try {
@@ -182,15 +216,13 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 { new: true }
             );
 
-            console.log("updated order ", updatedOrder);
-
             if (!updatedOrder) {
+                console.error("❌ No order found for razorpay_order_id:", razorpay_order_id);
                 console.error("Order status not updated:");
                 return null;
             }
 
             if (status === 'success' && updatedOrder.courseIds && updatedOrder.courseIds.length > 0) {
-
                 try {
                     for (const courseId of updatedOrder.courseIds) {
                         const existingProgress = await Progress.findOne({
@@ -209,7 +241,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
                             });
 
                             await newProgress.save();
-                            console.log(`Initialized progress for course ${courseId} for user ${updatedOrder.userId}`);
                         }
                     }
                 } catch (error) {
@@ -229,14 +260,13 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 );
 
                 for (const course of courses) {
-
                     await Course.findByIdAndUpdate(
                         course._id,
                         { $addToSet: { purchasedStudents: updatedOrder.userId } },
                         { new: true }
                     );
-                    if (course.tutorId) {
 
+                    if (course.tutorId) {
                         let tutorWallet = await TutorWallet.findOne({ tutorId: course.tutorId });
 
                         if (!tutorWallet) {
@@ -263,17 +293,23 @@ class StudentCourseRepository implements IStudentCourseRepository {
                         tutorWallet.transactions.push(transaction);
 
                         await tutorWallet.save();
-
-                        // console.log("Tutor wallet after the transaction", tutorWallet)
                     }
                 }
+
+                await Cart.findOneAndUpdate(
+                    { userId: updatedOrder.userId },
+                    { $set: { items: [], totalPrice: 0 } },
+                    { new: true }
+                );
             }
 
-            await Cart.findOneAndUpdate(
-                { userId: updatedOrder.userId },
-                { $set: { items: [], totalPrice: 0 } },
-                { new: true }
-            );
+            if (status === 'failed') {
+                await Cart.findOneAndUpdate(
+                    { userId: updatedOrder.userId },
+                    { $set: { items: updatedOrder.courseIds, totalPrice: updatedOrder.amount } },
+                    { new: true }
+                );
+            }
 
             return updatedOrder ? updatedOrder.status : null;
         } catch (error) {
@@ -322,11 +358,11 @@ class StudentCourseRepository implements IStudentCourseRepository {
             if (category && category.toLowerCase() !== "all") {
                 const categoryDoc = await Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
                 if (categoryDoc) {
-                    filter.category = categoryDoc._id; 
+                    filter.category = categoryDoc._id;
                     console.log("Found category _id:", categoryDoc._id);
                 } else {
                     console.log(`No category found with name: ${category}`);
-                    return { data: [], totalRecord: 0 }; 
+                    return { data: [], totalRecord: 0 };
                 }
             }
 
@@ -446,18 +482,60 @@ class StudentCourseRepository implements IStudentCourseRepository {
         return !!isValid;
     }
 
-    async createSubscritionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null> {
+
+    async findPendingSubscriptionOrder(studentId: string): Promise<ISubscriptionPurchased | null> {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const subscription = await SubscriptionPurchased.findOne({
+            userId: studentId,
+            status: 'pending',
+            createdAt: { $gte: fiveMinutesAgo }
+        });
+        if (!subscription) return null;
+        return subscription
+    }
+
+    async createSubscriptionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null> {
+        const session = await mongoose.startSession();
         try {
+            session.startTransaction();
+
+            if (!orderData.status || orderData.status === "pending") {
+                orderData.expireAt = new Date(Date.now() + 5 * 60 * 1000); // 10 minutes
+            }
+
+            const existingOrder = await SubscriptionPurchased.findOne(
+                {
+                    userId: orderData.userId,
+                    planId: orderData.planId,
+                    status: "pending",
+                },
+                null,
+                { session }
+            );
+
+            if (existingOrder) {
+                throw new Error("You already have a pending subscription for this plan.");
+            }
+
             const order = new SubscriptionPurchased(orderData);
 
-            const savedOrder = await order.save();
+            const savedOrder = await order.save({ session });
+
+            await session.commitTransaction();
+            session.endSession();
 
             return savedOrder;
         } catch (error) {
-            console.error("Error creating order in repository:", error);
+            await session.abortTransaction();
+            session.endSession();
+            console.error("Error creating subscription order:", error);
             return null;
         }
     }
+
+
+
+
 
     async findByOrderId(orderId: string): Promise<ISubscriptionPurchased | null> {
         const order = await SubscriptionPurchased.findOne({ orderId });
@@ -472,14 +550,12 @@ class StudentCourseRepository implements IStudentCourseRepository {
 
 
     async updateSubscriptionByOrderId(orderId: string, data: PaymentData): Promise<string | null> {
-        console.log("data of update subscription", data);
 
         const updatedOrder = await SubscriptionPurchased.findOneAndUpdate(
             { orderId: orderId },
             data,
             { new: true }
         );
-        console.log("Updated order", updatedOrder)
 
         if (updatedOrder && data.paymentStatus === 'paid' && data.paymentDetails?.paymentAmount) {
             try {

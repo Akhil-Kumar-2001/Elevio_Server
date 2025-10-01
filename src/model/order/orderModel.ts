@@ -2,12 +2,12 @@ import { Schema, Document, model, Types } from "mongoose";
 
 interface IOrder extends Document {
     userId: Schema.Types.ObjectId;
-    courseIds: Schema.Types.ObjectId[]; // Changed to array for multiple courses
+    courseIds: Schema.Types.ObjectId[]; 
     razorpayOrderId: string;
-    // razorpayPaymentId?: string;
     amount: number;
     status: "pending" | "success" | "failed";
     paymentMethod?: string;
+    expireAt?: Date | null;
     createdAt: Date;
     updatedAt: Date;
     _id: Types.ObjectId;
@@ -24,15 +24,12 @@ const orderSchema = new Schema<IOrder>({
         type: Schema.Types.ObjectId,
         ref: "Course",
         required: true,
-    }], // Array of course IDs
+    }], 
     razorpayOrderId: {
         type: String,
         required: true,
-        unique: true, // Still unique per order
+        unique: true,
     },
-    // razorpayPaymentId: {
-    //     type: String,
-    // },
     amount: {
         type: Number,
         required: true,
@@ -45,10 +42,26 @@ const orderSchema = new Schema<IOrder>({
     paymentMethod: {
         type: String,
     },
+    expireAt: {
+        type: Date,
+        index: { expireAfterSeconds: 0 },
+        default: function () {
+            return new Date(Date.now() + 5 * 60 * 1000); 
+        },
+    },
 }, { timestamps: true });
 
-// Optional: Index to improve query performance (no unique constraint here)
-orderSchema.index({ userId: 1, razorpayOrderId: 1 });
+orderSchema.pre("save", function (next) {
+    if (this.isModified("status") && this.status !== "pending") {
+        this.expireAt = null;
+    }
+    next();
+});
+
+orderSchema.index(
+  { userId: 1, "courseIds": 1 },
+  { unique: true, partialFilterExpression: { status: "pending" } }
+);
 
 const Order = model<IOrder>("Order", orderSchema);
 export { Order, IOrder };

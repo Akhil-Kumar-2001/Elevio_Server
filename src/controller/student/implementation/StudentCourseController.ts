@@ -90,23 +90,43 @@ class StudentCourseController implements IStudentCourseController {
         }
     }
 
+
     async createOrder(req: Request, res: Response): Promise<void> {
         try {
             const { studentId, amount, courseIds } = req.body;
-            if (!studentId || !amount || !courseIds) {
-                res.status(STATUS_CODES.NOT_FOUND).json({ success: false, message: ERROR_MESSAGES.NOT_FOUND, data: null })
-                return
+
+            if (!studentId || !amount || !courseIds ) {
+                res.status(STATUS_CODES.NOT_FOUND).json({
+                    success: false,
+                    message: ERROR_MESSAGES.NOT_FOUND,
+                    data: null
+                });
+                return;
             }
-
             const response = await this._studentCourseService.createOrder(studentId, amount, courseIds);
-            res.status(STATUS_CODES.CREATED).json({ success: true, message: "Order created successfully", data: response })
 
+            res.status(STATUS_CODES.CREATED).json({
+                success: true,
+                message: "Order created successfully",
+                data: response
+            });
 
+        } catch (error: any) {
+            const errorMessage = error.message || ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
 
-        } catch (error) {
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+            const statusCode = errorMessage.includes('payment is already in progress')
+                ? STATUS_CODES.BAD_REQUEST // or CONFLICT
+                : STATUS_CODES.INTERNAL_SERVER_ERROR;
+
+            res.status(statusCode).json({
+                success: false,
+                message: errorMessage,
+                data: null
+            });
         }
     }
+
+
 
     async searchCourse(req: Request, res: Response): Promise<void> {
         try {
@@ -156,11 +176,9 @@ class StudentCourseController implements IStudentCourseController {
 
 
     async verifyPayment(req: Request, res: Response): Promise<void> {
-        console.log("Request data for verfiy payment", req.body)
         try {
             const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
             const response = await this._studentCourseService.verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
-            console.log("controlelr response", response)
             res.status(response == "success" ? STATUS_CODES.OK : STATUS_CODES.BAD_REQUEST).json({ success: response === "success", message: response === "success" ? "Payment successful" : "Payment failed", status: response })
         } catch (error) {
             res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
@@ -263,13 +281,23 @@ class StudentCourseController implements IStudentCourseController {
 
 
 
-        } catch (error) {
-            res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+        } catch (error:any) {
+            // res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR, data: null })
+            const errorMessage = error.message || ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
+
+            const statusCode = errorMessage.includes('payment for this plan is already in progress')
+                ? STATUS_CODES.BAD_REQUEST
+                : STATUS_CODES.INTERNAL_SERVER_ERROR;
+
+            res.status(statusCode).json({
+                success: false,
+                message: errorMessage,
+                data: null
+            });
         }
     }
 
     async verifySubscriptionPayment(req: Request, res: Response): Promise<void> {
-        console.log("Request data for verfiy sub payment", req.body)
         try {
             const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
             const response = await this._studentCourseService.verifySubscriptionPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);

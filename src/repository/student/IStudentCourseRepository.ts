@@ -20,6 +20,7 @@ interface IStudentCourseRepository {
     getCart(studentId: string): Promise<ICartWithDetails | null>
     removeItem(id: string, studentId: string): Promise<boolean | null>
     createOrder(orderData: IOrderCreateData): Promise<IOrder | null>
+    findPendingOrder(studentId: string,courseId:string): Promise<IOrder | null>
     updateByOrderId(razorpay_order_id: string, status: string): Promise<string | null>
     getCategories(): Promise<ICategory[] | null>
     getCourses(page: number, limit: number): Promise<CourseResponseDataType | null>
@@ -31,8 +32,10 @@ interface IStudentCourseRepository {
     getLectures(id: string): Promise<ILecture[] | null>
     findById(lectureId: string): Promise<ILecture | null>
 
+
+    findPendingSubscriptionOrder(studentId: string): Promise<ISubscriptionPurchased | null>
     getSubscription(): Promise<ISubscription[] | null>
-    createSubscritionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null>
+    createSubscriptionOrder(orderData: IOrderCreateSubscriptionData): Promise<ISubscriptionPurchased | null>
     isValidPlan(studentId: string): Promise<boolean | null>
     findByOrderId(orderId: string): Promise<ISubscriptionPurchased | null>
     findPlanById(_id: string): Promise<ISubscription | null>

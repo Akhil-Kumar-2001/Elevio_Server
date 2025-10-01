@@ -19,7 +19,7 @@ interface IStudentCourseService {
     courseExist(id: string, userId: string): Promise<boolean | null>
     getCart(studentId: string): Promise<ICartWithDetails | null>
     removeItem(id: string, studentId: string): Promise<boolean | null>
-    createOrder(studentId: string, amount: number, courseIds: string[]): Promise<IOrderDto | null>
+    createOrder(studentId: string, amount: number, courseIds: string[]): Promise<IOrderDto| string | null>
     searchCourse(query: string, page: number, limit: number, category:string, priceRange:[number,number],sortOrder:string): Promise<PaginatedResponse<ICourseSearchServiceDto> | null>
     verifyPayment(razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string): Promise<string | null>
     getCategories(): Promise<ICategoryDto[] | null>
