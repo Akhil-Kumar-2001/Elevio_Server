@@ -303,14 +303,6 @@ class StudentCourseRepository implements IStudentCourseRepository {
                 );
             }
 
-            if (status === 'failed') {
-                await Cart.findOneAndUpdate(
-                    { userId: updatedOrder.userId },
-                    { $set: { items: updatedOrder.courseIds, totalPrice: updatedOrder.amount } },
-                    { new: true }
-                );
-            }
-
             return updatedOrder ? updatedOrder.status : null;
         } catch (error) {
             console.error("Error updating order:", error);
